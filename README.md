@@ -113,7 +113,7 @@ claude-vault/
 ├── 20_ENTITIES/                ← Structured knowledge base
 │   ├── Projects/               ← One .md per active project
 │   ├── Concepts/               ← Decisions, ADRs, technical notes
-│   └── [domain folders]        ← e.g. Japan_Alliance/, Products/, etc.
+│   └── [your domain folders]   ← e.g. Products/, Clients/, Research/, etc.
 │
 ├── 30_RELATIONS/               ← Maps of Content (MOC) and links
 │   └── Maps_of_Content/
@@ -136,7 +136,7 @@ claude-vault/
 
 **`10_INBOX/Daily_Logs/`** — the raw session log. The `memory-boot` skill creates one file per day, appends an entry at session start and at session end. Never restructure these — they are the audit trail.
 
-**`20_ENTITIES/`** — the knowledge base. One file per project, concept, or domain entity. This is where detailed information lives (roadmaps, specs, decisions). HOT_CACHE only holds pointers to these files.
+**`20_ENTITIES/`** — the knowledge base. One file per project, concept, or domain entity. This is where detailed information lives (roadmaps, specs, decisions). HOT_CACHE only holds pointers to these files. Add domain subfolders freely to match your own projects.
 
 **`40_ERRORS/`** — the error memory. `ERRORS.md` is append-only: every mistake gets logged immediately with date, context, correction applied, and whether it's a recurrent pattern. `PATTERNS_INDEX.md` extracts the patterns so Claude avoids repeating them.
 
