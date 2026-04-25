@@ -85,11 +85,121 @@ Session start
 | T2 | Sonnet 4.6 | 26–60 | Standard writing, code, analysis, light orchestration |
 | T3 | Opus 4.6 | 61–100 | System architecture, security code, multi-step reasoning, production debug |
 
-## Not Included
+---
 
-The following are excluded as domain-specific (Japan Alliance Database project):
-- `japan-alliance-lookup` — anime, games, cinema, music, culture, language, places, tech
-- `mangatracker-lookup` — manga and light novels
+## Obsidian Vault Setup (for memory-boot)
+
+The `memory-boot` plugin stores and retrieves session context from an Obsidian vault connected via the [`obsidian-claude-vault` MCP](https://github.com/bitbonsai/mcpvault). Here is the recommended vault structure and the reasoning behind each folder.
+
+### Recommended Vault Structure
+
+```
+claude-vault/
+│
+├── 00_SYSTEM/                  ← Claude's operating system
+│   ├── 05_Hot_Cache/
+│   │   └── HOT_CACHE.md        ← ★ Most important file. Read first every session.
+│   ├── 06_Successes/           ← Journal of what worked
+│   │   ├── SUCCESSES_INDEX.md  ← Master table (skills / plugins / projects)
+│   │   ├── skills/             ← One .md per skill created or improved
+│   │   ├── plugins/            ← One .md per plugin delivered
+│   │   └── projects/           ← One .md per project launched
+│   └── MASTER_PROTOCOL.md      ← Rules of engagement (reading order, logging rules)
+│
+├── 10_INBOX/                   ← Raw daily input, never restructured
+│   └── Daily_Logs/
+│       └── YYYY-MM-DD.md       ← One log per day, auto-created by memory-boot
+│
+├── 20_ENTITIES/                ← Structured knowledge base
+│   ├── Projects/               ← One .md per active project
+│   ├── Concepts/               ← Decisions, ADRs, technical notes
+│   └── [domain folders]        ← e.g. Japan_Alliance/, Products/, etc.
+│
+├── 30_RELATIONS/               ← Maps of Content (MOC) and links
+│   └── Maps_of_Content/
+│       └── MOC_ACTIVE_PROJECTS.md
+│
+├── 40_ERRORS/                  ← Error tracking and pattern detection
+│   ├── Error_Log/
+│   │   └── ERRORS.md           ← Append-only error log (never delete entries)
+│   └── Patterns/
+│       └── PATTERNS_INDEX.md   ← Recurring error patterns to avoid
+│
+└── 60_ARCHIVE/                 ← Retired content, snapshots, history
+```
+
+### What goes where
+
+**`00_SYSTEM/05_Hot_Cache/HOT_CACHE.md`** — the single most important file. It is Claude's working memory: current projects, last decisions, open tasks, error patterns to avoid. Keep it under 200 lines. Claude reads it first, every session, before anything else.
+
+**`00_SYSTEM/06_Successes/`** — the success journal. Every skill created, every plugin delivered, every project launched gets a line in `SUCCESSES_INDEX.md` and a fiche in the appropriate subfolder. The `rapport` skill reads this to generate status reports.
+
+**`10_INBOX/Daily_Logs/`** — the raw session log. The `memory-boot` skill creates one file per day, appends an entry at session start and at session end. Never restructure these — they are the audit trail.
+
+**`20_ENTITIES/`** — the knowledge base. One file per project, concept, or domain entity. This is where detailed information lives (roadmaps, specs, decisions). HOT_CACHE only holds pointers to these files.
+
+**`40_ERRORS/`** — the error memory. `ERRORS.md` is append-only: every mistake gets logged immediately with date, context, correction applied, and whether it's a recurrent pattern. `PATTERNS_INDEX.md` extracts the patterns so Claude avoids repeating them.
+
+### HOT_CACHE design principles
+
+The HOT_CACHE is the key to effective memory. Keep it fast to read and always up to date:
+
+```markdown
+---
+last_session: YYYY-MM-DD
+---
+
+## State
+- Last session: [what happened]
+- Active projects: [list with links to 20_ENTITIES/Projects/]
+
+## Last Decisions (reverse chronological)
+### YYYY-MM-DD — [topic]
+- [decision taken and why]
+
+## Open Tasks
+- [ ] [task] — context in one line
+- [x] ~~[done task]~~ ✅ YYYY-MM-DD
+
+## Error Patterns to Avoid
+- Sync with 40_ERRORS/Patterns/PATTERNS_INDEX.md
+```
+
+**Rules:**
+- Never let HOT_CACHE exceed 200 lines — summarize aggressively
+- Update `last_session` and open tasks at **every** session end
+- Move detailed context to `20_ENTITIES/` files; HOT_CACHE holds only pointers
+- If HOT_CACHE is older than 7 days, Claude will warn before proceeding
+
+### Memory optimization strategy
+
+| Problem | Solution |
+|---------|----------|
+| Claude forgets between sessions | `boot` at session start → reads HOT_CACHE |
+| Context window fills up | `context-compress` → 10-20% of original size |
+| Details get lost | Move depth to `20_ENTITIES/`, keep HOT_CACHE as index |
+| Mistakes repeat | Log immediately to `40_ERRORS/ERRORS.md` |
+| Can't find what was done | `06_Successes/SUCCESSES_INDEX.md` as master log |
+| Too many skills slow Claude down | `skill-manager` audit every 2 months |
+
+### MCP Setup (obsidian-claude-vault)
+
+Add to Claude Desktop's `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "obsidian-claude-vault": {
+      "command": "npx",
+      "args": ["-y", "@bitbonsai/mcpvault", "/absolute/path/to/your/vault"]
+    }
+  }
+}
+```
+
+> **Windows + MSIX note:** Claude Desktop (MSIX app) reads from `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`, **not** `%APPDATA%\Claude\`. Always edit the LocalCache path, otherwise the MCP will silently fail.
+
+---
 
 ## Requirements
 
