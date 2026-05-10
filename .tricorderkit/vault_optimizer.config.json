@@ -1,0 +1,19 @@
+{
+  "version": "0.1",
+  "mode": "generic_vault",
+  "manifest_path": ".tricorderkit/index/manifest.jsonl",
+  "reports_dir": ".tricorderkit/reports",
+  "cache_dir": ".tricorderkit/cache",
+  "rules": {
+    "manifest_first": true,
+    "dry_run_before_apply": true,
+    "avoid_full_vault_read": true,
+    "prefer_cli_for_batch": true,
+    "prefer_mcp_for_structured_sync": true
+  },
+  "thresholds": {
+    "large_file_bytes": 80000,
+    "max_direct_reads_per_task": 10,
+    "warn_total_vault_files": 500
+  }
+}
