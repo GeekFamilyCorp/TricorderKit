@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MangaTracker Work Record",
+  "type": "object",
+  "required": ["category", "action", "source", "confidence_label", "last_checked"],
+  "properties": {
+    "category": {"type": "string"},
+    "action": {"type": "string"},
+    "title_jp": {"type": "string"},
+    "source": {"type": "string"},
+    "source_url": {"type": "string"},
+    "confidence_label": {"type": "string"},
+    "last_checked": {"type": "string"},
+    "data": {"type": "object"}
+  }
+}

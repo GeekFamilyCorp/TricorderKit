@@ -1,0 +1,13 @@
+[project]
+name = "mangatracker-cli"
+version = "0.1.0"
+description = "CLI modulaire pour Japan-Alliance / MangaTracker : manga, light novels, anime, seiyu, studios, jeux, goods, events, sync."
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6.0.0"]
+
+[project.scripts]
+mangatracker = "mangatracker_cli.cli:main"
+animetracker = "mangatracker_cli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["mangatracker_cli*"]
