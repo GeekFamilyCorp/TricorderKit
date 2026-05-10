@@ -1,0 +1,65 @@
+# registry.yml — TricorderKit cli-forge
+# Registre officiel des CLIs validées
+# Une CLI n'est utilisable par les agents que si elle est enregistrée ici.
+# Version : 0.1.0 — 10/05/2026
+
+version: "0.1.0"
+last_updated: "2026-05-10"
+
+# ── CLIs enregistrées ──────────────────────────────────────────────────────────────
+clis:
+
+  - name: github-goat
+    version: 0.1.0
+    status: dry_run_validated      # pending | dry_run_validated | prod_ready
+    path: generated/github-goat/github_goat.py
+    manifest: generated/github-goat/manifest.yml
+    description: CLI GitHub API — lecture seule, cache SQLite, output JSON
+    service: GitHub
+    auth_required: true
+    safe_for_agents: true
+    dry_run_tested: true
+    dry_run_date: "2026-05-10"
+    prod_audit_done: false
+    tags: [github, code, repos, issues, search]
+    commands:
+      - list-repos
+      - get-repo
+      - search-repos
+      - list-issues
+    notes: "Validé en dry-run le 10/05/2026. Audit sécurité à faire avant prod_ready."
+
+# ── CLIs en attente de validation ───────────────────────────────────────────────
+pending:
+
+  - name: source-watch-goat
+    status: in_progress
+    description: CLI veille manga/anime — MangaDex + AniList + Jikan
+    priority: S
+
+  - name: obsidian-goat
+    status: planned
+    description: CLI Obsidian vault local — lecture/écriture notes
+    priority: A
+
+  - name: vault-audit-goat
+    status: planned
+    description: CLI audit Claude Vault — liens cassés, templates vides
+    priority: A
+
+  - name: security-goat
+    status: planned
+    description: CLI audit sécurité endpoints — headers, CORS, secrets
+    priority: B
+
+# ── Règles d'enregistrement ─────────────────────────────────────────────────────────────
+rules:
+  required_for_prod_ready:
+    - manifest validé contre cli_manifest.schema.json
+    - dry_run testé et validé
+    - security_status.audited = true
+    - tests cli_contracts/ passés
+    - output JSON conforme au skill_output.schema.json
+  required_for_agent_use:
+    - status in [dry_run_validated, prod_ready]
+    - safe_for_agents = true

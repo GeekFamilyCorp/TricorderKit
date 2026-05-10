@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tricorderkit/schemas/cli_manifest.schema.json",
+  "title": "TricorderKit CLI Manifest",
+  "description": "Schéma de validation pour les manifests de CLIs générées par cli-forge",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["name", "version", "source_api", "output_formats", "safe_commands"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Nom kebab-case de la CLI (ex: github-goat)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "source_api": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL de l'API source"
+    },
+    "source_docs": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL de la documentation"
+    },
+    "auth_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "auth_method": {
+      "type": "string",
+      "enum": ["none", "token", "oauth2", "api_key", "basic"],
+      "default": "none"
+    },
+    "output_formats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["json", "table", "markdown", "csv"]
+      },
+      "minItems": 1,
+      "description": "JSON doit toujours être en premier"
+    },
+    "safe_commands": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Commandes autorisées (lecture seule de préférence)"
+    },
+    "forbidden_commands": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Commandes explicitement interdites"
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": true,
+      "description": "Dry-run mode disponible (obligatoire)"
+    },
+    "cache": {
+      "type": "object",
+      "properties": {
+        "sqlite":         { "type": "boolean", "default": true },
+        "ttl_seconds":    { "type": "integer", "minimum": 0, "default": 300 },
+        "offline_search": { "type": "boolean", "default": true }
+      }
+    },
+    "rate_limit": {
+      "type": "object",
+      "properties": {
+        "requests_per_minute": { "type": "integer", "minimum": 1 },
+        "retry_after_seconds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "mcp_server": {
+      "type": "object",
+      "properties": {
+        "generated": { "type": "boolean", "default": false },
+        "path":      { "type": "string" }
+      }
+    },
+    "security_status": {
+      "type": "object",
+      "required": ["audited"],
+      "properties": {
+        "audited":                    { "type": "boolean", "default": false },
+        "audit_date":                 { "type": "string", "format": "date" },
+        "prompt_injection_checked":   { "type": "boolean", "default": false },
+        "shell_commands_checked":     { "type": "boolean", "default": false },
+        "network_access_checked":     { "type": "boolean", "default": false },
+        "sensitive_files_checked":    { "type": "boolean", "default": false },
+        "notes":                      { "type": "string" }
+      }
+    },
+    "token_budget": {
+      "type": "object",
+      "properties": {
+        "max_per_call": { "type": "integer", "minimum": 0 },
+        "warn_at":      { "type": "integer", "minimum": 0 }
+      },
+      "description": "Budget tokens max par appel CLI"
+    }
+  },
+  "examples": [
+    {
+      "name": "github-goat",
+      "version": "0.1.0",
+      "description": "CLI déterministe pour GitHub API — lecture seule",
+      "source_api": "https://api.github.com",
+      "source_docs": "https://docs.github.com/en/rest",
+      "auth_required": true,
+      "auth_method": "token",
+      "output_formats": ["json", "table", "markdown"],
+      "safe_commands": ["list-repos", "get-repo", "list-issues", "search-code", "list-commits"],
+      "forbidden_commands": ["delete-repo", "force-push", "admin-transfer"],
+      "dry_run": true,
+      "cache": { "sqlite": true, "ttl_seconds": 300, "offline_search": true },
+      "rate_limit": { "requests_per_minute": 30, "retry_after_seconds": 60 },
+      "mcp_server": { "generated": false },
+      "security_status": { "audited": false, "notes": "A auditer avant enregistrement prod" },
+      "token_budget": { "max_per_call": 2000, "warn_at": 1500 }
+    }
+  ]
+}
