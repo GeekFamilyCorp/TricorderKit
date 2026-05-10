@@ -1,0 +1,127 @@
+version: "3.8"
+
+# TricorderKit v0.7 — Infrastructure locale
+# Démarrage : docker compose up -d
+# Arrêt     : docker compose down
+
+services:
+
+  # ── Neo4j — Graph Knowledge ────────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.18
+    container_name: tricorder-neo4j
+    ports:
+      - "7474:7474"   # Browser HTTP
+      - "7687:7687"   # Bolt
+    environment:
+      NEO4J_AUTH: "${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-change-me-in-prod}"
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_dbms_memory_heap_max__size: "1G"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-change-me-in-prod}", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Qdrant — Vector Search / RAG ──────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.8.4
+    container_name: tricorder-qdrant
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Temporal — Workflow Engine ───────────────────────────────────────────────
+  temporal:
+    image: temporalio/auto-setup:1.23
+    container_name: tricorder-temporal
+    ports:
+      - "7233:7233"   # Frontend gRPC
+    environment:
+      DB: sqlite
+      DYNAMIC_CONFIG_FILE_PATH: /etc/temporal/config/dynamicconfig.yml
+    volumes:
+      - temporal_data:/etc/temporal/data
+      - ./config/temporal:/etc/temporal/config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "localhost:7233", "cluster", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  temporal-ui:
+    image: temporalio/ui:2.25
+    container_name: tricorder-temporal-ui
+    ports:
+      - "8080:8080"   # UI Web
+    environment:
+      TEMPORAL_ADDRESS: "temporal:7233"
+      TEMPORAL_CORS_ORIGINS: "http://localhost:3000"
+    depends_on:
+      - temporal
+    restart: unless-stopped
+
+  # ── Langfuse — Observabilité tokens + traces ─────────────────────────────────
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: tricorder-langfuse
+    ports:
+      - "3000:3000"   # UI + API
+    environment:
+      DATABASE_URL: "postgresql://langfuse:langfuse@langfuse-db:5432/langfuse"
+      NEXTAUTH_SECRET: "${LANGFUSE_NEXTAUTH_SECRET:-change-me-in-prod}"
+      NEXTAUTH_URL: "http://localhost:3000"
+      SALT: "${LANGFUSE_SALT:-change-me-in-prod}"
+      TELEMETRY_ENABLED: "false"
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  langfuse-db:
+    image: postgres:15
+    container_name: tricorder-langfuse-db
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ── Volumes persistants ─────────────────────────────────────────────────────
+volumes:
+  neo4j_data:
+    name: tricorder_neo4j_data
+  neo4j_logs:
+    name: tricorder_neo4j_logs
+  qdrant_data:
+    name: tricorder_qdrant_data
+  temporal_data:
+    name: tricorder_temporal_data
+  langfuse_db:
+    name: tricorder_langfuse_db
+
+# ── Network ───────────────────────────────────────────────────────────────────
+networks:
+  default:
+    name: tricorder-network

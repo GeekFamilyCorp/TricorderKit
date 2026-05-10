@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tricorderkit/schemas/skill_output.schema.json",
+  "title": "TricorderKit Skill Output Contract",
+  "description": "Schema de validation obligatoire pour les outputs de tous les skills TricorderKit. Tout skill prod doit exposer ce contrat.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["status", "skill_name", "skill_version", "timestamp", "output"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "partial", "error", "dry_run"],
+      "description": "Statut d'exécution du skill"
+    },
+    "skill_name": {
+      "type": "string",
+      "description": "Nom du skill (ex: tk-boot, tk-cli-forge)"
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version sémantique du skill"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 d'exécution"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Durée d'exécution en millisecondes"
+    },
+    "tokens_used": {
+      "type": "object",
+      "properties": {
+        "input":  { "type": "integer", "minimum": 0 },
+        "output": { "type": "integer", "minimum": 0 },
+        "total":  { "type": "integer", "minimum": 0 }
+      },
+      "description": "Budget tokens consommé"
+    },
+    "output": {
+      "type": "object",
+      "description": "Output principal du skill — structure libre selon le skill",
+      "required": ["summary"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Résumé court de l'output (obligatoire, max 500 chars)"
+        },
+        "data": {
+          "description": "Données principales du skill (structure définie par chaque skill)"
+        },
+        "files_created": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Liste des fichiers créés ou modifiés"
+        },
+        "decisions_logged": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Identifiants des décisions loggées dans DECISIONS.md"
+        },
+        "risks_logged": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Identifiants des risques loggés dans RISKS.md"
+        },
+        "next_steps": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 5,
+          "description": "Prochaines étapes recommandées (max 5)"
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code":               { "type": "string" },
+        "message":            { "type": "string" },
+        "recoverable":        { "type": "boolean" },
+        "rollback_available": { "type": "boolean" }
+      },
+      "description": "Détails d'erreur (présent uniquement si status=error)"
+    },
+    "dry_run_report": {
+      "type": "object",
+      "properties": {
+        "actions_that_would_run": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "estimated_tokens":     { "type": "integer" },
+        "estimated_duration_ms": { "type": "integer" },
+        "risk_level": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        }
+      },
+      "description": "Rapport de simulation (présent uniquement si status=dry_run)"
+    }
+  },
+  "examples": [
+    {
+      "status": "success",
+      "skill_name": "tk-boot",
+      "skill_version": "0.1.0",
+      "timestamp": "2026-05-10T10:00:00Z",
+      "duration_ms": 1240,
+      "tokens_used": { "input": 800, "output": 200, "total": 1000 },
+      "output": {
+        "summary": "Boot réussi — état chargé, 3 tâches actives, budget tokens 12%",
+        "data": {
+          "state_loaded": true,
+          "active_tasks": 3,
+          "token_budget_used_pct": 12
+        },
+        "next_steps": ["Vérifier .planning/TASKS.md", "Démarrer Phase 2 cli-forge"]
+      }
+    }
+  ]
+}
