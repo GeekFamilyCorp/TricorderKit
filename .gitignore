@@ -1,0 +1,51 @@
+# TricorderKit v0.7 — .gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Cache
+.cache/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+*.js.map
+dist/
+
+# Docker
+docker/volumes/
+
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# Reports (générés localement)
+vault/reports/*.html
+vault/reports/*.json
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/settings.json
+.idea/
