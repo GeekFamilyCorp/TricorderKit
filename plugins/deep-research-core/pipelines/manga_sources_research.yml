@@ -1,0 +1,123 @@
+# manga_sources_research.yml — Pipeline recherche manga TricorderKit
+# Version : 0.1.0 — 10/05/2026
+
+name: manga_sources_research
+version: 0.1.0
+description: Pipeline de recherche et veille manga — MangaDex + Jikan + Oricon + Natalie
+
+token_budget:
+  max_tokens: 20000
+  warn_at: 15000
+  on_exceeded: pause_and_notify
+
+dry_run: true
+
+# ── Étapes du pipeline ────────────────────────────────────────────────────────
+steps:
+
+  - id: collect_mangadex
+    name: Collecte MangaDex
+    source: trusted_sources.manga[0]  # MangaDex
+    action: search
+    params:
+      fields: [title, authors, artists, tags, status, year, available_translated_language]
+      limit: 50
+      content_rating: [safe, suggestive]
+    output: raw_mangadex
+    on_error: continue
+
+  - id: collect_jikan
+    name: Collecte Jikan (MAL)
+    source: trusted_sources.manga[1]  # Jikan
+    action: search
+    params:
+      fields: [title, score, rank, popularity, authors, genres, status, published]
+      limit: 25
+    output: raw_jikan
+    on_error: continue
+
+  - id: collect_oricon
+    name: Classements Oricon
+    source: trusted_sources.manga[3]  # Oricon
+    action: scrape_weekly_rankings
+    params:
+      category: manga
+      top_n: 20
+    output: raw_oricon
+    on_error: skip
+
+  - id: deduplicate
+    name: Déduplication
+    action: deduplicate
+    inputs: [raw_mangadex, raw_jikan, raw_oricon]
+    strategy: title_hash_similarity
+    similarity_threshold: 0.85
+    output: deduplicated_items
+
+  - id: score_reliability
+    name: Scoring fiabilité
+    action: score
+    input: deduplicated_items
+    method: weighted_sources
+    weights:
+      mangadex: 0.92
+      jikan: 0.88
+      oricon: 0.95
+    min_score: 0.70
+    output: scored_items
+
+  - id: enrich_metadata
+    name: Enrichissement metadata
+    action: enrich
+    input: scored_items
+    enrichments:
+      - type: author_lookup
+        source: jikan
+      - type: publisher_lookup
+        source: mangadex
+      - type: genre_normalization
+        taxonomy: tricorderkit_genres
+    output: enriched_items
+
+  - id: generate_report
+    name: Génération rapport Markdown
+    action: report
+    input: enriched_items
+    template: manga_report_template
+    output_path: "vault/reports/manga_watch_{date}.md"
+    sections:
+      - Nouvelles sorties
+      - Classements semaine
+      - Tendances genres
+      - Auteurs à surveiller
+    include_sources: true
+    max_items_per_section: 10
+
+  - id: index_obsidian
+    name: Indexation Obsidian
+    action: write_obsidian
+    input: enriched_items
+    vault_path: "${OBSIDIAN_VAULT_PATH}"
+    target_folder: "10_DOMAINS/manga"
+    template: atomic_manga_template
+    create_if_missing: true
+    update_if_exists: true
+
+  - id: index_qdrant
+    name: Indexation Qdrant (RAG)
+    action: upsert_vectors
+    input: enriched_items
+    collection: manga_knowledge
+    embedding_field: description
+    metadata_fields: [title, authors, genres, score, year, source]
+
+# ── Output final ────────────────────────────────────────────────────────────
+output:
+  format: json
+  summary_fields: [title, authors, score, source, report_path]
+  report_path: "vault/reports/manga_watch_{date}.md"
+
+# ── Schedule (pour workflow Temporal source_watch) ─────────────────────────────
+schedule:
+  default_interval_minutes: 60
+  min_interval_minutes: 30

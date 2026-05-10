@@ -1,0 +1,57 @@
+name: deep-research-core
+version: 0.1.0
+type: plugin
+description: Moteur de recherche autonome local-first - collecte multi-source, deduplication, scoring, synthese Markdown
+author: GeekFamilyCorp
+
+skills:
+  - tk-deep-research
+
+commands:
+  - /tk:deep-research
+
+dependencies:
+  - python: ">=3.11"
+  - packages:
+    - requests
+    - pyyaml
+    - jsonschema
+
+pipelines:
+  - name: manga_sources_research
+    file: pipelines/manga_sources_research.yml
+    status: ready
+  - name: anime_staff_research
+    file: pipelines/anime_staff_research.yml
+    status: planned
+  - name: github_research
+    file: pipelines/github_research.yml
+    status: planned
+  - name: vendor_research
+    file: pipelines/vendor_research.yml
+    status: planned
+
+sources:
+  trusted: sources/trusted_sources.yml
+  blocked: sources/blocked_sources.yml
+  japanese: sources/japanese_sources.yml
+
+outputs:
+  - type: markdown
+    path: "vault/reports/"
+  - type: json
+  - type: obsidian_notes
+    vault: "${OBSIDIAN_VAULT_PATH}"
+
+infrastructure_optional:
+  - service: qdrant
+    port: 6333
+    note: "Degrade mode si indisponible"
+
+token_budget:
+  max_per_research: 20000
+  warn_at: 15000
+  on_exceeded: pause_and_notify
+
+status: scaffold_ready
+phase: 4

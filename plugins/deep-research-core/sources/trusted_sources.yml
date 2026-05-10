@@ -1,0 +1,122 @@
+# trusted_sources.yml — TricorderKit deep-research-core
+# Sources fiables autorisées pour les recherches autonomes
+# Version : 0.1.0 — 10/05/2026
+
+# ── Manga & Light Novel ────────────────────────────────────────────────────────────
+manga:
+  - name: MangaDex
+    url: https://api.mangadex.org
+    type: api_rest
+    reliability: 0.92
+    rate_limit: 5/min
+    cache_ttl: 900
+    languages: [fr, en, ja]
+    notes: "Source principale. Gratuit, pas d'auth requise."
+
+  - name: Jikan (MyAnimeList)
+    url: https://api.jikan.moe/v4
+    type: api_rest
+    reliability: 0.88
+    rate_limit: 3/sec
+    cache_ttl: 1800
+    languages: [en, ja]
+    notes: "Wrapper non officiel MAL. Scores et meta fiables."
+
+  - name: BookWalker JP
+    url: https://bookwalker.jp
+    type: scrape
+    reliability: 0.85
+    cache_ttl: 3600
+    notes: "Catalogues numériques officiels japonais. Ventes et sorties."
+
+  - name: Oricon
+    url: https://www.oricon.co.jp
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 3600
+    notes: "Référence absolue pour les classements de ventes manga JP."
+
+  - name: Natalie Manga
+    url: https://natalie.mu/comic
+    type: scrape
+    reliability: 0.88
+    cache_ttl: 1800
+    languages: [ja]
+    notes: "News manga japonaises fiables."
+
+# ── Anime ────────────────────────────────────────────────────────────────────────
+anime:
+  - name: AniList
+    url: https://graphql.anilist.co
+    type: api_graphql
+    reliability: 0.93
+    rate_limit: 90/min
+    cache_ttl: 1800
+    languages: [en, ja]
+    notes: "API GraphQL. Scores, staff, studios, saisons. Très complet."
+
+  - name: AniDB
+    url: https://api.anidb.net
+    type: api_rest
+    reliability: 0.87
+    rate_limit: 1/2sec
+    cache_ttl: 3600
+    notes: "Data technique (episodes, credits). Moins user-friendly."
+
+  - name: Anime News Network
+    url: https://www.animenewsnetwork.com
+    type: scrape
+    reliability: 0.90
+    cache_ttl: 1800
+    notes: "News et encyclopedia anglophone de référence."
+
+# ── GitHub / Tech ─────────────────────────────────────────────────────────────────
+github:
+  - name: GitHub API
+    url: https://api.github.com
+    type: api_rest
+    reliability: 0.99
+    rate_limit: 5000/hour
+    cache_ttl: 300
+    auth_required: true
+    auth_method: token
+    notes: "Source primaire pour ingestion repos GitHub."
+
+  - name: GitHub Search
+    url: https://api.github.com/search
+    type: api_rest
+    reliability: 0.97
+    rate_limit: 30/min
+    cache_ttl: 300
+    notes: "Recherche code, repos, issues."
+
+# ── Éditeurs japonais ────────────────────────────────────────────────────────────────
+publishers:
+  - name: Shueisha (Jump+)
+    url: https://shonenjump.com
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 3600
+    notes: "Sorties officielles Shueisha."
+
+  - name: Kodansha
+    url: https://kodansha.us
+    type: scrape
+    reliability: 0.92
+    cache_ttl: 3600
+
+  - name: Square Enix Manga
+    url: https://squareenixmanga.com
+    type: scrape
+    reliability: 0.90
+    cache_ttl: 3600
+
+# ── Scoring global par domaine ────────────────────────────────────────────────────────
+scoring_weights:
+  official_api: 1.0
+  official_site: 0.9
+  aggregator_api: 0.85
+  aggregator_scrape: 0.75
+  community_wiki: 0.65
+  social_media: 0.40
+  unknown: 0.20
