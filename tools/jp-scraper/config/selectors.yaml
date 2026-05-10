@@ -1,0 +1,27 @@
+generic_news:
+  item: "article, .article, .news-item, .entry, li"
+  title: "h1, h2, h3, .title, .news-title"
+  url: "a"
+  date: "time, .date, .published"
+  summary: ".summary, .excerpt, p"
+
+natalie_news:
+  item: "article, li, .NA_card"
+  title: "h1, h2, h3, .NA_card_title"
+  url: "a"
+  date: "time, .NA_card_date"
+  summary: "p, .NA_card_text"
+
+manga_listing_generic:
+  item: "article, li, .series, .work, .episode"
+  title: "h1, h2, h3, .title, .series-title, .work-title"
+  url: "a"
+  date: "time, .date"
+  summary: ".summary, .description, p"
+
+novel_listing_generic:
+  item: "article, li, .widget-work, .work, .novel"
+  title: "h1, h2, h3, .title, .widget-work-title"
+  url: "a"
+  date: "time, .date"
+  summary: ".summary, .catchphrase, .description, p"

@@ -1,0 +1,65 @@
+sources:
+  - id: comic-natalie
+    name_jp: コミックナタリー
+    category: manga_anime_news
+    base_url: "https://natalie.mu/comic"
+    method_priority: ["rss", "http", "trafilatura"]
+    rss_url: "https://natalie.mu/comic/news/feed"
+    sitemap_url: null
+    respect_robots: true
+    crawl_delay_seconds: 3
+    selectors_profile: natalie_news
+    output_schema: news_record
+    reliability: professional_media
+
+  - id: animate-times
+    name_jp: アニメイトタイムズ
+    category: anime_seiyu_news
+    base_url: "https://www.animatetimes.com"
+    method_priority: ["rss", "http", "trafilatura"]
+    rss_url: "https://www.animatetimes.com/rss/news.xml"
+    sitemap_url: null
+    respect_robots: true
+    crawl_delay_seconds: 3
+    selectors_profile: generic_news
+    output_schema: news_record
+    reliability: professional_media
+
+  - id: shonenjumpplus
+    name_jp: 少年ジャンプ＋
+    category: manga
+    base_url: "https://shonenjumpplus.com"
+    method_priority: ["sitemap", "http", "playwright"]
+    rss_url: null
+    sitemap_url: null
+    respect_robots: true
+    crawl_delay_seconds: 5
+    selectors_profile: manga_listing_generic
+    output_schema: manga_record
+    reliability: official
+
+  - id: kakuyomu
+    name_jp: カクヨム
+    category: light_novel_web_novel
+    base_url: "https://kakuyomu.jp"
+    method_priority: ["http", "trafilatura"]
+    rss_url: null
+    sitemap_url: null
+    respect_robots: true
+    crawl_delay_seconds: 5
+    selectors_profile: novel_listing_generic
+    output_schema: light_novel_record
+    reliability: official
+
+  - id: syosetu
+    name_jp: 小說家になろう
+    category: light_novel_web_novel
+    base_url: "https://syosetu.com"
+    method_priority: ["http"]
+    rss_url: null
+    sitemap_url: null
+    respect_robots: true
+    crawl_delay_seconds: 5
+    selectors_profile: novel_listing_generic
+    output_schema: light_novel_record
+    reliability: official

@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-source-jp-scraper"
+version = "0.1.0"
+description = "Open source Japanese web scraping pipeline optimized for low-token agent workflows."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Japan-Alliance / MangaTracker" }]
+dependencies = [
+    "typer>=0.12.0",
+    "pyyaml>=6.0.1",
+    "httpx>=0.27.0",
+    "requests-cache>=1.2.0",
+    "feedparser>=6.0.11",
+    "selectolax>=0.3.21",
+    "trafilatura>=1.8.0",
+    "orjson>=3.10.0",
+    "python-dateutil>=2.9.0",
+    "rich>=13.7.0"
+]
+
+[project.optional-dependencies]
+crawler = ["scrapy>=2.11.0", "crawlee>=0.6.0"]
+browser = ["playwright>=1.44.0"]
+japanese = ["SudachiPy>=0.6.8", "sudachidict-core>=20240109", "fugashi>=1.3.0", "unidic-lite>=1.0.8"]
+all = ["scrapy>=2.11.0", "crawlee>=0.6.0", "playwright>=1.44.0", "SudachiPy>=0.6.8", "sudachidict-core>=20240109", "fugashi>=1.3.0", "unidic-lite>=1.0.8"]
+
+[project.scripts]
+jp-scraper = "jp_scraper.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
