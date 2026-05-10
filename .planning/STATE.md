@@ -17,10 +17,20 @@
 | Phase | Nom | Statut |
 |---|---|---|
 | 1 | Fondations (fichiers fondateurs) | ✅ Complétée |
-| 2 | CLI-first (cli-forge) | 🔶 En cours |
+| 2 | CLI-first (cli-forge + outils métier) | 🔶 En cours |
 | 3 | Workflows persistants (Temporal) | 🔲 Pending |
 | 4 | Deep Research | 🔲 Pending |
 | 5 | Obsidian + sécurité + evals | 🔲 Pending |
+
+---
+
+## Outils CLI installés (10/05/2026)
+
+| Outil | Chemin | Statut |
+|---|---|---|
+| mangatracker-cli v0.1.0 | `tools/mangatracker-cli/` | ✅ Opérationnel |
+| jp-scraper v0.1.0 | `tools/jp-scraper/` | ✅ Opérationnel |
+| vault-optimizer v0.1 | `scripts/vault_optimizer/` | ✅ Opérationnel |
 
 ---
 
@@ -30,16 +40,25 @@
 |---|---|---|
 | memory-boot | 🔲 À migrer v0.7 | S |
 | token-hygiene | 🔲 À migrer v0.7 | S |
-| cli-forge | ✅ Scaffold complet + github-goat + source-watch-goat | S |
+| cli-forge | ✅ Scaffold + github-goat + source-watch-goat | S |
 | workflow-engine | ✅ Scaffold + source_watch.workflow.ts | S |
 | deep-research-core | ✅ Scaffold + sources + pipeline manga | S |
 | agents-standard | 🔲 À créer | A |
 | skill-registry | 🔲 À créer | A |
-| repo-pack | 🔲 À migrer v0.7 | A |
-| usage-observer | 🔲 À créer | A |
-| eval-lab | 🔲 À créer | A |
-| obsidian-agent-layer | 🔲 À créer | B |
-| security-audit-cli | 🔲 À créer | B |
+
+---
+
+## Claude Code Integrations actives
+
+| Intégration | Statut |
+|---|---|
+| `.claude/agents/` (5 agents) | ✅ Prêts |
+| `.claude/commands/` (8 slash commands) | ✅ Prêts |
+| `.claude/hooks/` (4 hooks PreToolUse) | ✅ Prêts |
+| `.claude/skills/vault-token-optimizer/` | ✅ Prêt |
+| `.claude/skills/open-source-jp-scraper/` | ✅ Prêt |
+| `.tricorderkit/vault_optimizer.config.json` | ✅ Prêt |
+| `.mcp.json` (kintone via env vars) | ✅ Prêt (secrets requis) |
 
 ---
 
@@ -64,10 +83,16 @@ Aucun blocker critique identifié.
 ## Prochaine action recommandée
 
 ```text
-Tester source-watch-goat en dry-run puis live :
-  python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py --dry-run trending-manga
-  python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py trending-manga --output table
-Puis valider le manifest : python plugins/cli-forge/scripts/validate_cli_manifest.py --all
+Priority 1 — Implémenter les parseurs mangatracker-cli :
+  Premier : manga/shonenjumpplus
+  Ensuite : ln/syosetu, anime/comic-natalie
+
+Priority 2 — Tester jp-scraper RSS live :
+  jp-scraper scrape source comic-natalie --mode rss
+  jp-scraper report summary --source comic-natalie
+
+Priority 3 — Configurer kintone :
+  Renseigner KINTONE_BASE_URL + KINTONE_API_TOKEN dans .env
 ```
 
 ---
