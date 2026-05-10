@@ -1,0 +1,56 @@
+# manifest.yml — source-watch-goat CLI
+# TricorderKit cli-forge
+
+name: source-watch-goat
+version: 0.1.0
+description: CLI veille manga/anime — MangaDex REST + AniList GraphQL + Jikan REST, cache SQLite
+source_api: https://api.mangadex.org
+source_docs: https://api.mangadex.org/docs
+auth_required: false
+auth_method: none
+
+output_formats:
+  - json
+  - table
+
+safe_commands:
+  - search-manga
+  - get-manga
+  - latest-manga
+  - trending-manga
+  - search-anime
+  - get-anime
+  - seasonal-anime
+  - trending-anime
+  - author-works
+
+forbidden_commands:
+  - write-vault
+  - delete-cache
+  - post-review
+
+dry_run: true
+
+cache:
+  sqlite: true
+  ttl_seconds: 900
+  offline_search: true
+
+rate_limit:
+  requests_per_minute: 5
+  retry_after_seconds: 60
+
+mcp_server:
+  generated: false
+
+security_status:
+  audited: false
+  prompt_injection_checked: false
+  shell_commands_checked: false
+  network_access_checked: false
+  sensitive_files_checked: false
+  notes: "En cours de validation. Dry-run en cours."
+
+token_budget:
+  max_per_call: 3000
+  warn_at: 2000
