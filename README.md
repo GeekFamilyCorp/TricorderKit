@@ -1,217 +1,227 @@
 # TricorderKit
 
-> Plugin ecosystem for Claude Cowork — Session memory, intelligent model routing, and token optimization.
+> CLI-first Agentic Knowledge Operating System — local-first
 
-TricorderKit is a collection of **Claude Cowork plugins and skills** focused on helping Claude work smarter across sessions: remembering context from one conversation to the next, routing tasks to the right model tier (Haiku / Sonnet / Opus), and cutting unnecessary token spend.
+[![Version](https://img.shields.io/badge/version-0.7-blue)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/phase-2%20CLI--first-orange)](/.planning/STATE.md)
+[![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
-## Why TricorderKit?
+---
 
-Three problems it solves:
+## What is TricorderKit?
 
-1. **No memory between sessions** — Claude forgets everything when the conversation ends. `memory-boot` fixes this by persisting context in an Obsidian vault and loading it on demand.
-2. **Wrong model for the task** — Using Opus for a typo correction, or Haiku for an architecture decision. `token-optimizer` classifies each request and routes to the appropriate tier automatically.
-3. **Token waste** — Long contexts, verbose CLI output, hallucinated API signatures. Three dedicated skills compress these at source.
+TricorderKit is an **Agentic Knowledge OS** — a local-first system that transforms user intentions into traceable, auditable, and reusable workflows.
 
-## Contents
+```
+v0.6 definition : memory + skills + token hygiene + observability
+v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
+```
 
-### Plugins (installable in Claude Cowork)
+It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
 
-| Plugin | Skills | Description |
-|--------|--------|-------------|
-| [`memory-boot`](plugins/memory-boot/) | `memory-boot`, `rapport` | Session memory from Obsidian vault. Boot context, daily logs, success tracking. |
-| [`token-optimizer`](plugins/token-optimizer/) | `model-router`, `task-classifier`, `budget-tracker`, `context-compress`, `docs-fresh`, `cli-compress` | Intelligent Haiku/Sonnet/Opus routing with context compression, fresh docs injection, and monthly budget tracking. |
+---
 
-### Standalone Skills
+## Stack
 
-| Skill | Description |
-|-------|-------------|
-| [`skill-manager`](skills/skill-manager/) | Inventory, audit, and conflict detection for all installed skills and plugins. |
-| [`skill-creator`](skills/skill-creator/) | Create and iterate on skills with eval/benchmark loops. |
-| [`consolidate-memory`](skills/consolidate-memory/) | Reflective pass over memory files — merge duplicates, fix stale facts, prune the index. |
+| Layer | Technology | Purpose |
+|---|---|---|
+| Agent | Claude Code (Anthropic) | Main reasoning agent |
+| Knowledge | Obsidian (local vault) | Local-first knowledge base |
+| Connectors | MCP servers | Service integrations |
+| Graph DB | Neo4j 5.18 | Relational knowledge graph |
+| Vector DB | Qdrant v1.8.4 | Semantic search / RAG |
+| Workflows | Temporal 1.23 | Persistent workflow engine |
+| Observability | Langfuse 2 | Token tracing + cost tracking |
+| Infrastructure | Docker Compose | Local infra |
+| CLIs | cli-forge (custom) | Deterministic API wrappers |
+
+---
 
 ## Quick Start
 
-### memory-boot
-
-**Prerequisites:** `obsidian-claude-vault` MCP connected in Claude Cowork.
-
-1. Install the plugin in Claude Cowork
-2. At the start of any session, type: `boot`
-
-Claude will read your HOT_CACHE, error patterns and daily log, then summarize the session context.
-
-To get a status report: type `rapport`
-
-### token-optimizer
-
-1. Install the plugin in Claude Cowork
-2. Optionally install `rtk` for CLI compression:
-   ```bash
-   bash plugins/token-optimizer/scripts/rtk-install.sh
-   ```
-3. The model router activates automatically on each significant request.
-
-Check budget:
 ```bash
-python3 plugins/token-optimizer/scripts/budget.py status
+# 1. Clone the repo
+git clone https://github.com/GeekFamilyCorp/TricorderKit.git
+cd TricorderKit
+
+# 2. Copy and fill environment variables
+cp .env.example .env
+
+# 3. Start infrastructure (optional — Phase 3+)
+docker compose up -d
+
+# 4. Boot the agent session
+/tk:boot
 ```
-
-## Architecture
-
-```
-Session start
-     |
-[memory-boot]  <- reads HOT_CACHE + ERRORS + PATTERNS from Obsidian
-     |
-[model-router] <- [budget-tracker] (monthly token budget)
-     |
-     |-- [context-compress]  (if context > 60% of window)
-     |-- [docs-fresh]        (if a library/framework is mentioned) -> MCP Context7
-     |
-     T1: haiku-executor   (Haiku 4.5  — score 0-25)
-     T2: sonnet-executor  (Sonnet 4.6 — score 26-60)
-     T3: opus-executor    (Opus 4.6   — score 61-100)
-     |
-[cli-compress] <- rtk hook (all bash commands)
-     |
-  Response + budget log
-```
-
-## Model Tiers
-
-| Tier | Model | Score | Use cases |
-|------|-------|-------|-----------|
-| T1 | Haiku 4.5 | 0–25 | Translations, summaries, reformulations, simple extractions |
-| T2 | Sonnet 4.6 | 26–60 | Standard writing, code, analysis, light orchestration |
-| T3 | Opus 4.6 | 61–100 | System architecture, security code, multi-step reasoning, production debug |
 
 ---
 
-## Obsidian Vault Setup (for memory-boot)
+## CLI Usage
 
-The `memory-boot` plugin stores and retrieves session context from an Obsidian vault connected via the [`obsidian-claude-vault` MCP](https://github.com/bitbonsai/mcpvault). Here is the recommended vault structure and the reasoning behind each folder.
+TricorderKit includes deterministic CLIs via the `cli-forge` plugin. These replace raw API calls with structured, cacheable commands.
 
-### Recommended Vault Structure
+### github-goat — GitHub API CLI
 
-```
-claude-vault/
-│
-├── 00_SYSTEM/                  ← Claude's operating system
-│   ├── 05_Hot_Cache/
-│   │   └── HOT_CACHE.md        ← ★ Most important file. Read first every session.
-│   ├── 06_Successes/           ← Journal of what worked
-│   │   ├── SUCCESSES_INDEX.md  ← Master table (skills / plugins / projects)
-│   │   ├── skills/             ← One .md per skill created or improved
-│   │   ├── plugins/            ← One .md per plugin delivered
-│   │   └── projects/           ← One .md per project launched
-│   └── MASTER_PROTOCOL.md      ← Rules of engagement (reading order, logging rules)
-│
-├── 10_INBOX/                   ← Raw daily input, never restructured
-│   └── Daily_Logs/
-│       └── YYYY-MM-DD.md       ← One log per day, auto-created by memory-boot
-│
-├── 20_ENTITIES/                ← Structured knowledge base
-│   ├── Projects/               ← One .md per active project
-│   ├── Concepts/               ← Decisions, ADRs, technical notes
-│   └── [your domain folders]   ← e.g. Products/, Clients/, Research/, etc.
-│
-├── 30_RELATIONS/               ← Maps of Content (MOC) and links
-│   └── Maps_of_Content/
-│       └── MOC_ACTIVE_PROJECTS.md
-│
-├── 40_ERRORS/                  ← Error tracking and pattern detection
-│   ├── Error_Log/
-│   │   └── ERRORS.md           ← Append-only error log (never delete entries)
-│   └── Patterns/
-│       └── PATTERNS_INDEX.md   ← Recurring error patterns to avoid
-│
-└── 60_ARCHIVE/                 ← Retired content, snapshots, history
+```bash
+# List repos
+python plugins/cli-forge/generated/github-goat/github_goat.py list-repos <owner>
+
+# Search repositories
+python plugins/cli-forge/generated/github-goat/github_goat.py search-repos "agentic OS"
+
+# List issues
+python plugins/cli-forge/generated/github-goat/github_goat.py list-issues <owner> <repo>
+
+# Dry-run (simulate without side effects)
+python plugins/cli-forge/generated/github-goat/github_goat.py --dry-run list-repos <owner>
 ```
 
-### What goes where
+### source-watch-goat — Manga/Anime Watch CLI
 
-**`00_SYSTEM/05_Hot_Cache/HOT_CACHE.md`** — the single most important file. It is Claude's working memory: current projects, last decisions, open tasks, error patterns to avoid. Keep it under 200 lines. Claude reads it first, every session, before anything else.
+```bash
+# Trending manga (via Jikan/MAL)
+python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py trending-manga --output table
 
-**`00_SYSTEM/06_Successes/`** — the success journal. Every skill created, every plugin delivered, every project launched gets a line in `SUCCESSES_INDEX.md` and a fiche in the appropriate subfolder. The `rapport` skill reads this to generate status reports.
+# Search manga
+python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py search-manga "Berserk"
 
-**`10_INBOX/Daily_Logs/`** — the raw session log. The `memory-boot` skill creates one file per day, appends an entry at session start and at session end. Never restructure these — they are the audit trail.
+# Seasonal anime
+python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py seasonal-anime --season SPRING --year 2026
 
-**`20_ENTITIES/`** — the knowledge base. One file per project, concept, or domain entity. This is where detailed information lives (roadmaps, specs, decisions). HOT_CACHE only holds pointers to these files. Add domain subfolders freely to match your own projects.
+# Trending anime
+python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py trending-anime
 
-**`40_ERRORS/`** — the error memory. `ERRORS.md` is append-only: every mistake gets logged immediately with date, context, correction applied, and whether it's a recurrent pattern. `PATTERNS_INDEX.md` extracts the patterns so Claude avoids repeating them.
-
-### HOT_CACHE design principles
-
-The HOT_CACHE is the key to effective memory. Keep it fast to read and always up to date:
-
-```markdown
----
-last_session: YYYY-MM-DD
----
-
-## State
-- Last session: [what happened]
-- Active projects: [list with links to 20_ENTITIES/Projects/]
-
-## Last Decisions (reverse chronological)
-### YYYY-MM-DD — [topic]
-- [decision taken and why]
-
-## Open Tasks
-- [ ] [task] — context in one line
-- [x] ~~[done task]~~ ✅ YYYY-MM-DD
-
-## Error Patterns to Avoid
-- Sync with 40_ERRORS/Patterns/PATTERNS_INDEX.md
+# Dry-run any command
+python plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py --dry-run trending-manga
 ```
 
-**Rules:**
-- Never let HOT_CACHE exceed 200 lines — summarize aggressively
-- Update `last_session` and open tasks at **every** session end
-- Move detailed context to `20_ENTITIES/` files; HOT_CACHE holds only pointers
-- If HOT_CACHE is older than 7 days, Claude will warn before proceeding
-
-### Memory optimization strategy
-
-| Problem | Solution |
-|---------|----------|
-| Claude forgets between sessions | `boot` at session start → reads HOT_CACHE |
-| Context window fills up | `context-compress` → 10-20% of original size |
-| Details get lost | Move depth to `20_ENTITIES/`, keep HOT_CACHE as index |
-| Mistakes repeat | Log immediately to `40_ERRORS/ERRORS.md` |
-| Can't find what was done | `06_Successes/SUCCESSES_INDEX.md` as master log |
-| Too many skills slow Claude down | `skill-manager` audit every 2 months |
-
-### MCP Setup (obsidian-claude-vault)
-
-Add to Claude Desktop's `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "obsidian-claude-vault": {
-      "command": "npx",
-      "args": ["-y", "@bitbonsai/mcpvault", "/absolute/path/to/your/vault"]
-    }
-  }
-}
-```
-
-> **Windows + MSIX note:** Claude Desktop (MSIX app) reads from `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json`, **not** `%APPDATA%\Claude\`. Always edit the LocalCache path, otherwise the MCP will silently fail.
+> **Windows encoding tip:** Set `PYTHONUTF8=1` before running scripts to handle Japanese characters correctly.
 
 ---
 
-## Requirements
+## Agent Commands
 
-- Claude Cowork or Claude Code
-- Python 3.8+ (for `token-optimizer` scripts)
-- Obsidian + `obsidian-claude-vault` MCP (for `memory-boot`)
-- Node.js / npx (for Context7 MCP in `token-optimizer`)
-
-## Author
-
-[GeekFamilyCorp](https://github.com/GeekFamilyCorp) — Built with Claude Cowork
+```text
+/tk:boot              → load state + memory + context
+/tk:status            → current system state
+/tk:plan              → display .planning/TASKS.md
+/tk:pack-context      → compress context for handoff
+/tk:token-hygiene     → token budget audit
+/tk:audit-skills      → verify skill registry
+/tk:eval-skill <name> → run non-regression eval
+/tk:cli-forge <svc>   → generate CLI for a service
+/tk:cli-audit <name>  → security audit a CLI
+/tk:deep-research <q> → autonomous structured research
+/tk:vault-audit       → audit Obsidian vault coherence
+/tk:workflow-start <w>→ start a Temporal workflow
+/tk:workflow-status   → status of active workflows
+/tk:security-scan     → security audit
+/tk:report            → structured Markdown report
+/tk:health            → system health dashboard
+/tk:dry-run <cmd>     → simulate command without side effects
+/tk:changelog         → auto-generate CHANGELOG entry
+```
 
 ---
 
-*TricorderKit is named after the Star Trek tricorder — a device that scans, analyzes, and records everything. That's exactly what this toolkit does for Claude's work sessions.*
+## Repo Structure
+
+```text
+TricorderKit/
+├── README.md               ← this file
+├── README_FIRST.md         ← read before anything else
+├── AGENTS.md               ← instructions for Claude agents
+├── CLAUDE.md               ← Claude Code configuration
+├── CHANGELOG.md            ← version history
+├── docker-compose.yml      ← local infrastructure
+├── .env.example            ← environment variables template
+│
+├── core/
+│   ├── mainbrain/          ← MainBrain v1.4 decision algorithm
+│   └── contracts/          ← JSON schemas (skill output contract)
+│
+├── plugins/
+│   ├── cli-forge/          ← deterministic CLI generator
+│   │   ├── generated/
+│   │   │   ├── github-goat/        ← GitHub API CLI
+│   │   │   └── source-watch-goat/  ← Manga/Anime watch CLI
+│   │   └── scripts/        ← manifest validator
+│   ├── workflow-engine/    ← Temporal workflows
+│   └── deep-research-core/ ← autonomous research pipelines
+│
+├── skills/
+│   └── tk-boot/            ← /tk:boot skill
+│
+├── scripts/
+│   ├── validate_repo.py    ← repo structure validator
+│   └── health_check.py     ← system health dashboard
+│
+├── tests/
+│   └── cli_contracts/      ← CLI contract tests (dry-run)
+│
+└── .planning/
+    ├── STATE.md            ← current project state
+    ├── TASKS.md            ← active backlog
+    ├── DECISIONS.md        ← architectural decisions log
+    ├── RISKS.md            ← risk register
+    └── ROADMAP_v0.7.md     ← 5-phase roadmap
+```
+
+---
+
+## Health Check
+
+```bash
+# Repo structure validation
+python scripts/validate_repo.py
+
+# System health dashboard (services + CLIs + planning)
+python scripts/health_check.py
+
+# HTML report
+python scripts/health_check.py --output html
+
+# CLI contract tests
+python tests/cli_contracts/test_github_goat.py
+python tests/cli_contracts/test_source_watch_goat.py
+```
+
+---
+
+## v0.7 — What's New vs v0.6
+
+See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
+
+- **MainBrain v1.4** — upgraded routing engine with Risk Guard, CLI Selector, Token Hygiene Guard, and Dry-run mode
+- **cli-forge plugin** — generates deterministic CLIs (github-goat, source-watch-goat) with SQLite cache and dry-run support
+- **workflow-engine plugin** — Temporal-based persistent workflows with token budget guard and pause/resume signals
+- **deep-research-core plugin** — autonomous local-first research engine (MangaDex + AniList + Jikan + GitHub + Oricon)
+- **Contract testing** — `skill_output.schema.json` mandatory for all skills
+- **Rate limiting** — `token_budget` per workflow with `pause_and_notify`
+- **docker-compose.yml** — Neo4j + Qdrant + Temporal + Langfuse local stack
+- **5-phase roadmap** with milestone dates in `.planning/ROADMAP_v0.7.md`
+
+---
+
+## Phase Roadmap (v0.7)
+
+| Phase | Name | Status | Target |
+|---|---|---|---|
+| 1 | Foundations | ✅ Complete | 10/05/2026 |
+| 2 | CLI-first (cli-forge) | 🔶 In progress | 17/05/2026 |
+| 3 | Persistent workflows (Temporal) | 🔲 Pending | 07/06/2026 |
+| 4 | Deep Research | 🔲 Pending | 21/06/2026 |
+| 5 | Quality loop (eval-lab, security) | 🔲 Pending | 05/07/2026 |
+
+---
+
+## Contributing
+
+This is a personal/research project. If you fork it, please respect the atomic knowledge rule:
+
+> **1 idea = 1 node (100–500 tokens)**
+
+---
+
+*TricorderKit v0.7 — GeekFamilyCorp — 2026*  
+*"What a tricorder does for the body, TricorderKit does for knowledge."*
