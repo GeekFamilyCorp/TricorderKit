@@ -1,34 +1,31 @@
-# mangatracker_demo.ps1 — TricorderKit v0.7
-# Démo rapide des commandes mangatracker-cli (Windows PowerShell)
+# example_cli_demo.ps1 — TricorderKit v0.7
+# Generic demo for your domain CLI (Windows PowerShell)
+# Adapt this script to your own CLI tool installed under tools/
 
 $ScriptDir = Split-Path -Parent $PSScriptRoot
-$CLI = Join-Path $ScriptDir "tools\mangatracker-cli"
+$CLI = Join-Path $ScriptDir "tools\your-cli"
 
-Write-Host "=== MangaTracker CLI Demo ===" -ForegroundColor Cyan
-Write-Host "Répertoire : $CLI"
+Write-Host "=== Your CLI Demo ===" -ForegroundColor Cyan
+Write-Host "Directory: $CLI"
 Write-Host ""
 
-Push-Location $CLI
+# Replace the following with your actual CLI commands
+# See tools/your-cli/README.md for available commands
 
 Write-Host "--- 1. Audit sources ---" -ForegroundColor Yellow
-python -m mangatracker_cli.cli audit sources
+# python -m your_cli.cli audit sources
+Write-Host "[stub] Replace with: python -m your_cli.cli audit sources"
 
 Write-Host ""
-Write-Host "--- 2. Manga scan-new (Shonen Jump+) ---" -ForegroundColor Yellow
-python -m mangatracker_cli.cli manga scan-new --source shonenjumpplus --type chapter1
+Write-Host "--- 2. Scan new content ---" -ForegroundColor Yellow
+# python -m your_cli.cli content scan-new --source your_source
+Write-Host "[stub] Replace with: python -m your_cli.cli content scan-new --source your_source"
 
 Write-Host ""
-Write-Host "--- 3. LN scan-ranking (Syosetu) ---" -ForegroundColor Yellow
-python -m mangatracker_cli.cli ln scan-ranking --source syosetu --format json
+Write-Host "--- 3. Sync to Obsidian dry-run ---" -ForegroundColor Yellow
+# python -m your_cli.cli sync obsidian --dry-run
+Write-Host "[stub] Replace with: python -m your_cli.cli sync obsidian --dry-run"
 
 Write-Host ""
-Write-Host "--- 4. Anime scan-news (Comic Natalie) ---" -ForegroundColor Yellow
-python -m mangatracker_cli.cli anime scan-news --source comic-natalie
-
-Write-Host ""
-Write-Host "--- 5. Sync Obsidian dry-run ---" -ForegroundColor Yellow
-python -m mangatracker_cli.cli sync obsidian --dry-run
-
-Pop-Location
-Write-Host ""
-Write-Host "=== Demo terminée ===" -ForegroundColor Green
+Write-Host "=== Demo complete ===" -ForegroundColor Green
+Write-Host "See tools/your-cli/README.md and docs/integration/ for full documentation."

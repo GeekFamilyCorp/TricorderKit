@@ -1,87 +1,81 @@
-# deep-research-core — Plugin TricorderKit v0.7
+# deep-research-core — TricorderKit v0.7 Plugin
 
-> Moteur de recherche autonome local-first pour TricorderKit.
-
----
-
-## Pourquoi deep-research-core ?
-
-Les agents TricorderKit ont besoin de recherches structurées, sourcées et indexées — pas de réponses improvisées.
-
-Ce plugin transforme une requête en rapport Markdown sourcé, indexé dans Obsidian et le vault RAG (Qdrant).
+> Local-first autonomous research engine for TricorderKit.
 
 ---
 
-## Pipeline cognitif
+## Why deep-research-core?
+
+TricorderKit agents need structured, sourced, indexed research — not improvised answers.
+
+This plugin transforms a query into a sourced Markdown report, indexed in Obsidian and the RAG vault (Qdrant).
+
+---
+
+## Cognitive pipeline
 
 ```text
-Requête utilisateur
-        ↓
+User query
+      ↓
 Source Selector (trusted_sources.yml)
-        ↓
-Collecte multi-source parallèle
-        ↓
-Déduplication (hash + similarité sémantique)
-        ↓
-Score de fiabilité (0.0 → 1.0)
-        ↓
-Synthèse Markdown structurée
-        ↓
-Indexation Obsidian + Qdrant (RAG)
-        ↓
-Rapport final sourcé
+      ↓
+Parallel multi-source collection
+      ↓
+Deduplication (hash + semantic similarity)
+      ↓
+Reliability score (0.0 → 1.0)
+      ↓
+Structured Markdown synthesis
+      ↓
+Obsidian + Qdrant indexing (RAG)
+      ↓
+Final sourced report
 ```
 
 ---
 
-## Cas d'usage
+## Use cases
 
-- Veille MangaTracker (nouvelles sorties, classements Oricon)
-- Veille AnimeTracker (saison en cours, studios, staff)
-- Enrichissement fiches mangakas / éditeurs japonais
-- Audits de repos GitHub (scoring, intégration TricorderKit)
-- Recherche approfondie VPS / infra
+- Domain content watch (new releases, rankings, news)
+- Entity enrichment (authors, publishers, producers)
+- GitHub repo audits (scoring, TricorderKit integration)
+- Infrastructure / vendor research
+- Any structured, multi-source deep research task
 
 ---
 
-## Commandes TricorderKit
+## TricorderKit commands
 
 ```bash
-/tk:deep-research "<requête>"      # Lance une recherche complète
-/tk:deep-research --pipeline manga # Utilise le pipeline manga
-/tk:deep-research --dry-run "<q>"  # Simule sans recherche réelle
+/tk:deep-research "<query>"           # Full research
+/tk:deep-research --pipeline content  # Use content pipeline
+/tk:deep-research --dry-run "<q>"     # Simulate without real search
 ```
 
 ---
 
-## Structure du plugin
+## Plugin structure
 
 ```text
 plugins/deep-research-core/
-├── README.md                          ← ce fichier
+├── README.md
 ├── SKILL.md
+├── manifest.yml
 ├── sources/
-│   ├── trusted_sources.yml            ← sources fiables autorisées
-│   ├── blocked_sources.yml            ← sources bloquées
-│   └── japanese_sources.yml           ← sources japonaises spécifiques
+│   ├── trusted_sources.yml    ← allowed trusted sources
+│   └── blocked_sources.yml    ← blocked sources
 ├── pipelines/
-│   ├── manga_sources_research.yml     ← pipeline manga
-│   ├── anime_staff_research.yml       ← pipeline anime/staff
-│   ├── github_research.yml            ← pipeline GitHub
-│   └── vendor_research.yml            ← pipeline vendeurs / VPS
+│   ├── content_sources_research.yml   ← content pipeline (adapt to your domain)
+│   ├── entity_research.yml            ← entity pipeline (planned)
+│   ├── github_research.yml            ← GitHub pipeline (planned)
+│   └── vendor_research.yml            ← vendor pipeline (planned)
 └── scripts/
-    ├── collect_sources.py             ← collecte multi-source
-    ├── score_reliability.py           ← scoring fiabilité
-    ├── deduplicate_findings.py        ← déduplication
-    └── export_report.py               ← export rapport Markdown
+    ├── collect_sources.py
+    ├── score_reliability.py
+    ├── deduplicate_findings.py
+    └── export_report.py
 ```
 
 ---
 
-## Inspiré de
-
-- `LearningCircuit/local-deep-research` — moteur de recherche autonome local
-
----
-
-*Version 0.1.0 — 10/05/2026*
+*Version 0.1.0 — TricorderKit generic stub*

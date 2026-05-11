@@ -1,54 +1,54 @@
-# Skill : deep-research-core — TricorderKit v0.7
+# Skill: deep-research-core — TricorderKit v0.7
 
-> Recherche autonome locale-first : collecte, deduplique, score et synthetise.
+> Local-first autonomous research: collect, deduplicate, score and synthesize.
 
 ---
 
-## Declencheurs
+## Triggers
 
 ```text
-/tk:deep-research "<requete>"
-/tk:deep-research --pipeline manga "<requete>"
-/tk:deep-research --pipeline github "<requete>"
-/tk:deep-research --dry-run "<requete>"
+/tk:deep-research "<query>"
+/tk:deep-research --pipeline content "<query>"
+/tk:deep-research --pipeline github "<query>"
+/tk:deep-research --dry-run "<query>"
 ```
 
 ---
 
-## Instructions pour l'agent
+## Agent instructions
 
-### Algorithme de recherche
+### Research algorithm
 
 ```text
-1. Identifier le pipeline selon la requete (manga / anime / github / vendor)
-2. Lire sources/trusted_sources.yml -> selectionner les sources pertinentes
-3. Bloquer toute source dans blocked_sources.yml
-4. Collecter en parallele (max 3 sources simultanees)
-5. Dedupliquer par hash titre + similarite semantique (seuil 0.85)
-6. Scorer chaque resultat (0.0 -> 1.0) selon scoring_weights
-7. Filtrer : garder score >= 0.70 uniquement
-8. Synthetiser en Markdown structure
-9. Indexer dans Obsidian (dossier cible selon pipeline)
-10. Indexer dans Qdrant si disponible
-11. Retourner rapport final avec sources citees
+1. Identify the pipeline based on the query (content / entity / github / vendor)
+2. Read sources/trusted_sources.yml → select relevant sources
+3. Block any source in blocked_sources.yml
+4. Collect in parallel (max 3 simultaneous sources)
+5. Deduplicate by title hash + semantic similarity (threshold 0.85)
+6. Score each result (0.0 → 1.0) according to scoring_weights
+7. Filter: keep score >= 0.70 only
+8. Synthesize in structured Markdown
+9. Index in Obsidian (target folder per pipeline)
+10. Index in Qdrant if available
+11. Return final report with cited sources
 ```
 
-### Regles importantes
+### Important rules
 
-- Ne jamais utiliser une source hors `trusted_sources.yml`
-- Toujours citer les sources dans le rapport final
-- Limiter a 500 tokens par item dans la synthese (principe atomique)
-- Si Qdrant down -> continuer sans indexation vectorielle (degraded mode)
-- Logguer dans `.planning/DECISIONS.md` si la recherche aboutit a une decision
+- Never use a source outside `trusted_sources.yml`
+- Always cite sources in the final report
+- Limit to 500 tokens per item in synthesis (atomic principle)
+- If Qdrant down → continue without vector indexing (degraded mode)
+- Log in `.planning/DECISIONS.md` if research leads to a decision
 
-### Pipelines disponibles
+### Available pipelines (adapt to your domain)
 
-| Pipeline | Sources | Usage |
-|---|---|---|
-| manga | MangaDex, Jikan, Oricon, Natalie | Veille manga, fiches series |
-| anime | AniList, AniDB, ANN | Veille anime, staff, studios |
-| github | GitHub API, GitHub Search | Audit repos, scoring integration |
-| vendor | Personnalise | VPS, services, comparatifs |
+| Pipeline | Usage |
+|---|---|
+| content | Domain content watch, entity profiles |
+| entity | Authors, publishers, producers |
+| github | Repo audits, integration scoring |
+| vendor | VPS, services, comparisons |
 
 ---
 
@@ -58,7 +58,7 @@
 {
   "status": "success",
   "skill_name": "tk-deep-research",
-  "query": "<requete>",
+  "query": "<query>",
   "pipeline": "<pipeline>",
   "items_found": N,
   "items_after_dedup": N,
@@ -66,17 +66,16 @@
   "report_path": "vault/reports/research_YYYY-MM-DD_<slug>.md",
   "output": {
     "summary": "...",
-    "data": [...],
-    "sources_used": [...]
+    "data": [],
+    "sources_used": []
   }
 }
 ```
 
 ---
 
-## Mode degrade
+## Degraded mode
 
-Si les services sont indisponibles :
-- Qdrant down -> skip indexation vectorielle, continuer
-- Obsidian inaccessible -> sauvegarder dans `vault/reports/` local
-- Source API down -> utiliser le cache SQLite si disponible
+- Qdrant down → skip vector indexing, continue
+- Obsidian inaccessible → save to `vault/reports/` locally
+- Source API down → use SQLite cache if available

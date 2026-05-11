@@ -1,15 +1,17 @@
-# Open Source JP Scraper Skill
+# Open Source Web Scraper Skill
 
-Use this skill when Claude must collect information from Japanese websites with minimal token usage.
+Use this skill when Claude must collect information from websites with minimal token usage.
 
 ## Tool priority
 
-1. `jp-scraper sources audit`
-2. `jp-scraper scrape source <id> --mode auto`
-3. `jp-scraper delta build --source <id>`
-4. `jp-scraper report summary --source <id>`
+1. `your-scraper sources audit`
+2. `your-scraper scrape source <id> --mode auto`
+3. `your-scraper delta build --source <id>`
+4. `your-scraper report summary --source <id>`
 5. Read `scan_summary.md`
 6. Read `scan_delta.jsonl` only when necessary
+
+> Adapt `your-scraper` to your actual CLI tool name (see `tools/` directory).
 
 ## Forbidden by default
 

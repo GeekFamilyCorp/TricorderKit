@@ -1,15 +1,15 @@
 {
   "mcpServers": {
-    "kintone": {
+    "your-service": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@kintone/mcp-server"],
+      "args": ["-y", "@your-org/mcp-server"],
       "env": {
-        "KINTONE_BASE_URL": "${KINTONE_BASE_URL}",
-        "KINTONE_API_TOKEN": "${KINTONE_API_TOKEN}"
+        "SERVICE_BASE_URL": "${SERVICE_BASE_URL}",
+        "SERVICE_API_TOKEN": "${SERVICE_API_TOKEN}"
       },
-      "description": "Kintone back-office — fiches sources, statuts, validation humaine"
+      "description": "Your back-office service — structured records, statuses, human validation"
     }
   },
-  "_policy": "CLI-first. MCP uniquement pour accès structurés kintone. Voir mcp/README_MCP_POLICY.md"
+  "_policy": "CLI-first. MCP only for structured external access. See mcp/README_MCP_POLICY.md"
 }

@@ -1,116 +1,56 @@
-manga:
-  shonenjumpplus:
-    name_jp: 少年ジャンプ＋
-    url: https://shonenjumpplus.com
-    reliability: official
-    priority: 5
-    use_cases: [chapter_1_detection, new_series, one_shot]
-  comic-days:
-    name_jp: コミックDAYS
-    url: https://comic-days.com
-    reliability: official
-    priority: 5
-    use_cases: [chapter_1_detection, new_series]
-  magapoke:
-    name_jp: マガポケ
-    url: https://pocket.shonenmagazine.com
-    reliability: official
-    priority: 5
-    use_cases: [chapter_1_detection, magazine_tracking]
-  kadocomi:
-    name_jp: カドコミ / ComicWalker
-    url: https://comic-walker.com
-    reliability: official
-    priority: 5
-    use_cases: [kadokawa_manga, ln_adaptation, media_mix]
-  sunday-webry:
-    name_jp: サンデーうぇぶり
-    url: https://www.sunday-webry.com
-    reliability: official
-    priority: 5
-    use_cases: [chapter_1_detection, new_series]
-ln:
-  syosetu:
-    name_jp: 小説家になろう
-    url: https://syosetu.com
-    reliability: official_platform
-    priority: 5
-    use_cases: [web_novel_origin, ranking, adaptation_detection]
-  kakuyomu:
-    name_jp: カクヨム
-    url: https://kakuyomu.jp
-    reliability: official_platform
-    priority: 5
-    use_cases: [web_novel_origin, contest, kadokawa_pipeline]
-  alphapolis:
-    name_jp: アルファポリス
-    url: https://www.alphapolis.co.jp
-    reliability: official_platform
-    priority: 4
-    use_cases: [web_novel, manga_adaptation_detection]
-anime:
-  comic-natalie:
-    name_jp: コミックナタリー
-    url: https://natalie.mu/comic
-    reliability: professional_media
-    priority: 5
-    use_cases: [announcement_crosscheck, adaptation_detection, cast_staff]
-  animate-times:
-    name_jp: アニメイトタイムズ
-    url: https://www.animatetimes.com
-    reliability: professional_media
-    priority: 5
-    use_cases: [anime_news, seiyu, events]
-  anime-official:
-    name_jp: 公式アニメサイト
-    url: variable
-    reliability: official_primary
-    priority: 5
-    use_cases: [staff_cast_validation, broadcast, pv_key_visual]
-seiyu:
-  aoni:
-    name_jp: 青二プロダクション
-    url: https://www.aoni.co.jp
-    reliability: official_agency
-    priority: 5
-    use_cases: [profile_validation, agency_membership, role_crosscheck]
-studio:
-  mappa:
-    name_jp: MAPPA
-    url: https://www.mappa.co.jp
-    reliability: official_studio
-    priority: 5
-    use_cases: [studio_profile, works_validation, news]
-game:
-  cero:
-    name_jp: CERO
-    url: https://www.cero.gr.jp
-    reliability: official_rating
-    priority: 5
-    use_cases: [cero_rating, age_classification]
-  famitsu:
-    name_jp: ファミッエ.com
-    url: https://www.famitsu.com
-    reliability: professional_media
-    priority: 5
-    use_cases: [game_news, sales_ranking, adaptation_game_detection]
-goods:
-  goodsmile:
-    name_jp: グッドスマイルカンパニー
-    url: https://www.goodsmile.com/ja
-    reliability: official_manufacturer
-    priority: 5
-    use_cases: [figure_release, preorder, product_specs]
-events:
-  animejapan:
-    name_jp: AnimeJapan
-    url: https://www.anime-japan.jp
-    reliability: official_event
-    priority: 5
-    use_cases: [event_tracking, stage_announcement, exhibitor_tracking]
-  jump-festa:
-    name_jp: ジャンプフェスタ
-    url: https://www.jumpfesta.com
-    reliability: official_event
-    priority: 5
-    use_cases: [jump_announcements, stages, goods]
+# sources.yaml — Domain CLI source configuration
+# Replace these placeholder sources with your actual domain sources
+# Version: 0.1.0 — stub
+#
+# Structure:
+#   category:
+#     - id: unique_source_id
+#       name: Human-readable name
+#       url: https://...
+#       type: api_rest | rss | scrape
+#       category: your_category
+#       active: true
+#       cache_ttl: 900
+#       notes: "..."
+
+# ── Example category 1 (replace with your domain) ───────────────────────────
+content:
+  - id: example_api_1
+    name: Example API Source 1
+    url: https://api.example.com/v1
+    type: api_rest
+    category: content
+    active: true
+    cache_ttl: 900
+    notes: "Replace with your actual primary API source"
+
+  - id: example_rss_1
+    name: Example RSS Feed 1
+    url: https://example.com/rss
+    type: rss
+    category: content
+    active: true
+    cache_ttl: 1800
+    notes: "Replace with your actual RSS source"
+
+# ── Example category 2 ──────────────────────────────────────────────────────
+rankings:
+  - id: example_ranking_1
+    name: Example Ranking Source
+    url: https://rankings.example.com
+    type: scrape
+    category: rankings
+    active: true
+    cache_ttl: 3600
+    notes: "Replace with your actual rankings source"
+
+# ── Example category 3 ──────────────────────────────────────────────────────
+news:
+  - id: example_news_1
+    name: Example News Source
+    url: https://news.example.com
+    type: scrape
+    category: news
+    active: true
+    cache_ttl: 1800
+    notes: "Replace with your actual news source"

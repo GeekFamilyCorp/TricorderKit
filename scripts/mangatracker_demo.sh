@@ -1,35 +1,33 @@
 #!/usr/bin/env bash
-# mangatracker_demo.sh — TricorderKit v0.7
-# Démo rapide des commandes mangatracker-cli
+# example_cli_demo.sh — TricorderKit v0.7
+# Generic demo for your domain CLI
+# Adapt this script to your own CLI tool installed under tools/
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-CLI="$SCRIPT_DIR/tools/mangatracker-cli"
+CLI="$SCRIPT_DIR/tools/your-cli"
 
-echo "=== MangaTracker CLI Demo ==="
-echo "Répertoire : $CLI"
+echo "=== Your CLI Demo ==="
+echo "Directory: $CLI"
 echo ""
 
-cd "$CLI"
+# Replace the following with your actual CLI commands
+# See tools/your-cli/README.md for available commands
 
 echo "--- 1. Audit sources ---"
-python -m mangatracker_cli.cli audit sources
+# python -m your_cli.cli audit sources
+echo "[stub] Replace with: python -m your_cli.cli audit sources"
 
 echo ""
-echo "--- 2. Manga scan-new (Shonen Jump+) ---"
-python -m mangatracker_cli.cli manga scan-new --source shonenjumpplus --type chapter1
+echo "--- 2. Scan new content ---"
+# python -m your_cli.cli content scan-new --source your_source
+echo "[stub] Replace with: python -m your_cli.cli content scan-new --source your_source"
 
 echo ""
-echo "--- 3. LN scan-ranking (Syosetu) ---"
-python -m mangatracker_cli.cli ln scan-ranking --source syosetu --format json
+echo "--- 3. Sync to Obsidian dry-run ---"
+# python -m your_cli.cli sync obsidian --dry-run
+echo "[stub] Replace with: python -m your_cli.cli sync obsidian --dry-run"
 
 echo ""
-echo "--- 4. Anime scan-news (Comic Natalie) ---"
-python -m mangatracker_cli.cli anime scan-news --source comic-natalie
-
-echo ""
-echo "--- 5. Sync Obsidian dry-run ---"
-python -m mangatracker_cli.cli sync obsidian --dry-run
-
-echo ""
-echo "=== Demo terminée ==="
+echo "=== Demo complete ==="
+echo "See tools/your-cli/README.md and docs/integration/ for full documentation."

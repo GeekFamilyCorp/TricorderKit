@@ -1,8 +1,8 @@
 name: deep-research-core
 version: 0.1.0
 type: plugin
-description: Moteur de recherche autonome local-first - collecte multi-source, deduplication, scoring, synthese Markdown
-author: GeekFamilyCorp
+description: Local-first autonomous research engine - multi-source collection, deduplication, scoring, Markdown synthesis
+author: TricorderKit
 
 skills:
   - tk-deep-research
@@ -18,11 +18,11 @@ dependencies:
     - jsonschema
 
 pipelines:
-  - name: manga_sources_research
-    file: pipelines/manga_sources_research.yml
+  - name: content_sources_research
+    file: pipelines/content_sources_research.yml
     status: ready
-  - name: anime_staff_research
-    file: pipelines/anime_staff_research.yml
+  - name: entity_research
+    file: pipelines/entity_research.yml
     status: planned
   - name: github_research
     file: pipelines/github_research.yml
@@ -34,7 +34,6 @@ pipelines:
 sources:
   trusted: sources/trusted_sources.yml
   blocked: sources/blocked_sources.yml
-  japanese: sources/japanese_sources.yml
 
 outputs:
   - type: markdown
@@ -46,7 +45,7 @@ outputs:
 infrastructure_optional:
   - service: qdrant
     port: 6333
-    note: "Degrade mode si indisponible"
+    note: "Degraded mode if unavailable"
 
 token_budget:
   max_per_research: 20000

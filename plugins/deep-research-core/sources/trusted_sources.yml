@@ -1,76 +1,42 @@
 # trusted_sources.yml — TricorderKit deep-research-core
-# Sources fiables autorisées pour les recherches autonomes
-# Version : 0.1.0 — 10/05/2026
+# Trusted sources allowed for autonomous research
+# Version: 0.1.0 — stub (replace with your domain sources)
 
-# ── Manga & Light Novel ────────────────────────────────────────────────────────────
-manga:
-  - name: MangaDex
-    url: https://api.mangadex.org
+# ── Primary API sources ──────────────────────────────────────────────────────
+primary_api:
+  - name: Your Primary API
+    url: https://api.your-source.com
     type: api_rest
     reliability: 0.92
     rate_limit: 5/min
     cache_ttl: 900
-    languages: [fr, en, ja]
-    notes: "Source principale. Gratuit, pas d'auth requise."
+    notes: "Replace with your actual primary API source."
 
-  - name: Jikan (MyAnimeList)
-    url: https://api.jikan.moe/v4
+  - name: Your Secondary API
+    url: https://api.your-second-source.com
     type: api_rest
     reliability: 0.88
     rate_limit: 3/sec
     cache_ttl: 1800
-    languages: [en, ja]
-    notes: "Wrapper non officiel MAL. Scores et meta fiables."
+    notes: "Replace with your actual secondary API source."
 
-  - name: BookWalker JP
-    url: https://bookwalker.jp
+# ── Scraped sources ──────────────────────────────────────────────────────────
+secondary:
+  - name: Your Ranking Source
+    url: https://www.your-ranking-source.com
     type: scrape
     reliability: 0.85
     cache_ttl: 3600
-    notes: "Catalogues numériques officiels japonais. Ventes et sorties."
+    notes: "Replace with your actual ranking/aggregator source."
 
-  - name: Oricon
-    url: https://www.oricon.co.jp
-    type: scrape
-    reliability: 0.95
-    cache_ttl: 3600
-    notes: "Référence absolue pour les classements de ventes manga JP."
-
-  - name: Natalie Manga
-    url: https://natalie.mu/comic
+  - name: Your News Source
+    url: https://www.your-news-source.com
     type: scrape
     reliability: 0.88
     cache_ttl: 1800
-    languages: [ja]
-    notes: "News manga japonaises fiables."
+    notes: "Replace with your actual news source."
 
-# ── Anime ────────────────────────────────────────────────────────────────────────
-anime:
-  - name: AniList
-    url: https://graphql.anilist.co
-    type: api_graphql
-    reliability: 0.93
-    rate_limit: 90/min
-    cache_ttl: 1800
-    languages: [en, ja]
-    notes: "API GraphQL. Scores, staff, studios, saisons. Très complet."
-
-  - name: AniDB
-    url: https://api.anidb.net
-    type: api_rest
-    reliability: 0.87
-    rate_limit: 1/2sec
-    cache_ttl: 3600
-    notes: "Data technique (episodes, credits). Moins user-friendly."
-
-  - name: Anime News Network
-    url: https://www.animenewsnetwork.com
-    type: scrape
-    reliability: 0.90
-    cache_ttl: 1800
-    notes: "News et encyclopedia anglophone de référence."
-
-# ── GitHub / Tech ─────────────────────────────────────────────────────────────────
+# ── GitHub / Tech ────────────────────────────────────────────────────────────
 github:
   - name: GitHub API
     url: https://api.github.com
@@ -80,7 +46,7 @@ github:
     cache_ttl: 300
     auth_required: true
     auth_method: token
-    notes: "Source primaire pour ingestion repos GitHub."
+    notes: "Primary source for GitHub repo ingestion."
 
   - name: GitHub Search
     url: https://api.github.com/search
@@ -88,30 +54,9 @@ github:
     reliability: 0.97
     rate_limit: 30/min
     cache_ttl: 300
-    notes: "Recherche code, repos, issues."
+    notes: "Code, repo, issues search."
 
-# ── Éditeurs japonais ────────────────────────────────────────────────────────────────
-publishers:
-  - name: Shueisha (Jump+)
-    url: https://shonenjump.com
-    type: scrape
-    reliability: 0.95
-    cache_ttl: 3600
-    notes: "Sorties officielles Shueisha."
-
-  - name: Kodansha
-    url: https://kodansha.us
-    type: scrape
-    reliability: 0.92
-    cache_ttl: 3600
-
-  - name: Square Enix Manga
-    url: https://squareenixmanga.com
-    type: scrape
-    reliability: 0.90
-    cache_ttl: 3600
-
-# ── Scoring global par domaine ────────────────────────────────────────────────────────
+# ── Global scoring weights ──────────────────────────────────────────────────
 scoring_weights:
   official_api: 1.0
   official_site: 0.9
