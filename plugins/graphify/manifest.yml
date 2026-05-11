@@ -1,12 +1,35 @@
 name: graphify
 version: 0.1.0
-description: Hybrid knowledge graph — Neo4j + Qdrant + LangGraph
+description: Hybrid knowledge graph engine -- Neo4j + Qdrant + LangGraph
 status: scaffold
 phase: 3
+author: GeekFamilyCorp
+repo: https://github.com/GeekFamilyCorp/TricorderKit
 
 requires:
-  services: [neo4j, qdrant]
-  env: [NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, QDRANT_URL]
+  services:
+    - neo4j
+    - qdrant
+  env:
+    - NEO4J_URI
+    - NEO4J_USER
+    - NEO4J_PASSWORD
+    - QDRANT_URL
+  python:
+    - neo4j>=5.0
+    - qdrant-client>=1.8
+    - langgraph>=0.1
+    - openai>=1.0
+
+mcp_servers:
+  - name: graph-server
+    path: mcp/graph-server/
+    port: 7475
+    status: todo
+  - name: vector-server
+    path: mcp/vector-server/
+    port: 6334
+    status: todo
 
 ontology:
   node_types: [Concept, Entity, Task, Skill, Agent, Source, Session, Decision]
@@ -14,7 +37,7 @@ ontology:
 
 integrations:
   - plugin: deep-research-core
-    role: feeds Source + Concept nodes
+    role: feeds Source nodes + Concept nodes
   - plugin: workflow-engine
     role: Temporal Activity + LangGraph state API
   - plugin: memory-boot
