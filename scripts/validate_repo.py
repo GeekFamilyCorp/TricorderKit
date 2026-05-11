@@ -2,9 +2,13 @@
 """
 validate_repo.py — TricorderKit v0.7
 Valide que l'arborescence du repo respecte la structure attendue.
+
 Usage :
-    python scripts/validate_repo.py
-    python scripts/validate_repo.py --fix   # crée les fichiers manquants
+    python scripts/validate_repo.py              # rapport complet
+    python scripts/validate_repo.py --fix        # crée des STUBS pour les fichiers manquants
+                                                 # ⚠️  les stubs sont signalés séparément
+                                                 #     et n'améliorent pas le score réel
+    python scripts/validate_repo.py --show-stubs # liste tous les stubs actifs dans le repo
 Output : JSON (summary + détails par catégorie)
 """
 
@@ -16,6 +20,23 @@ from pathlib import Path
 
 # ── Répertoire racine ────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.parent
+
+# ── Marqueur de stub ─────────────────────────────────────────────────────────
+# Présent dans tous les fichiers créés par --fix.
+# check_required_files() et check_placeholders() l'utilisent pour les détecter.
+# Ne pas modifier ce marqueur sans regénérer tous les stubs existants.
+PLACEHOLDER_MARKER = "TRICORDERKIT_STUB_PLACEHOLDER"
+
+PLACEHOLDER_TEMPLATE = """\
+# TODO — stub créé automatiquement par validate_repo.py --fix
+# {marker}
+#
+# Ce fichier est un PLACEHOLDER vide. Il ne remplace pas le vrai contenu.
+# Action requise : remplacez ce fichier par l'implémentation réelle.
+#
+# Pour lister tous les stubs actifs dans ce repo :
+#   python scripts/validate_repo.py --show-stubs
+""".format(marker=PLACEHOLDER_MARKER)
 
 # ── Structure attendue ───────────────────────────────────────────────────────
 REQUIRED_FILES = [
@@ -37,9 +58,7 @@ REQUIRED_FILES = [
 REQUIRED_DIRS = [
     "plugins",
     "skills",
-    "cli",
-    "mcp",
-    "vault",
+    "tools",
     "tests",
     "scripts",
     "core",
@@ -47,18 +66,45 @@ REQUIRED_DIRS = [
 ]
 
 PLUGIN_REQUIRED = ["README.md", "SKILL.md", "manifest.yml"]
-
 CLI_REQUIRED = ["manifest.yml"]
 
 
 # ── Vérifications ──────────────────────────────────────────────────────────
+def _is_stub(path: Path) -> bool:
+    """Retourne True si le fichier contient le marqueur de stub."""
+    try:
+        return PLACEHOLDER_MARKER in path.read_text(encoding="utf-8", errors="ignore")
+    except (OSError, PermissionError):
+        return False
+
+
 def check_required_files() -> dict:
-    missing, present = [], []
+    """
+    Classe chaque fichier obligatoire en trois catégories :
+    - present  : fichier réel (contenu non-stub)
+    - stubs    : fichier créé par --fix (placeholder)
+    - missing  : fichier absent
+
+    Le score global utilise real_score (stubs exclus) pour ne pas masquer
+    les manques réels.
+    """
+    missing, present, stubs = [], [], []
     for f in REQUIRED_FILES:
         path = ROOT / f
-        (present if path.exists() else missing).append(f)
-    return {"present": present, "missing": missing,
-            "score": len(present) / len(REQUIRED_FILES) * 100}
+        if not path.exists():
+            missing.append(f)
+        elif _is_stub(path):
+            stubs.append(f)
+        else:
+            present.append(f)
+    total = len(REQUIRED_FILES)
+    return {
+        "present":    present,
+        "stubs":      stubs,
+        "missing":    missing,
+        "score":      round((len(present) + len(stubs)) / total * 100, 1) if total else 0,
+        "real_score": round(len(present) / total * 100, 1) if total else 0,
+    }
 
 
 def check_required_dirs() -> dict:
@@ -66,8 +112,11 @@ def check_required_dirs() -> dict:
     for d in REQUIRED_DIRS:
         path = ROOT / d
         (present if path.exists() else missing).append(d)
-    return {"present": present, "missing": missing,
-            "score": len(present) / len(REQUIRED_DIRS) * 100}
+    return {
+        "present": present,
+        "missing": missing,
+        "score":   round(len(present) / len(REQUIRED_DIRS) * 100, 1),
+    }
 
 
 def check_plugins() -> dict:
@@ -86,36 +135,43 @@ def check_plugins() -> dict:
             "missing": missing,
         })
     complete = [r for r in results if r["status"] == "valid"]
-    return {"plugins": results, "total": len(results),
-            "complete": len(complete),
-            "score": (len(complete) / len(results) * 100) if results else 0}
+    return {
+        "plugins":  results,
+        "total":    len(results),
+        "complete": len(complete),
+        "score":    round(len(complete) / len(results) * 100, 1) if results else 0,
+    }
 
 
 def check_cli_registry() -> dict:
+    """Vérifie les CLIs dans tools/ (structure STATE.md v0.7)."""
     registry_path = ROOT / "plugins" / "cli-forge" / "registry.yml"
     if not registry_path.exists():
-        return {"status": "missing", "message": "registry.yml introuvable"}
+        return {"status": "missing", "message": "registry.yml introuvable dans plugins/cli-forge/"}
 
-    generated_dir = ROOT / "plugins" / "cli-forge" / "generated"
-    if not generated_dir.exists():
-        return {"status": "empty", "clis": []}
+    tools_dir = ROOT / "tools"
+    if not tools_dir.exists():
+        return {"status": "empty", "clis": [], "message": "répertoire tools/ absent"}
 
     results = []
-    for cli_dir in sorted(generated_dir.iterdir()):
+    for cli_dir in sorted(tools_dir.iterdir()):
         if not cli_dir.is_dir():
             continue
         missing = [f for f in CLI_REQUIRED if not (cli_dir / f).exists()]
         py_files = list(cli_dir.glob("*.py"))
         results.append({
-            "name":       cli_dir.name,
+            "name":         cli_dir.name,
             "has_manifest": (cli_dir / "manifest.yml").exists(),
-            "has_script": len(py_files) > 0,
-            "script":     py_files[0].name if py_files else None,
-            "missing":    missing,
-            "status":     "ready" if not missing and py_files else "incomplete",
+            "has_script":   len(py_files) > 0,
+            "script":       py_files[0].name if py_files else None,
+            "missing":      missing,
+            "status":       "ready" if not missing and py_files else "incomplete",
         })
-    return {"clis": results, "total": len(results),
-            "ready": len([r for r in results if r["status"] == "ready"])}
+    return {
+        "clis":  results,
+        "total": len(results),
+        "ready": len([r for r in results if r["status"] == "ready"]),
+    }
 
 
 def check_skills() -> dict:
@@ -132,8 +188,11 @@ def check_skills() -> dict:
             "name":   skill_dir.name,
             "status": "valid" if has_skill_md else "missing_SKILL.md",
         })
-    return {"skills": results, "total": len(results),
-            "valid": len([r for r in results if r["status"] == "valid"])}
+    return {
+        "skills": results,
+        "total":  len(results),
+        "valid":  len([r for r in results if r["status"] == "valid"]),
+    }
 
 
 def check_planning() -> dict:
@@ -148,32 +207,79 @@ def check_planning() -> dict:
         "RISKS.md":    (planning_dir / "RISKS.md").exists(),
         "ROADMAP.md":  any(planning_dir.glob("ROADMAP*.md")),
     }
-    complete = all(files.values())
-    return {"files": files, "complete": complete,
-            "score": sum(files.values()) / len(files) * 100}
+    return {
+        "files":    files,
+        "complete": all(files.values()),
+        "score":    round(sum(files.values()) / len(files) * 100, 1),
+    }
+
+
+def check_placeholders() -> list:
+    """Scanne tout le repo et retourne les fichiers contenant le marqueur de stub."""
+    stubs = []
+    extensions = {".md", ".json", ".yml", ".yaml", ".py", ".txt", ".toml"}
+    for path in ROOT.rglob("*"):
+        if path.is_file() and path.suffix in extensions:
+            if _is_stub(path):
+                stubs.append(str(path.relative_to(ROOT)).replace("\\", "/"))
+    return sorted(stubs)
 
 
 # ── Fix manquants ──────────────────────────────────────────────────────────
-PLACEHOLDER = "# TODO — fichier à compléter\n\n*Généré automatiquement par validate_repo.py*\n"
-
 def fix_missing(missing_files: list) -> list:
+    """Crée des fichiers stub pour les fichiers manquants."""
     created = []
     for f in missing_files:
         path = ROOT / f
         path.parent.mkdir(parents=True, exist_ok=True)
         if not path.exists():
-            path.write_text(PLACEHOLDER, encoding="utf-8")
+            path.write_text(PLACEHOLDER_TEMPLATE, encoding="utf-8")
             created.append(f)
     return created
 
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="validate_repo — TricorderKit v0.7")
-    parser.add_argument("--fix",    action="store_true", help="Créer les fichiers manquants")
+    parser = argparse.ArgumentParser(
+        description="validate_repo — TricorderKit v0.7",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Exemples :\n"
+            "  python scripts/validate_repo.py\n"
+            "  python scripts/validate_repo.py --fix\n"
+            "  python scripts/validate_repo.py --show-stubs\n"
+            "  python scripts/validate_repo.py --output json\n"
+        ),
+    )
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Créer des stubs pour les fichiers manquants (signalés séparément, n'améliorent pas le score réel)",
+    )
+    parser.add_argument(
+        "--show-stubs",
+        action="store_true",
+        help="Lister tous les fichiers stub actifs dans le repo puis quitter",
+    )
     parser.add_argument("--output", choices=["json", "pretty"], default="pretty")
     args = parser.parse_args()
 
+    # ── Mode --show-stubs uniquement ────────────────────────────────────────
+    if args.show_stubs:
+        stubs = check_placeholders()
+        if args.output == "json":
+            print(json.dumps({"stubs": stubs, "count": len(stubs)}, indent=2, ensure_ascii=False))
+        else:
+            if stubs:
+                print(f"\n⚠️  {len(stubs)} stub(s) détecté(s) — à remplacer par le vrai contenu :")
+                for s in stubs:
+                    print(f"   ↳ {s}")
+            else:
+                print("\n✅ Aucun stub détecté — tous les fichiers ont du contenu réel.")
+            print()
+        sys.exit(0 if not stubs else 2)
+
+    # ── Rapport complet ──────────────────────────────────────────────────────
     files    = check_required_files()
     dirs     = check_required_dirs()
     plugins  = check_plugins()
@@ -181,14 +287,15 @@ def main():
     skills   = check_skills()
     planning = check_planning()
 
-    # Score global
-    scores = [files["score"], dirs["score"], planning.get("score", 0)]
-    global_score = sum(scores) / len(scores)
+    # Score global basé sur real_score (stubs exclus) pour refléter l'état réel
+    scores = [files["real_score"], dirs["score"], planning.get("score", 0)]
+    global_score = round(sum(scores) / len(scores), 1)
 
     result = {
-        "timestamp":    datetime.utcnow().isoformat() + "Z",
-        "global_score": round(global_score, 1),
-        "status":       "healthy" if global_score >= 80 else ("partial" if global_score >= 50 else "critical"),
+        "timestamp":     datetime.utcnow().isoformat() + "Z",
+        "global_score":  global_score,
+        "status":        "healthy" if global_score >= 80 else ("partial" if global_score >= 50 else "critical"),
+        "stubs_present": len(files["stubs"]) > 0,
         "sections": {
             "required_files": files,
             "required_dirs":  dirs,
@@ -196,52 +303,82 @@ def main():
             "plugins":        plugins,
             "cli_registry":   clis,
             "skills":         skills,
-        }
+        },
     }
 
-    # Fix si demandé
-    if args.fix and files["missing"]:
-        created = fix_missing(files["missing"])
-        result["fix_applied"] = created
+    # ── Appliquer --fix si demandé ───────────────────────────────────────────
+    if args.fix:
+        if files["missing"]:
+            print(
+                "\n⚠️  --fix : création de fichiers STUB uniquement.\n"
+                "   Ces stubs n'ont aucun contenu réel et n'améliorent pas le score réel.\n"
+                "   Utilisez --show-stubs pour les retrouver et les remplacer.\n"
+            )
+            created = fix_missing(files["missing"])
+            result["fix_applied"] = created
+        else:
+            print("\nℹ️  --fix : aucun fichier manquant à créer.\n")
 
+    # ── Affichage ─────────────────────────────────────────────────────────────
     if args.output == "json":
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
         icon = {"healthy": "✅", "partial": "⚠️", "critical": "❌"}.get(result["status"], "?")
-        print(f"\n{icon}  TricorderKit Repo Health — {result['global_score']}% ({result['status'].upper()})")
+        print(f"\n{icon}  TricorderKit Repo Health — {result['global_score']}% réel ({result['status'].upper()})")
         print(f"   Timestamp : {result['timestamp']}")
 
+        # Fichiers
         f = result["sections"]["required_files"]
-        print(f"\n📁 Fichiers obligatoires : {len(f['present'])}/{len(f['present'])+len(f['missing'])} ({f['score']:.0f}%)")
+        n_real    = len(f["present"])
+        n_stubs   = len(f["stubs"])
+        n_missing = len(f["missing"])
+        n_total   = n_real + n_stubs + n_missing
+        stub_note = f", dont {n_stubs} stub(s) ⚠️" if n_stubs else ""
+        print(f"\n📁 Fichiers obligatoires : {n_real}/{n_total} réels ({f['real_score']}%){stub_note}")
+        for s in f["stubs"]:
+            print(f"   ⚠️  stub    : {s}  ← à remplacer par le vrai contenu")
         for m in f["missing"]:
             print(f"   ❌ manquant : {m}")
 
+        # Répertoires
         d = result["sections"]["required_dirs"]
-        print(f"\n📂 Répertoires : {len(d['present'])}/{len(d['present'])+len(d['missing'])} ({d['score']:.0f}%)")
+        print(f"\n📂 Répertoires : {len(d['present'])}/{len(d['present'])+len(d['missing'])} ({d['score']}%)")
         for m in d["missing"]:
             print(f"   ❌ manquant : {m}")
 
+        # Planning
         p = result["sections"]["planning"]
-        planning_status = '✅ complet' if p.get('complete') else f'⚠️ {p.get("score", 0):.0f}%'
+        planning_status = "✅ complet" if p.get("complete") else f"⚠️ {p.get('score', 0)}%"
         print(f"\n📋 Planning : {planning_status}")
 
+        # Plugins
         pl = result["sections"]["plugins"]
-        print(f"\n🔌 Plugins : {pl.get('complete',0)}/{pl.get('total',0)} complets")
+        print(f"\n🔌 Plugins : {pl.get('complete', 0)}/{pl.get('total', 0)} complets")
         for plugin in pl.get("plugins", []):
             ico = "✅" if plugin["status"] == "valid" else "⚠️"
-            print(f"   {ico} {plugin['name']}" + (f" — manque : {plugin['missing']}" if plugin["missing"] else ""))
+            suffix = f" — manque : {plugin['missing']}" if plugin["missing"] else ""
+            print(f"   {ico} {plugin['name']}{suffix}")
 
+        # CLIs
         cl = result["sections"]["cli_registry"]
-        print(f"\n⚡ CLIs : {cl.get('ready',0)}/{cl.get('total',0)} prêtes")
+        print(f"\n⚡ CLIs (tools/) : {cl.get('ready', 0)}/{cl.get('total', 0)} prêtes")
         for cli in cl.get("clis", []):
             ico = "✅" if cli["status"] == "ready" else "⚠️"
             print(f"   {ico} {cli['name']}")
+        if cl.get("message"):
+            print(f"   ℹ️  {cl['message']}")
 
+        # Skills
         sk = result["sections"]["skills"]
-        print(f"\n🎯 Skills : {sk.get('valid',0)}/{sk.get('total',0)} valides")
+        print(f"\n🎯 Skills : {sk.get('valid', 0)}/{sk.get('total', 0)} valides")
 
+        # Résultat --fix
         if result.get("fix_applied"):
-            print(f"\n🔧 Fichiers créés par --fix : {result['fix_applied']}")
+            print(f"\n🔧 Stubs créés ({len(result['fix_applied'])}) :")
+            for f_path in result["fix_applied"]:
+                print(f"   ↳ {f_path}")
+            print("   ⚠️  Ces fichiers sont des placeholders vides.")
+            print("   ⚠️  Lancez --show-stubs pour les retrouver ultérieurement.")
         print()
 
     sys.exit(0 if result["status"] in ("healthy", "partial") else 1)
