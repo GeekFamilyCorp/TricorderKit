@@ -1,5 +1,18 @@
 version: "3.8"
 
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  ⚠️  DEV / LOCAL ONLY — NE PAS UTILISER TEL QUEL EN PRODUCTION          ║
+# ║                                                                          ║
+# ║  Avant tout déploiement VPS / cloud :                                   ║
+# ║  • Remplacer TOUS les secrets par défaut (change_this_* et langfuse)    ║
+# ║  • Utiliser un secrets manager (Vault, AWS Secrets, Docker Secrets…)    ║
+# ║  • Restreindre les ports — ne pas exposer 7474/7687/6333/7233/3000      ║
+# ║    directement sur l'interface publique                                  ║
+# ║  • Activer TLS sur Neo4j Bolt, Qdrant et Temporal                       ║
+# ║  • Remplacer postgres user/password langfuse/langfuse par des valeurs   ║
+# ║    fortes définies dans .env                                             ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
 # TricorderKit v0.7 — Infrastructure locale
 # Démarrage : docker compose up -d
 # Arrêt     : docker compose down
@@ -14,7 +27,7 @@ services:
       - "7474:7474"   # Browser HTTP
       - "7687:7687"   # Bolt
     environment:
-      NEO4J_AUTH: "${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-change-me-in-prod}"
+      NEO4J_AUTH: "${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-change_this_password_in_prod}"
       NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
       NEO4J_dbms_memory_heap_max__size: "1G"
     volumes:
@@ -22,7 +35,7 @@ services:
       - neo4j_logs:/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-change-me-in-prod}", "RETURN 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-change_this_password_in_prod}", "RETURN 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -84,9 +97,9 @@ services:
       - "3000:3000"   # UI + API
     environment:
       DATABASE_URL: "postgresql://langfuse:langfuse@langfuse-db:5432/langfuse"
-      NEXTAUTH_SECRET: "${LANGFUSE_NEXTAUTH_SECRET:-change-me-in-prod}"
+      NEXTAUTH_SECRET: "${LANGFUSE_NEXTAUTH_SECRET:-change_this_nextauth_secret_in_prod}"
       NEXTAUTH_URL: "http://localhost:3000"
-      SALT: "${LANGFUSE_SALT:-change-me-in-prod}"
+      SALT: "${LANGFUSE_SALT:-change_this_salt_in_prod}"
       TELEMETRY_ENABLED: "false"
     depends_on:
       langfuse-db:
@@ -98,7 +111,7 @@ services:
     container_name: tricorder-langfuse-db
     environment:
       POSTGRES_USER: langfuse
-      POSTGRES_PASSWORD: langfuse
+      POSTGRES_PASSWORD: langfuse   # ⚠️ hardcoded — à externaliser en prod
       POSTGRES_DB: langfuse
     volumes:
       - langfuse_db:/var/lib/postgresql/data
