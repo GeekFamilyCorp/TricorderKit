@@ -1,0 +1,27 @@
+name: graphify
+version: 0.1.0
+description: Hybrid knowledge graph — Neo4j + Qdrant + LangGraph
+status: scaffold
+phase: 3
+
+requires:
+  services: [neo4j, qdrant]
+  env: [NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, QDRANT_URL]
+
+ontology:
+  node_types: [Concept, Entity, Task, Skill, Agent, Source, Session, Decision]
+  relationship_types: [RELATES_TO, DEPENDS_ON, PRODUCES, CONSUMES, REFERENCES, DERIVED_FROM, PART_OF, IMPLEMENTS, DISCOVERED_IN]
+
+integrations:
+  - plugin: deep-research-core
+    role: feeds Source + Concept nodes
+  - plugin: workflow-engine
+    role: Temporal Activity + LangGraph state API
+  - plugin: memory-boot
+    role: seeds graph from Obsidian vault
+
+token_budget:
+  max_tokens_per_query: 2000
+  on_budget_exceeded: truncate_results
+
+implements: [DEC-003, DEC-004, DEC-008, DEC-009]
