@@ -1,65 +1,44 @@
 # TricorderKit v0.7 — State
 
-**Date:** 2026-05-11  
-**Phase:** 2 (CLI-first active) — repo neutralized  
-**Status:** Public generic framework ✅
-
----
+**Date:** 2026-05-11
+**Phase:** 3 (RAG/Knowledge Graph — en cours)
+**Status:** Public generic framework OK
 
 ## Current state
+TricorderKit est un framework agentique public et domain-agnostic.
+Phase 2 (CLI-first) terminee. Phase 3 (RAG + Graphify) active.
 
-TricorderKit is now a **public, domain-agnostic agentic OS framework**.
-
-All Japan-Alliance / MangaTracker-specific content has been migrated to the private `MangaTracker` repository.
-
----
-
-## Installed components
-
-### CLI tools (examples — replace with your domain CLIs)
-- `tools/your-cli/` — generic domain CLI scaffold
-- `tools/your-scraper/` — open-source web scraper (RSS/HTTP/trafilatura)
-
-### Claude Code integrations
-- `.claude/hooks/` — 4 hooks active (token budget, vault manifest, secret guard, full-vault-read guard)
-- `.claude/agents/` — 5 agents (token-budget, vault-audit, vault-optimizer, vault-structure, web-scraper)
-- `.claude/commands/` — 8 commands (vault-analyze/audit/delta/optimize/sync, token-check, scraper-audit/scan)
-- `.claude/skills/` — vault-token-optimizer + open-source-web-scraper
-
-### Plugins
-- `plugins/deep-research-core/` — autonomous research engine (generic stub)
-- `plugins/cli-forge/` — CLI scaffolding
-- `plugins/memory-boot/` — session memory boot
-- `plugins/token-optimizer/` — token optimization
-- `plugins/workflow-engine/` — workflow orchestration
-
-### Vault optimizer
-- `scripts/vault_optimizer/` — 5 scripts (analyzer, manifest, delta, router, summarizer)
-
----
+## Plugins installes
+- plugins/deep-research-core/ — research engine (stub)
+- plugins/cli-forge/ — CLI scaffolding
+- plugins/memory-boot/ — session memory boot
+- plugins/token-optimizer/ — token optimization
+- plugins/workflow-engine/ — Temporal + LangGraph (DEC-008)
+- plugins/graphify/ — Neo4j + Qdrant hybrid (DEC-009) [v0.1 scaffold]
 
 ## Architecture
-
-```text
-TricorderKit (public) — generic framework
-    └── any domain CLI (tools/)
-    └── web scraper (tools/)
-    └── Claude integrations (.claude/)
-    └── deep-research-core (plugins/)
-
+TricorderKit (public)
+    tools/             (domain CLIs)
+    plugins/graphify/  <- NEW Phase 3
+        Neo4j (graph traversal)
+        Qdrant (semantic search)
+        LangGraph (agent loops)
 MangaTracker (private) — Japan-Alliance instance
-    └── tools/mangatracker-cli/ (18 JP sources)
-    └── tools/jp-scraper/ (5 JP sources)
-    └── plugins/deep-research-core/ (JP pipelines + sources)
-    └── .mcp.json (kintone config)
-    └── .claude/ (JP-specific agents/commands/skills)
-```
 
----
+## Phase 3 Roadmap
+1. core/contracts/graph.schema.json (ontologie Neo4j)
+2. mcp/servers/graph-server/ (Neo4j MCP)
+3. mcp/servers/vector-server/ (Qdrant MCP)
+4. graphify dual-write (Neo4j + Qdrant sync)
+5. LangGraph agent loops via graphify state API
+6. Gitleaks pre-commit + CI (Priority S)
+7. cli-printing-press dans cli-forge (Priority S)
 
-## Next steps
-
-1. Implement actual CLI parsers for your domain
-2. Configure your MCP service in `.env`
-3. Test the scraper with your sources
-4. Build Phase 3 — RAG / Qdrant integration
+## Etapes completees
+1. OK Phase 2 CLI-first
+2. OK Framework neutralise (Manga/Anime retire)
+3. OK validate_repo.py — stub detection
+4. OK docker-compose.yml — DEV ONLY warning
+5. OK .env.example — secure placeholders
+6. OK DECISIONS.md — DEC-001 a DEC-009
+7. OK plugins/graphify — v0.1 scaffold
