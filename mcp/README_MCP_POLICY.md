@@ -70,4 +70,21 @@ See `.mcp.json` at root.
 Secrets go in `.env` (never committed).  
 Required variables: `SERVICE_BASE_URL`, `SERVICE_API_TOKEN`.
 
-*Version 0.1.0 — TricorderKit generic stub*
+---
+
+## Troubleshooting
+
+### MCP authentication errors (401 / "Requires authentication")
+
+> **First action : read the MCP source code** to find the exact env variable name expected.
+> Do not assume it — read it in `dist/common/utils.js` or `dist/index.js`.
+
+Full diagnostic protocol → see **[MCP_AUTH_DIAGNOSTIC.md](./MCP_AUTH_DIAGNOSTIC.md)**
+
+Common mistake documented (2026-05-11) :
+- Config used `GITHUB_TOKEN`
+- MCP expected `GITHUB_PERSONAL_ACCESS_TOKEN`
+- Token was silently ignored → 401 on all writes, reads worked (public repos)
+- Fix took 2 min once source was read. Without reading source : 3h lost.
+
+*Version 0.2.0 — TricorderKit — updated 2026-05-11*
