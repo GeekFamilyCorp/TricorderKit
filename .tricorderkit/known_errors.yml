@@ -1,0 +1,23 @@
+# known_errors.yml — registre des erreurs récurrentes (v0.8)
+version: "0.8"
+
+errors:
+  - id: CLIRUNNER_MIX_STDERR_REMOVED
+    component: tests/cli_contracts
+    pattern: "CliRunner.__init__() got an unexpected keyword argument 'mix_stderr'"
+    cause: >
+      Click 8.2+ et Typer 0.25+ ont supprimé le paramètre mix_stderr. stdout
+      et stderr sont séparés par défaut.
+    fix: "Utiliser CliRunner() sans argument."
+    date_first_seen: "2026-05-13"
+
+  - id: TK_INSTALLER_PACKAGE_NAMING
+    component: tools/tk_installer
+    pattern: >
+      TK_INSTALLER_SPEC v0.1 §1 indique tools/tk-installer/ (kebab-case).
+    cause: >
+      Python interdit l'import d'un package contenant un tiret.
+    fix: >
+      Adopter tools/tk_installer/ (snake_case). Commande shell reste
+      tk-installer via entry_point pyproject.toml.
+    date_first_seen: "2026-05-13"

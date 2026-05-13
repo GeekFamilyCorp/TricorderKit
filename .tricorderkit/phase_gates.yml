@@ -1,0 +1,60 @@
+# phase_gates.yml - INSTALL_TRICORDERKIT_PHASED_v0.8 section 5
+version: "0.8"
+
+phase_gates:
+  phase_0_bootstrap:
+    requires:
+      - python_available
+      - git_available
+      - repo_root_detected
+      - reports_install_dir_exists
+      - state_file_exists
+
+  phase_1_repo_health:
+    requires:
+      - scripts/validate_repo.py: passing
+      - scripts/health_check.py: passing
+      - .planning/STATE.md: exists
+      - .planning/TASKS.md: exists
+      - .planning/DECISIONS.md: exists
+      - .planning/RISKS.md: exists
+
+  phase_2_cli_forge:
+    requires:
+      - plugins/cli-forge/registry.yml: exists
+      - plugins/cli-forge/cli_manifest.schema.json: exists
+      - plugins/cli-forge/scripts/validate_cli_manifest.py: passing
+      - core/contracts/skill_output.schema.json: exists
+      - docs/cli_forge_typer_standard.md: exists
+      - tests/cli_contracts/test_tk_installer.py: passing
+      - typer_standard_documented: true
+      - at_least_one_typer_cli_passing: true
+
+  phase_25_quality_guard:
+    requires:
+      - plugins/quality-guard/manifest.yml: exists
+      - plugins/quality-guard/cli.py: exists
+      - tests/quality_guard: passing
+      - reports/quality/latest.json: exists
+      - data/quality_guard/error_memory.sqlite: exists
+
+  phase_3_workflows:
+    requires:
+      - phase_2_cli_forge: verified
+      - phase_25_quality_guard: verified
+      - workflow_engine_plan: exists
+      - docker_available: true
+
+  phase_4_deep_research:
+    requires:
+      - phase_3_workflows: verified
+      - deep_research_sources_configured: true
+      - source_cache_configured: true
+      - markdown_report_output: true
+
+  phase_5_quality_loop:
+    requires:
+      - phase_25_quality_guard: verified
+      - skill_eval_tests: exists
+      - regression_tests: exists
+      - security_scan_workflow: exists

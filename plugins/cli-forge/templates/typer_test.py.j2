@@ -1,0 +1,127 @@
+{# ===================================================================
+   Template tests CliRunner — TricorderKit cli-forge
+   Conforme à skill_output.schema.json + docs/cli_forge_typer_standard.md
+
+   Variables attendues :
+     cli_name           ex. "tk-installer"
+     module_name        ex. "tk_installer"
+     import_path        ex. "tools.tk_installer.tk_installer"
+     cli_version        ex. "0.1.0"
+     commands           liste de dicts {name, has_dry_run}
+   =================================================================== #}
+"""Tests CliRunner pour la CLI {{ cli_name }}.
+
+Couvre le contrat skill_output.schema.json et le standard Typer.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import pytest
+from typer.testing import CliRunner
+
+from {{ import_path }} import app, CLI_NAME, CLI_VERSION, VALID_STATUSES
+
+
+@pytest.fixture
+def runner() -> CliRunner:
+    """CliRunner Typer (Click 8.2+ : stdout/stderr séparés par défaut)."""
+    return CliRunner()
+
+
+# ---------------------------------------------------------------------------
+# Contrat universel : help, version
+# ---------------------------------------------------------------------------
+
+class TestContractHelp:
+    def test_help_returns_zero(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "Usage:" in result.stdout
+
+
+class TestContractVersion:
+    def test_version_returns_zero(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["--version"])
+        assert result.exit_code == 0
+
+    def test_version_shows_value(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["--version"])
+        assert CLI_VERSION in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# Contrat skill_output.schema.json
+# ---------------------------------------------------------------------------
+
+{% for cmd in commands %}
+class TestSchema_{{ cmd.name|replace('-', '_')|title }}:
+    """`{{ cmd.name }}` doit produire un JSON conforme au schéma officiel."""
+
+    def test_{{ cmd.name|replace('-', '_') }}_required_fields(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--output", "json"])
+        payload = json.loads(result.stdout)
+        for field in ("status", "skill_name", "skill_version", "timestamp", "output"):
+            assert field in payload, f"Champ obligatoire manquant : {field}"
+        assert payload["status"] in VALID_STATUSES
+
+    def test_{{ cmd.name|replace('-', '_') }}_skill_name(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--output", "json"])
+        payload = json.loads(result.stdout)
+        assert payload["skill_name"] == f"{CLI_NAME}.{{ cmd.name }}"
+
+    def test_{{ cmd.name|replace('-', '_') }}_version_format(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--output", "json"])
+        payload = json.loads(result.stdout)
+        assert re.match(r"^\d+\.\d+\.\d+$", payload["skill_version"])
+
+    def test_{{ cmd.name|replace('-', '_') }}_summary_present(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--output", "json"])
+        payload = json.loads(result.stdout)
+        summary = payload["output"]["summary"]
+        assert isinstance(summary, str)
+        assert 0 < len(summary) <= 500
+
+    def test_{{ cmd.name|replace('-', '_') }}_stdout_clean_json(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--output", "json"])
+        json.loads(result.stdout)
+
+{% if cmd.has_dry_run %}
+    def test_{{ cmd.name|replace('-', '_') }}_dry_run_status(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["{{ cmd.name }}", "--dry-run", "--output", "json"])
+        payload = json.loads(result.stdout)
+        assert payload["status"] == "dry_run"
+        assert "dry_run_report" in payload
+{% endif %}
+
+
+{% endfor %}
+# ---------------------------------------------------------------------------
+# Contrat sécurité
+# ---------------------------------------------------------------------------
+
+class TestNoSecretsLeaked:
+    FORBIDDEN_PATTERNS = ["PRIVATE KEY", "BEGIN RSA", "api_key=", "password=",
+                          "ghp_", "sk-ant-"]
+
+    @pytest.mark.parametrize("command_args", [
+        ["--help"], ["--version"],
+        {% for cmd in commands %}["{{ cmd.name }}", "--output", "json"],
+        {% endfor %}
+    ])
+    def test_no_secret_in_output(self, runner: CliRunner, command_args: list[str]) -> None:
+        result = runner.invoke(app, command_args)
+        combined = (result.stdout or "") + (result.stderr or "")
+        for pattern in self.FORBIDDEN_PATTERNS:
+            assert pattern not in combined
+
+
+# ---------------------------------------------------------------------------
+# Contrat exit codes
+# ---------------------------------------------------------------------------
+
+class TestExitCodes:
+    def test_unknown_command_returns_code_2(self, runner: CliRunner) -> None:
+        result = runner.invoke(app, ["commande-inexistante"])
+        assert result.exit_code == 2
