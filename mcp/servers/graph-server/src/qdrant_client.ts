@@ -1,15 +1,14 @@
 /**
  * TricorderKit — graph-server
  * Qdrant Client — wrapper pour embedding + vector search
+ * Embedding : Ollama / nomic-embed-text (local, zéro coût, 768 dims)
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-import OpenAI from 'openai';
 
-const VECTOR_SIZE = 1536; // text-embedding-3-small
+const VECTOR_SIZE = 768;     // nomic-embed-text
 const DISTANCE    = 'Cosine';
 
-// Collections = 1 par type de nœud (voir graph.schema.json)
 const NODE_COLLECTIONS = [
   'concepts', 'entities', 'tasks', 'skills',
   'agents', 'sources', 'sessions', 'decisions',
@@ -34,22 +33,39 @@ export interface VectorSearchResult {
   payload: Record<string, unknown>;
 }
 
-// ─── Qdrant Client ──────────────────────────────────────────────────────────
+// ─── Ollama embed ────────────────────────────────────────────────────────────
+
+async function ollamaEmbed(text: string): Promise<number[]> {
+  const ollamaUrl  = process.env.OLLAMA_URL    ?? 'http://localhost:11434';
+  const model      = process.env.EMBEDDING_MODEL ?? 'nomic-embed-text';
+
+  const res = await fetch(`${ollamaUrl}/api/embeddings`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ model, prompt: text }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Ollama embed error ${res.status}: ${await res.text()}`);
+  }
+
+  const data = await res.json() as { embedding: number[] };
+  return data.embedding;
+}
+
+// ─── Qdrant Client ───────────────────────────────────────────────────────────
 
 export class TKQdrantClient {
   private qdrant: QdrantClient;
-  private openai: OpenAI;
 
   constructor(
-    qdrantUrl: string  = process.env.QDRANT_URL      ?? 'http://localhost:6333',
-    qdrantKey: string  = process.env.QDRANT_API_KEY  ?? '',
-    openaiKey: string  = process.env.OPENAI_API_KEY  ?? ''
+    qdrantUrl: string = process.env.QDRANT_URL     ?? 'http://localhost:6333',
+    qdrantKey: string = process.env.QDRANT_API_KEY ?? ''
   ) {
     this.qdrant = new QdrantClient({
       url: qdrantUrl,
       ...(qdrantKey ? { apiKey: qdrantKey } : {}),
     });
-    this.openai = new OpenAI({ apiKey: openaiKey });
   }
 
   async ping(): Promise<boolean> {
@@ -61,10 +77,10 @@ export class TKQdrantClient {
     }
   }
 
-  // ── Initialiser les collections ─────────────────────────────────────────
+  // ── Initialiser les collections ──────────────────────────────────────────
 
   async ensureCollections(): Promise<void> {
-    const existing = await this.qdrant.getCollections();
+    const existing     = await this.qdrant.getCollections();
     const existingNames = existing.collections.map((c) => c.name);
 
     for (const name of NODE_COLLECTIONS) {
@@ -76,14 +92,10 @@ export class TKQdrantClient {
     }
   }
 
-  // ── Embedding ────────────────────────────────────────────────────────────
+  // ── Embedding (Ollama) ───────────────────────────────────────────────────
 
   async embed(text: string): Promise<number[]> {
-    const response = await this.openai.embeddings.create({
-      model: process.env.EMBEDDING_MODEL ?? 'text-embedding-3-small',
-      input: text,
-    });
-    return response.data[0].embedding;
+    return ollamaEmbed(text);
   }
 
   // ── Upsert vecteur ───────────────────────────────────────────────────────
@@ -114,7 +126,7 @@ export class TKQdrantClient {
     limit: number = 10,
     minScore: number = 0.5
   ): Promise<VectorSearchResult[]> {
-    const vector = await this.embed(query);
+    const vector      = await this.embed(query);
     const collections =
       nodeTypes.length > 0
         ? nodeTypes.map((t) => TYPE_TO_COLLECTION[t]).filter(Boolean)
@@ -132,8 +144,8 @@ export class TKQdrantClient {
         });
         for (const r of res) {
           allResults.push({
-            id: String(r.id),
-            score: r.score,
+            id:      String(r.id),
+            score:   r.score,
             payload: (r.payload ?? {}) as Record<string, unknown>,
           });
         }
@@ -149,11 +161,7 @@ export class TKQdrantClient {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  // Qdrant accepte UUIDs ou entiers — on hash le node_id en entier unsigned 64
-  // Implémentation simplifiée : on utilise le string directement via payload
   private toQdrantId(nodeId: string): string {
-    // Qdrant accepte les strings UUID v4 et les entiers.
-    // On padde en UUID-like pour compatibilité maximale.
     const padded = nodeId.replace(/-/g, '').padEnd(32, '0').slice(0, 32);
     return [
       padded.slice(0, 8),
