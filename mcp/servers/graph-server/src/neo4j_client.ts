@@ -3,7 +3,7 @@
  * Neo4j Client — wrapper driver pour les opérations graph
  */
 
-import neo4j, { Driver, Session } from 'neo4j-driver';
+import neo4j, { Driver } from 'neo4j-driver';
 
 export interface Neo4jNode {
   id: string;
@@ -29,13 +29,30 @@ export interface Neo4jRelationship {
   metadata?: Record<string, unknown>;
 }
 
-export interface GraphQueryResult {
-  nodes: Neo4jNode[];
-  relationships: Neo4jRelationship[];
-  raw: unknown[];
+// ─── Sanitize ────────────────────────────────────────────────────────────────
+// Neo4j n'accepte que les primitives et tableaux de primitives.
+// On convertit les objets imbriqués en JSON string.
+
+function sanitizeProps(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val === null || val === undefined) continue;
+    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+      result[key] = val;
+    } else if (Array.isArray(val)) {
+      // Tableaux de primitives uniquement — on sérialise les éléments objets
+      result[key] = val.map((v) =>
+        typeof v === 'object' && v !== null ? JSON.stringify(v) : v
+      );
+    } else if (typeof val === 'object') {
+      // Objet imbriqué → JSON string
+      result[key] = JSON.stringify(val);
+    }
+  }
+  return result;
 }
 
-// ─── Client ────────────────────────────────────────────────────────────────
+// ─── Client ──────────────────────────────────────────────────────────────────
 
 export class Neo4jClient {
   private driver: Driver;
@@ -65,15 +82,15 @@ export class Neo4jClient {
   async upsertNode(node: Neo4jNode): Promise<void> {
     const session = this.driver.session();
     try {
-      // MERGE sur l'ID — idempotent
+      const { id, type, ...rest } = node;
+      const props = sanitizeProps({ id, type, ...rest });
       const query = `
         MERGE (n:TKNode { id: $id })
         SET n += $props
-        SET n:${node.type}
+        SET n:${type}
         RETURN n
       `;
-      const { id, type, ...rest } = node;
-      await session.run(query, { id, props: { id, type, ...rest } });
+      await session.run(query, { id, props });
     } finally {
       await session.close();
     }
@@ -84,19 +101,20 @@ export class Neo4jClient {
   async upsertRelationship(rel: Neo4jRelationship): Promise<void> {
     const session = this.driver.session();
     try {
+      const { from_id, to_id, rel_type, metadata, ...rest } = rel;
+      const props = sanitizeProps({
+        created_at: new Date().toISOString(),
+        ...rest,
+        ...(metadata ?? {}),
+      });
       const query = `
         MATCH (a:TKNode { id: $from_id })
         MATCH (b:TKNode { id: $to_id })
-        MERGE (a)-[r:${rel.rel_type}]->(b)
+        MERGE (a)-[r:${rel_type}]->(b)
         SET r += $props
         RETURN r
       `;
-      const { from_id, to_id, rel_type, ...props } = rel;
-      await session.run(query, {
-        from_id,
-        to_id,
-        props: { created_at: new Date().toISOString(), ...props },
-      });
+      await session.run(query, { from_id, to_id, props });
     } finally {
       await session.close();
     }
@@ -133,7 +151,7 @@ export class Neo4jClient {
     }
   }
 
-  // ── Requête par IDs (pour merge avec résultats Qdrant) ──────────────────
+  // ── Requête par IDs ──────────────────────────────────────────────────────
 
   async getNodesByIds(ids: string[]): Promise<Neo4jNode[]> {
     if (ids.length === 0) return [];
