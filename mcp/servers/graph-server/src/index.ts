@@ -1,12 +1,6 @@
 /**
  * TricorderKit — graph-server
  * Serveur MCP stdio — 4 outils graphify
- *
- * Outils :
- *   graphify_ping      → connectivité Neo4j + Qdrant
- *   graphify_store     → écrire un nœud (Neo4j + Qdrant)
- *   graphify_relate    → créer une relation Neo4j
- *   graphify_retrieve  → requête hybride (graph + vector)
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -16,12 +10,8 @@ import { z } from 'zod';
 import { Neo4jClient } from './neo4j_client.js';
 import { TKQdrantClient } from './qdrant_client.js';
 
-// ─── Clients ────────────────────────────────────────────────────────────────
-
 const neo4j  = new Neo4jClient();
 const qdrant = new TKQdrantClient();
-
-// ─── Schémas Zod (alignés sur core/contracts/graph.schema.json) ─────────────
 
 const NODE_TYPES = [
   'Concept', 'Entity', 'Task', 'Skill',
@@ -34,16 +24,16 @@ const REL_TYPES = [
 ] as const;
 
 const NodeWriteSchema = z.object({
-  id:          z.string().min(3).max(64).regex(/^[a-z][a-z0-9_-]+$/),
-  type:        z.enum(NODE_TYPES),
-  title:       z.string().max(256),
-  content:     z.string().optional(),
-  tags:        z.array(z.string()).optional(),
-  source_url:  z.string().url().optional(),
-  confidence:  z.number().min(0).max(1).optional(),
-  created_by:  z.string().optional(),
-  session_id:  z.string().optional(),
-  extra:       z.record(z.unknown()).optional(),
+  id:         z.string().min(3).max(64).regex(/^[a-z][a-z0-9_-]+$/),
+  type:       z.enum(NODE_TYPES),
+  title:      z.string().max(256),
+  content:    z.string().optional(),
+  tags:       z.array(z.string()).optional(),
+  source_url: z.string().url().optional(),
+  confidence: z.number().min(0).max(1).optional(),
+  created_by: z.string().optional(),
+  session_id: z.string().optional(),
+  extra:      z.record(z.unknown()).optional(),
 });
 
 const RelWriteSchema = z.object({
@@ -62,198 +52,173 @@ const RetrieveSchema = z.object({
   node_types: z.array(z.enum(NODE_TYPES)).optional(),
 });
 
+// ─── Helper log ──────────────────────────────────────────────────────────────
+function log(msg: string): void {
+  process.stderr.write(`[graph-server] ${msg}\n`);
+}
+
+function errResult(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  log(`ERROR: ${msg}`);
+  return {
+    content: [{ type: 'text' as const, text: JSON.stringify({ status: 'error', error: msg }) }],
+    isError: true,
+  };
+}
+
 // ─── Serveur MCP ─────────────────────────────────────────────────────────────
 
-const server = new McpServer({
-  name:    'graph-server',
-  version: '0.1.0',
-});
+const server = new McpServer({ name: 'graph-server', version: '0.1.0' });
 
-// ── Tool : graphify_ping ────────────────────────────────────────────────────
+// ── graphify_ping ─────────────────────────────────────────────────────────────
 
 server.tool(
   'graphify_ping',
-  'Vérifie la connectivité de Neo4j et Qdrant. Retourne un objet { neo4j: bool, qdrant: bool, ok: bool }.',
+  'Vérifie la connectivité de Neo4j et Qdrant.',
   {},
   async () => {
-    const [neo4jOk, qdrantOk] = await Promise.all([
-      neo4j.ping(),
-      qdrant.ping(),
-    ]);
-    const ok = neo4jOk && qdrantOk;
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({ neo4j: neo4jOk, qdrant: qdrantOk, ok }),
-      }],
-      isError: !ok,
-    };
+    try {
+      const [neo4jOk, qdrantOk] = await Promise.all([neo4j.ping(), qdrant.ping()]);
+      const ok = neo4jOk && qdrantOk;
+      log(`ping — neo4j:${neo4jOk} qdrant:${qdrantOk}`);
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ neo4j: neo4jOk, qdrant: qdrantOk, ok }) }],
+        isError: !ok,
+      };
+    } catch (err) { return errResult(err); }
   }
 );
 
-// ── Tool : graphify_store ───────────────────────────────────────────────────
+// ── graphify_store ────────────────────────────────────────────────────────────
 
 server.tool(
   'graphify_store',
   'Écrit un nœud dans Neo4j ET génère son embedding dans Qdrant. Idempotent (MERGE sur id).',
   {
-    id:         z.string().describe('Identifiant unique du nœud — minuscules, tirets autorisés (ex: dec-008-langgraph)'),
-    type:       z.enum(NODE_TYPES).describe('Type de nœud : Concept | Entity | Task | Skill | Agent | Source | Session | Decision'),
-    title:      z.string().describe('Titre court du nœud (max 256 chars)'),
-    content:    z.string().optional().describe('Contenu textuel principal — utilisé pour l\'embedding Qdrant'),
+    id:         z.string().describe('Identifiant unique — minuscules, tirets autorisés (ex: dec-008-langgraph)'),
+    type:       z.enum(NODE_TYPES).describe('Type : Concept | Entity | Task | Skill | Agent | Source | Session | Decision'),
+    title:      z.string().describe('Titre court (max 256 chars)'),
+    content:    z.string().optional().describe('Contenu textuel — utilisé pour l\'embedding'),
     tags:       z.array(z.string()).optional().describe('Tags libres'),
-    source_url: z.string().optional().describe('URL source (optionnelle)'),
+    source_url: z.string().optional().describe('URL source'),
     confidence: z.number().optional().describe('Score de confiance 0-1'),
-    created_by: z.string().optional().describe('Agent ou skill auteur (ex: mainbrain, deep-research-core)'),
-    session_id: z.string().optional().describe('ID de la session d\'origine'),
-    extra:      z.record(z.unknown()).optional().describe('Champs métier spécifiques au type (ex: decision_id, status, impact)'),
+    created_by: z.string().optional().describe('Agent auteur'),
+    session_id: z.string().optional().describe('ID session d\'origine'),
+    extra:      z.record(z.unknown()).optional().describe('Champs métier additionnels'),
   },
   async (args) => {
-    const parsed = NodeWriteSchema.parse(args);
-    const now = new Date().toISOString();
-    const node = {
-      ...parsed,
-      created_at: now,
-      updated_at: now,
-      ...(parsed.extra ?? {}),
-    };
+    try {
+      log(`graphify_store called — id:${args.id} type:${args.type}`);
+      const parsed = NodeWriteSchema.parse(args);
+      const now    = new Date().toISOString();
+      const node   = { ...parsed, created_at: now, updated_at: now, ...(parsed.extra ?? {}) };
 
-    // Écriture Neo4j
-    await neo4j.upsertNode(node);
+      log('writing to Neo4j...');
+      await neo4j.upsertNode(node);
+      log('Neo4j OK');
 
-    // Embedding Qdrant (sur title + content)
-    const textToEmbed = [parsed.title, parsed.content].filter(Boolean).join(' — ');
-    await qdrant.upsertVector(parsed.id, parsed.type, textToEmbed, {
-      id: parsed.id,
-      type: parsed.type,
-      title: parsed.title,
-      tags: parsed.tags ?? [],
-      created_at: now,
-    });
+      const textToEmbed = [parsed.title, parsed.content].filter(Boolean).join(' — ');
+      log(`embedding: "${textToEmbed.slice(0, 60)}..."`);
+      await qdrant.upsertVector(parsed.id, parsed.type, textToEmbed, {
+        id: parsed.id, type: parsed.type, title: parsed.title,
+        tags: parsed.tags ?? [], created_at: now,
+      });
+      log('Qdrant OK');
 
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          status: 'success',
-          id: parsed.id,
-          type: parsed.type,
-          neo4j: 'upserted',
-          qdrant: 'indexed',
-          timestamp: now,
-        }),
-      }],
-    };
+      return {
+        content: [{ type: 'text', text: JSON.stringify({
+          status: 'success', id: parsed.id, type: parsed.type,
+          neo4j: 'upserted', qdrant: 'indexed', timestamp: now,
+        })}],
+      };
+    } catch (err) { return errResult(err); }
   }
 );
 
-// ── Tool : graphify_relate ──────────────────────────────────────────────────
+// ── graphify_relate ───────────────────────────────────────────────────────────
 
 server.tool(
   'graphify_relate',
-  'Crée une relation typée entre deux nœuds existants dans Neo4j. Idempotent (MERGE).',
+  'Crée une relation typée entre deux nœuds Neo4j. Idempotent (MERGE).',
   {
-    from_id:  z.string().describe('ID du nœud source'),
-    rel_type: z.enum(REL_TYPES).describe('Type de relation : RELATES_TO | DEPENDS_ON | PRODUCES | CONSUMES | REFERENCES | DERIVED_FROM | PART_OF | IMPLEMENTS | DISCOVERED_IN'),
-    to_id:    z.string().describe('ID du nœud cible'),
-    weight:   z.number().optional().describe('Force de la relation 0-1 (optionnel)'),
-    metadata: z.record(z.unknown()).optional().describe('Propriétés libres sur la relation'),
+    from_id:  z.string().describe('ID nœud source'),
+    rel_type: z.enum(REL_TYPES).describe('Type de relation'),
+    to_id:    z.string().describe('ID nœud cible'),
+    weight:   z.number().optional().describe('Force 0-1'),
+    metadata: z.record(z.unknown()).optional().describe('Propriétés libres'),
   },
   async (args) => {
-    const parsed = RelWriteSchema.parse(args);
-    await neo4j.upsertRelationship(parsed);
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          status: 'success',
-          from_id: parsed.from_id,
-          rel_type: parsed.rel_type,
-          to_id: parsed.to_id,
+    try {
+      log(`graphify_relate — ${args.from_id} -[${args.rel_type}]-> ${args.to_id}`);
+      const parsed = RelWriteSchema.parse(args);
+      await neo4j.upsertRelationship(parsed);
+      return {
+        content: [{ type: 'text', text: JSON.stringify({
+          status: 'success', from_id: parsed.from_id,
+          rel_type: parsed.rel_type, to_id: parsed.to_id,
           timestamp: new Date().toISOString(),
-        }),
-      }],
-    };
+        })}],
+      };
+    } catch (err) { return errResult(err); }
   }
 );
 
-// ── Tool : graphify_retrieve ────────────────────────────────────────────────
+// ── graphify_retrieve ─────────────────────────────────────────────────────────
 
 server.tool(
   'graphify_retrieve',
-  'Requête hybride sur le knowledge graph. Mode hybrid = Neo4j keyword + Qdrant vector en parallèle, résultats fusionnés et rankés par score.',
+  'Requête hybride Neo4j + Qdrant, résultats fusionnés par score.',
   {
     query:      z.string().describe('Requête en langage naturel'),
-    mode:       z.enum(['hybrid', 'graph', 'vector']).optional().describe('Mode de recherche : hybrid (défaut) | graph (Neo4j seul) | vector (Qdrant seul)'),
-    limit:      z.number().optional().describe('Nombre maximum de résultats (défaut 10, max 100)'),
-    min_score:  z.number().optional().describe('Score minimum de similarité 0-1 pour le mode vector (défaut 0.5)'),
-    node_types: z.array(z.enum(NODE_TYPES)).optional().describe('Filtrer par types de nœuds (optionnel)'),
+    mode:       z.enum(['hybrid', 'graph', 'vector']).optional().describe('hybrid | graph | vector'),
+    limit:      z.number().optional().describe('Max résultats (défaut 10)'),
+    min_score:  z.number().optional().describe('Score minimum 0-1 (défaut 0.5)'),
+    node_types: z.array(z.enum(NODE_TYPES)).optional().describe('Filtrer par types'),
   },
   async (args) => {
-    const parsed = RetrieveSchema.parse(args);
-    const { query, mode, limit, min_score, node_types } = parsed;
+    try {
+      log(`graphify_retrieve — "${args.query}" mode:${args.mode ?? 'hybrid'}`);
+      const parsed = RetrieveSchema.parse(args);
+      const { query, mode, limit, min_score, node_types } = parsed;
 
-    const graphResults =
-      mode !== 'vector'
-        ? await neo4j.queryByKeyword(query, node_types ?? [], limit)
-        : [];
+      const graphResults = mode !== 'vector'
+        ? await neo4j.queryByKeyword(query, node_types ?? [], limit) : [];
+      const vectorResults = mode !== 'graph'
+        ? await qdrant.search(query, node_types ?? [], limit, min_score) : [];
 
-    const vectorResults =
-      mode !== 'graph'
-        ? await qdrant.search(query, node_types ?? [], limit, min_score)
-        : [];
+      const vectorIds   = vectorResults.map((r) => r.id);
+      const enriched    = vectorIds.length > 0 ? await neo4j.getNodesByIds(vectorIds) : [];
+      const enrichedMap = new Map(enriched.map((n) => [n.id, n]));
+      const vectorNodes = vectorResults.map((r) => ({ ...enrichedMap.get(r.id), _score: r.score, _source: 'vector' }));
 
-    // Fusion : enrichir les résultats vector avec les données Neo4j
-    const vectorIds = vectorResults.map((r) => r.id);
-    const enriched  = vectorIds.length > 0 ? await neo4j.getNodesByIds(vectorIds) : [];
-    const enrichedMap = new Map(enriched.map((n) => [n.id, n]));
+      const seen   = new Set<string>();
+      const merged = [
+        ...graphResults.map((n) => ({ ...n, _source: 'graph', _score: 1.0 })),
+        ...vectorNodes,
+      ].filter((n) => { const id = n.id as string; if (!id || seen.has(id)) return false; seen.add(id); return true; });
 
-    const vectorNodes = vectorResults.map((r) => ({
-      ...enrichedMap.get(r.id),
-      _score: r.score,
-      _source: 'vector',
-    }));
+      merged.sort((a, b) => ((b._score as number) ?? 0) - ((a._score as number) ?? 0));
+      log(`retrieve — ${merged.length} results`);
 
-    // Merge + déduplication par id
-    const seen = new Set<string>();
-    const merged = [
-      ...graphResults.map((n) => ({ ...n, _source: 'graph', _score: 1.0 })),
-      ...vectorNodes,
-    ].filter((n) => {
-      const id = n.id as string;
-      if (!id || seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
-
-    // Tri par score décroissant
-    merged.sort((a, b) => ((b._score as number) ?? 0) - ((a._score as number) ?? 0));
-
-    return {
-      content: [{
-        type: 'text',
-        text: JSON.stringify({
-          status: 'success',
-          query,
-          mode,
-          count: merged.length,
+      return {
+        content: [{ type: 'text', text: JSON.stringify({
+          status: 'success', query, mode, count: merged.length,
           results: merged.slice(0, limit),
-        }),
-      }],
-    };
+        })}],
+      };
+    } catch (err) { return errResult(err); }
   }
 );
 
-// ─── Démarrage ───────────────────────────────────────────────────────────────
+// ─── Démarrage ────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  // Stdout réservé au protocole MCP — logs sur stderr
-  process.stderr.write('graph-server MCP démarré (stdio)\n');
+  log('graph-server MCP démarré (stdio)');
 }
 
 main().catch((err) => {
-  process.stderr.write(`graph-server erreur fatale : ${err}\n`);
+  log(`erreur fatale : ${err}`);
   process.exit(1);
 });
