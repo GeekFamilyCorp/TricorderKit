@@ -41,7 +41,9 @@ Thumbs.db
 # Reports (générés localement)
 vault/reports/*.html
 vault/reports/*.json
-
+# Install/quality/upgrade reports (générés localement, jamais commités)
+reports/
+!reports/.gitkeep
 # Logs
 *.log
 logs/

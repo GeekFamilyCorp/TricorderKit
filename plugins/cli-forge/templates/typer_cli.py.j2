@@ -1,0 +1,173 @@
+{# ===================================================================
+   Template Typer CLI — TricorderKit cli-forge
+   Conforme à core/contracts/skill_output.schema.json (DEC-005)
+   Conforme à docs/cli_forge_typer_standard.md (DEC-010)
+
+   Variables attendues :
+     cli_name           ex. "tk-installer"
+     module_name        ex. "tk_installer"
+     cli_description    ex. "TricorderKit phased installer"
+     cli_version        ex. "0.1.0"
+     commands           liste de dicts {name, help, has_dry_run}
+   =================================================================== #}
+"""{{ cli_description }}.
+
+CLI conforme au standard Typer TricorderKit.
+- Schéma manifest : plugins/cli-forge/cli_manifest.schema.json
+- Schéma output  : core/contracts/skill_output.schema.json
+- Implémentation : docs/cli_forge_typer_standard.md
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from datetime import datetime, timezone
+from typing import Any
+
+import typer
+from rich.console import Console
+
+# ---------------------------------------------------------------------------
+# Constantes
+# ---------------------------------------------------------------------------
+
+CLI_NAME = "{{ cli_name }}"
+CLI_VERSION = "{{ cli_version }}"
+
+# Exit codes (cf. standard §2.6)
+EXIT_OK = 0
+EXIT_BUSINESS_ERROR = 1
+EXIT_ENV_KO = 3
+EXIT_GATE_BLOCKED = 4
+EXIT_CONFLICT = 5
+
+# Statuts conformes skill_output.schema.json
+VALID_STATUSES = {"success", "partial", "error", "dry_run"}
+
+
+# ---------------------------------------------------------------------------
+# App Typer
+# ---------------------------------------------------------------------------
+
+app = typer.Typer(
+    name=CLI_NAME,
+    help="{{ cli_description }}",
+    no_args_is_help=True,
+    add_completion=False,
+)
+
+console = Console(stderr=True)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _now_iso_utc_z() -> str:
+    """ISO 8601 UTC avec suffixe Z."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def emit_result(
+    command: str,
+    status: str,
+    summary: str,
+    data: dict[str, Any] | None = None,
+    files_created: list[str] | None = None,
+    next_steps: list[str] | None = None,
+    error_details: dict[str, Any] | None = None,
+    dry_run_report: dict[str, Any] | None = None,
+    output_format: str = "pretty",
+    duration_ms: int = 0,
+) -> int:
+    """Émet un payload conforme à skill_output.schema.json."""
+    if status not in VALID_STATUSES:
+        raise ValueError(f"Statut invalide : {status!r}")
+    if len(summary) > 500:
+        summary = summary[:497] + "..."
+
+    payload: dict[str, Any] = {
+        "status": status,
+        "skill_name": f"{CLI_NAME}.{command}",
+        "skill_version": CLI_VERSION,
+        "timestamp": _now_iso_utc_z(),
+        "duration_ms": duration_ms,
+        "output": {
+            "summary": summary,
+            "data": data or {},
+            "files_created": files_created or [],
+            "next_steps": (next_steps or [])[:5],
+        },
+    }
+    if status == "error" and error_details:
+        payload["error"] = error_details
+    if status == "dry_run" and dry_run_report:
+        payload["dry_run_report"] = dry_run_report
+
+    if output_format == "json":
+        sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2))
+        sys.stdout.write("\n")
+    else:
+        color = {"success": "green", "partial": "yellow",
+                 "error": "red", "dry_run": "cyan"}[status]
+        console.print(f"[{color}]{command} → {status}[/{color}]")
+        console.print(summary)
+        if next_steps:
+            console.print("[cyan]Prochaines étapes :[/cyan]")
+            for s in next_steps[:5]:
+                console.print(f"  • {s}")
+
+    return EXIT_OK if status in ("success", "dry_run") else EXIT_BUSINESS_ERROR
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"{CLI_NAME} {CLI_VERSION}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        False, "--version", callback=_version_callback, is_eager=True,
+        help="Affiche la version et quitte.",
+    ),
+) -> None:
+    """Point d'entrée racine."""
+
+
+# ---------------------------------------------------------------------------
+# Commandes
+# ---------------------------------------------------------------------------
+
+{% for cmd in commands %}
+@app.command("{{ cmd.name }}")
+def {{ cmd.name|replace('-', '_') }}(
+    output: str = typer.Option("pretty", "--output", "-o",
+        help="Format de sortie : pretty ou json."),{% if cmd.has_dry_run %}
+    dry_run: bool = typer.Option(False, "--dry-run",
+        help="N'écrit rien sur disque, liste les actions."),
+    force: bool = typer.Option(False, "--force",
+        help="Écrase les fichiers existants (avec backup)."),{% endif %}
+) -> None:
+    """{{ cmd.help }}"""
+    # TODO: implémenter la logique métier
+    exit_code = emit_result(
+        command="{{ cmd.name }}",
+        status="success",
+        summary="Commande {{ cmd.name }} non encore implémentée.",
+        data={"message": "stub"},
+        next_steps=["Implémenter la logique dans {{ module_name }}.py"],
+        output_format=output,
+    )
+    raise typer.Exit(code=exit_code)
+
+
+{% endfor %}
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    app()

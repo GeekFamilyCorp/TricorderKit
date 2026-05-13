@@ -1,0 +1,84 @@
+# Manifest du plugin cli-forge
+# Source d'autorité : docs/cli_forge_typer_standard.md (DEC-010)
+# Schémas de référence :
+#   - plugins/cli-forge/cli_manifest.schema.json (manifest CLI)
+#   - core/contracts/skill_output.schema.json    (output, DEC-005)
+
+name: cli-forge
+version: 0.2.0
+description: >
+  Module central de TricorderKit pour créer, maintenir, tester et référencer
+  les CLIs déterministes utilisables par agents IA. Standard Typer (DEC-010).
+author: GeekFamilyCorp
+license: TBD
+status: prototype
+phase: phase_2_cli_forge
+
+standards:
+  cli_framework:
+    default: typer
+    legacy_allowed:
+      - argparse
+    required_for_new_cli:
+      - typer_app_exported
+      - dry_run_supported
+      - json_output_conforms_skill_schema
+      - cli_runner_tests
+      - manifest_validates_against_cli_manifest_schema
+
+  output_contract:
+    schema: core/contracts/skill_output.schema.json
+    required_fields:
+      - status
+      - skill_name
+      - skill_version
+      - timestamp
+      - output.summary
+    status_values:
+      - success
+      - partial
+      - error
+      - dry_run
+
+  manifest_contract:
+    schema: plugins/cli-forge/cli_manifest.schema.json
+    validator: plugins/cli-forge/scripts/validate_cli_manifest.py
+
+  exit_codes:
+    success: 0
+    business_error: 1
+    cli_misuse: 2
+    environment_ko: 3
+    gate_blocked: 4
+    conflict: 5
+
+  security:
+    no_secret_in_output: true
+    no_interactive_input: true
+    anti_overwrite_without_force: true
+
+artifacts:
+  documentation: docs/cli_forge_typer_standard.md
+  templates:
+    - plugins/cli-forge/templates/typer_cli.py.j2
+    - plugins/cli-forge/templates/typer_test.py.j2
+  registry: plugins/cli-forge/registry.yml
+  skill: plugins/cli-forge/SKILL.md
+  schemas:
+    - plugins/cli-forge/cli_manifest.schema.json
+    - core/contracts/skill_output.schema.json
+
+tests:
+  contracts_dir: tests/cli_contracts/
+  reference_test: tests/cli_contracts/test_tk_installer.py
+  required_test_classes:
+    - TestContractHelp
+    - TestContractVersion
+    - TestSchema*
+    - TestNoSecretsLeaked
+    - TestExitCodes
+
+token_hygiene:
+  reuse_first: true
+  minimal_patch_rule: true
+  json_output_preferred_for_agents: true

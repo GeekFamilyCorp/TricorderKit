@@ -1,0 +1,28 @@
+# install_profile.yml - INSTALL_TRICORDERKIT_PHASED_v0.8 section 6
+version: "0.8"
+
+install_mode: "local_first"
+target_platform: "windows_or_vps"
+self_hosting: true
+docker_required_for_phase_3: true
+
+policy:
+  no_duplicate_services: true
+  no_core_replacement_without_decision: true
+  no_auto_fix_without_human_validation: true
+  no_secret_in_repo: true
+  no_stub_as_real_file: true
+
+preferred_tools:
+  cli_framework: "typer"
+  scanner_static: "semgrep"
+  scanner_container: "trivy"
+  scanner_secrets: "gitleaks"
+  memory_db: "sqlite"
+  reports: "markdown_json"
+
+optional_tools:
+  workflow_engine: "temporal"
+  vector_db: "qdrant"
+  graph_db: "neo4j"
+  observability: "langfuse"
