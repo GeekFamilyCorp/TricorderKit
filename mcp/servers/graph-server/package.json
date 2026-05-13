@@ -2,12 +2,13 @@
   "name": "@tricorderkit/graph-server",
   "version": "0.1.0",
   "description": "MCP server — Neo4j + Qdrant knowledge graph for TricorderKit",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "ts-node --esm src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
