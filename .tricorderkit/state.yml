@@ -1,0 +1,55 @@
+# TricorderKit state - INSTALL_TRICORDERKIT_PHASED_v0.8 section 4
+# Cohabite avec vault_optimizer.config.json dans .tricorderkit/
+version: "0.8"
+project: "TricorderKit"
+install_status: "partial"
+last_check: "2026-05-13"
+last_installer_run: "2026-05-13_phase2_consolidation"
+
+environment:
+  os: "windows"
+  python: "Python 3.14.4"
+  docker: "Docker version 29.4.2, build 055a478"
+  docker_compose: null
+  git: "git version 2.54.0.windows.1"
+  node: "v24.15.0"
+
+phases:
+  phase_0_bootstrap: { status: done, verified: true }
+  phase_1_repo_health: { status: done, verified: true }
+  phase_2_cli_forge:
+    status: done
+    verified: true
+    verified_at: "2026-05-13"
+    tests_passing: 21
+    tests_path: "tests/cli_contracts/test_tk_installer.py"
+    notes: >
+      Consolidation Phase 2 — alignée sur core/contracts/skill_output.schema.json
+      (DEC-005) et plugins/cli-forge/cli_manifest.schema.json. Standard Typer
+      documenté dans docs/cli_forge_typer_standard.md (DEC-010).
+  phase_25_quality_guard: { status: pending, verified: false }
+  phase_3_workflows:
+    status: blocked
+    verified: false
+    blocked_by: [phase_2_cli_forge, phase_25_quality_guard]
+    notes: >
+      Note v0.7 : Phase 3 RAG/Graphify déjà active côté distant (plugins/graphify
+      v0.1 scaffold). Le blocage v0.8 est nominal — la roadmap réelle est en
+      Phase 3.
+  phase_4_deep_research:
+    status: blocked
+    verified: false
+    blocked_by: [phase_3_workflows]
+  phase_5_quality_loop:
+    status: blocked
+    verified: false
+    blocked_by: [phase_25_quality_guard]
+
+modules:
+  tk_installer: { status: prototype }
+  cli_forge: { status: prototype }
+  quality_guard: { status: pending }
+  workflow_engine: { status: pending }
+  deep_research_core: { status: pending }
+  security_auditor: { status: pending }
+  graphify: { status: prototype, source: distant_v0_7 }
