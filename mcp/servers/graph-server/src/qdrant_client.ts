@@ -2,11 +2,12 @@
  * TricorderKit — graph-server
  * Qdrant Client — wrapper pour embedding + vector search
  * Embedding : Ollama / nomic-embed-text (local, zéro coût, 768 dims)
+ * Ollama >= 0.1.26 : POST /api/embed { model, input } → { embeddings: number[][] }
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
 
-const VECTOR_SIZE = 768;     // nomic-embed-text
+const VECTOR_SIZE = 768;
 const DISTANCE    = 'Cosine';
 
 const NODE_COLLECTIONS = [
@@ -33,27 +34,23 @@ export interface VectorSearchResult {
   payload: Record<string, unknown>;
 }
 
-// ─── Ollama embed ────────────────────────────────────────────────────────────
-
 async function ollamaEmbed(text: string): Promise<number[]> {
-  const ollamaUrl  = process.env.OLLAMA_URL    ?? 'http://localhost:11434';
-  const model      = process.env.EMBEDDING_MODEL ?? 'nomic-embed-text';
+  const ollamaUrl = process.env.OLLAMA_URL      ?? 'http://localhost:11434';
+  const model     = process.env.EMBEDDING_MODEL ?? 'nomic-embed-text';
 
-  const res = await fetch(`${ollamaUrl}/api/embeddings`, {
+  const res = await fetch(`${ollamaUrl}/api/embed`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ model, prompt: text }),
+    body:    JSON.stringify({ model, input: text }),
   });
 
   if (!res.ok) {
     throw new Error(`Ollama embed error ${res.status}: ${await res.text()}`);
   }
 
-  const data = await res.json() as { embedding: number[] };
-  return data.embedding;
+  const data = await res.json() as { embeddings: number[][] };
+  return data.embeddings[0];
 }
-
-// ─── Qdrant Client ───────────────────────────────────────────────────────────
 
 export class TKQdrantClient {
   private qdrant: QdrantClient;
@@ -77,12 +74,9 @@ export class TKQdrantClient {
     }
   }
 
-  // ── Initialiser les collections ──────────────────────────────────────────
-
   async ensureCollections(): Promise<void> {
-    const existing     = await this.qdrant.getCollections();
+    const existing      = await this.qdrant.getCollections();
     const existingNames = existing.collections.map((c) => c.name);
-
     for (const name of NODE_COLLECTIONS) {
       if (!existingNames.includes(name)) {
         await this.qdrant.createCollection(name, {
@@ -92,13 +86,9 @@ export class TKQdrantClient {
     }
   }
 
-  // ── Embedding (Ollama) ───────────────────────────────────────────────────
-
   async embed(text: string): Promise<number[]> {
     return ollamaEmbed(text);
   }
-
-  // ── Upsert vecteur ───────────────────────────────────────────────────────
 
   async upsertVector(
     nodeId: string,
@@ -107,18 +97,14 @@ export class TKQdrantClient {
     payload: Record<string, unknown>
   ): Promise<void> {
     const collection = TYPE_TO_COLLECTION[nodeType];
-    if (!collection) throw new Error(`Type de nœud inconnu : ${nodeType}`);
-
+    if (!collection) throw new Error(`Type de noeud inconnu : ${nodeType}`);
     await this.ensureCollections();
     const vector = await this.embed(textToEmbed);
-
     await this.qdrant.upsert(collection, {
       wait: true,
       points: [{ id: this.toQdrantId(nodeId), vector, payload }],
     });
   }
-
-  // ── Recherche sémantique ─────────────────────────────────────────────────
 
   async search(
     query: string,
@@ -131,44 +117,22 @@ export class TKQdrantClient {
       nodeTypes.length > 0
         ? nodeTypes.map((t) => TYPE_TO_COLLECTION[t]).filter(Boolean)
         : [...NODE_COLLECTIONS];
-
     const allResults: VectorSearchResult[] = [];
-
     for (const collection of collections) {
       try {
         const res = await this.qdrant.search(collection as string, {
-          vector,
-          limit,
-          score_threshold: minScore,
-          with_payload: true,
+          vector, limit, score_threshold: minScore, with_payload: true,
         });
         for (const r of res) {
-          allResults.push({
-            id:      String(r.id),
-            score:   r.score,
-            payload: (r.payload ?? {}) as Record<string, unknown>,
-          });
+          allResults.push({ id: String(r.id), score: r.score, payload: (r.payload ?? {}) as Record<string, unknown> });
         }
-      } catch {
-        // Collection vide ou inexistante — on ignore
-      }
+      } catch { /* collection vide */ }
     }
-
-    return allResults
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    return allResults.sort((a, b) => b.score - a.score).slice(0, limit);
   }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
 
   private toQdrantId(nodeId: string): string {
     const padded = nodeId.replace(/-/g, '').padEnd(32, '0').slice(0, 32);
-    return [
-      padded.slice(0, 8),
-      padded.slice(8, 12),
-      padded.slice(12, 16),
-      padded.slice(16, 20),
-      padded.slice(20, 32),
-    ].join('-');
+    return [padded.slice(0,8), padded.slice(8,12), padded.slice(12,16), padded.slice(16,20), padded.slice(20,32)].join('-');
   }
 }
