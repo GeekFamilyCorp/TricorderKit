@@ -1,0 +1,56 @@
+{
+  "name": "graph-server",
+  "version": "0.1.0",
+  "description": "MCP server Neo4j + Qdrant — knowledge graph TricorderKit",
+  "transport": "stdio",
+  "command": "node",
+  "args": ["mcp/servers/graph-server/dist/index.js"],
+  "env_required": [
+    "NEO4J_URI",
+    "NEO4J_USER",
+    "NEO4J_PASSWORD",
+    "QDRANT_URL",
+    "OPENAI_API_KEY"
+  ],
+  "env_optional": [
+    "QDRANT_API_KEY",
+    "EMBEDDING_MODEL"
+  ],
+  "tools": [
+    {
+      "name": "graphify_ping",
+      "description": "Vérifie la connectivité Neo4j + Qdrant",
+      "input": {}
+    },
+    {
+      "name": "graphify_store",
+      "description": "Écrit un nœud dans Neo4j + Qdrant (idempotent)",
+      "input": {
+        "required": ["id", "type", "title"],
+        "optional": ["content", "tags", "source_url", "confidence", "created_by", "session_id", "extra"]
+      }
+    },
+    {
+      "name": "graphify_relate",
+      "description": "Crée une relation typée entre deux nœuds Neo4j",
+      "input": {
+        "required": ["from_id", "rel_type", "to_id"],
+        "optional": ["weight", "metadata"]
+      }
+    },
+    {
+      "name": "graphify_retrieve",
+      "description": "Requête hybride graph + vector",
+      "input": {
+        "required": ["query"],
+        "optional": ["mode", "limit", "min_score", "node_types"]
+      }
+    }
+  ],
+  "services_required": [
+    { "name": "neo4j",  "port": 7687, "docker_service": "neo4j" },
+    { "name": "qdrant", "port": 6333, "docker_service": "qdrant" }
+  ],
+  "ontology_contract": "core/contracts/graph.schema.json",
+  "status": "ready-to-build"
+}

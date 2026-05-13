@@ -1,0 +1,28 @@
+{
+  "name": "@tricorderkit/graph-server",
+  "version": "0.1.0",
+  "description": "MCP server — Neo4j + Qdrant knowledge graph for TricorderKit",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "neo4j-driver": "^5.18.0",
+    "@qdrant/js-client-rest": "^1.8.0",
+    "openai": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
