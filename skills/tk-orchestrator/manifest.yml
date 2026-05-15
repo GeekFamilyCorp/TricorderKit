@@ -1,0 +1,65 @@
+# manifest.yml — tk-orchestrator
+# Compatible cli-forge (cli_manifest.schema.json v1.0.0)
+# DEC-008 — Orchestrator-First Pattern — 15/05/2026
+
+name: tk-orchestrator
+version: "0.2.0"
+description: "Meta-skill orchestrateur — routing multi-domaine, abort-on-failure, double interface CLI/Cowork"
+source_api: "https://tricorderkit.local/tk-orchestrator"
+source_docs: "https://tricorderkit.local/docs/tk-orchestrator"
+auth_required: false
+auth_method: "none"
+output_formats:
+  - json
+  - table
+safe_commands:
+  - route
+  - chain
+  - budget-check
+  - status
+  - dry-run
+forbidden_commands: []
+dry_run: true
+cache:
+  sqlite: true
+  ttl_seconds: 300
+  offline_search: false
+rate_limit:
+  requests_per_minute: 60
+  retry_after_seconds: 5
+mcp_server:
+  generated: false
+security_status:
+  audited: false
+  prompt_injection_checked: false
+  shell_commands_checked: false
+  network_access_checked: false
+  sensitive_files_checked: false
+  notes: "Skill interne — pas d'accès réseau externe. Audit à faire avant prod_ready."
+token_budget:
+  max_per_call: 1700
+  warn_at: 1360
+
+# Paramètres étendus (hors schéma cli-forge — métadonnées supplémentaires)
+extended:
+  entrypoint: orchestrator.py
+  language: python
+  python_version: ">=3.10"
+  priority: HIGHEST
+  orchestration:
+    registry_path: plugins/cli-forge/registry.yml
+    min_cli_status: dry_run_validated
+    context_isolation: true
+    token_counting: heuristic_4chars_per_token
+    chain_max_steps: 5
+    chain_policy: abort_on_failure
+    boot_cache_aware: true
+    safety_buffer_pct: 20
+  cowork_skill:
+    skill_md: skills/tk-orchestrator/SKILL.md
+    triggers:
+      - "/tk:orchestrate"
+      - "/tk:route"
+      - "/tk:chain"
+      - "/tk:budget-check"
+    priority: HIGHEST
