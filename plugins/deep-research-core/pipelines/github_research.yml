@@ -1,0 +1,117 @@
+# github_research.yml -- Pipeline recherche GitHub TricorderKit
+# Version : 0.1.0 -- 15/05/2026
+
+name: github_research
+version: 0.1.0
+description: Pipeline recherche et audit repos GitHub -- scoring qualite, integration TricorderKit
+
+token_budget:
+  max_tokens: 15000
+  warn_at: 10000
+  on_exceeded: pause_and_notify
+
+dry_run: false
+
+defaults:
+  min_stars: 50
+  min_reliability_score: 0.75
+  max_results_per_step: 30
+  languages: [python, typescript, javascript]
+
+steps:
+
+  - id: collect_github_search
+    name: Recherche repos GitHub
+    source: trusted_sources.github[0]
+    action: search_repositories
+    params:
+      fields: [full_name, description, stars, language, topics, updated_at, license, html_url]
+      sort: stars
+      per_page: 30
+      filters:
+        min_stars: 50
+    output: raw_repos
+    on_error: abort
+    notes: "Necessite GITHUB_PERSONAL_ACCESS_TOKEN dans l'env."
+
+  - id: filter_relevant
+    name: Filtrage pertinence
+    action: filter
+    input: raw_repos
+    criteria:
+      - field: stars
+        operator: gte
+        value: 50
+      - field: updated_at
+        operator: gte
+        value: "2024-01-01"
+    output: filtered_repos
+    on_error: continue
+
+  - id: score_repos
+    name: Scoring qualite repo
+    action: score_github
+    input: filtered_repos
+    scoring_dimensions:
+      stars_weight: 0.30
+      recency_weight: 0.25
+      description_weight: 0.15
+      license_weight: 0.10
+      topics_weight: 0.10
+      source_reliability_weight: 0.10
+    min_score: 0.75
+    output: scored_repos
+
+  - id: deduplicate
+    name: Deduplication
+    action: deduplicate
+    input: scored_repos
+    strategy: full_name_exact
+    output: dedup_repos
+
+  - id: enrich_metadata
+    name: Enrichissement metadata repo
+    action: enrich_github
+    input: dedup_repos
+    enrichments:
+      - type: readme_summary
+        max_chars: 500
+      - type: last_commit_date
+      - type: open_issues_count
+      - type: has_tests
+        detect_patterns: ["tests/", "test/", "spec/", "pytest", "jest"]
+      - type: tricorderkit_compatibility
+        check_patterns:
+          mcp_server: ["mcp", "model-context-protocol", "claude"]
+          goat_cli: ["typer", "cli", "command"]
+          workflow: ["temporal", "workflow", "celery"]
+    output: enriched_repos
+
+  - id: generate_report
+    name: Generation rapport Markdown
+    action: report
+    input: enriched_repos
+    template: github_report_template
+    output_path: "vault/reports/github_research_{date}.md"
+    sections:
+      - Repos hautement recommandes (score >= 0.90)
+      - Repos compatibles TricorderKit
+      - Repos a surveiller
+      - Repos rejetes (raison)
+    include_sources: true
+    max_items_per_section: 10
+
+  - id: index_obsidian
+    name: Indexation Obsidian
+    action: write_obsidian
+    input: enriched_repos
+    vault_path: "${OBSIDIAN_VAULT_PATH}"
+    target_folder: "10_DOMAINS/github"
+    template: atomic_github_template
+    create_if_missing: true
+    update_if_exists: true
+
+output:
+  format: json
+  summary_fields: [full_name, stars, language, _reliability_score, report_path]
+  report_path: "vault/reports/github_research_{date}.md"
