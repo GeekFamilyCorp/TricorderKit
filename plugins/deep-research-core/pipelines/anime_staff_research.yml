@@ -1,0 +1,160 @@
+# anime_staff_research.yml -- Pipeline recherche anime & staff TricorderKit
+# Version : 0.1.0 -- 15/05/2026
+
+name: anime_staff_research
+version: 0.1.0
+description: Pipeline veille anime -- staff, studios, saisons en cours, adaptations manga
+
+token_budget:
+  max_tokens: 20000
+  warn_at: 15000
+  on_exceeded: pause_and_notify
+
+dry_run: false
+
+defaults:
+  min_reliability_score: 0.70
+  season_lookback: 2
+  include_upcoming: true
+
+steps:
+
+  - id: collect_anilist
+    name: Collecte AniList (anime courant + staff)
+    source: trusted_sources.anime[0]
+    action: search
+    params:
+      type: ANIME
+      limit: 30
+    output: raw_anilist
+    on_error: continue
+
+  - id: collect_ann
+    name: Collecte Anime News Network
+    source: trusted_sources.anime[2]
+    action: scrape_news
+    params:
+      category: [anime, production, staff]
+      limit: 20
+    output: raw_ann
+    on_error: skip
+
+  - id: collect_natalie
+    name: Collecte Natalie.mu Anime
+    source: japanese_sources.news[1]
+    action: scrape_news
+    params:
+      category: anime
+      limit: 20
+    output: raw_natalie
+    on_error: skip
+
+  - id: merge_sources
+    name: Fusion des sources
+    action: merge
+    inputs: [raw_anilist, raw_ann, raw_natalie]
+    merge_key: title_normalized
+    output: merged_items
+
+  - id: deduplicate
+    name: Deduplication
+    action: deduplicate
+    input: merged_items
+    strategy: title_hash_similarity
+    similarity_threshold: 0.85
+    output: dedup_items
+
+  - id: score_reliability
+    name: Scoring fiabilite
+    action: score
+    input: dedup_items
+    method: weighted_sources
+    weights:
+      anilist: 0.93
+      anime_news_network: 0.90
+      natalie_mu: 0.92
+    min_score: 0.70
+    output: scored_items
+
+  - id: extract_staff
+    name: Extraction staff & studios
+    action: extract_entities
+    input: scored_items
+    entity_types:
+      - type: director
+        roles: [Director, "Series Director"]
+      - type: series_composition
+        roles: ["Series Composition", "Script"]
+      - type: character_design
+        roles: ["Character Design", "Chief Animation Director"]
+      - type: music
+        roles: [Music]
+      - type: studio
+        source_field: studios
+    output: staff_entities
+
+  - id: link_manga_source
+    name: Lien adaptation -> manga source
+    action: enrich_relations
+    input: scored_items
+    enrichments:
+      - type: source_manga_lookup
+        via: relations
+        relation_types: [ADAPTATION, SOURCE]
+        lookup_domain: manga
+        lookup_source: mangadex
+      - type: original_work_flag
+        condition: "source == 'ORIGINAL'"
+    output: enriched_items
+
+  - id: generate_report
+    name: Generation rapport Markdown
+    action: report
+    input: enriched_items
+    template: anime_staff_report_template
+    output_path: "vault/reports/anime_staff_{season}_{date}.md"
+    sections:
+      - Saison en cours
+      - Prochaines saisons (annoncees)
+      - Staff notables (realisateurs, compositeurs)
+      - Studios actifs cette saison
+      - Adaptations manga en cours
+    include_sources: true
+    max_items_per_section: 15
+
+  - id: index_obsidian_anime
+    name: Indexation Obsidian -- fiches anime
+    action: write_obsidian
+    input: enriched_items
+    vault_path: "${OBSIDIAN_VAULT_PATH}"
+    target_folder: "10_DOMAINS/anime"
+    template: atomic_anime_template
+    create_if_missing: true
+    update_if_exists: true
+
+  - id: index_obsidian_staff
+    name: Indexation Obsidian -- fiches staff
+    action: write_obsidian
+    input: staff_entities
+    vault_path: "${OBSIDIAN_VAULT_PATH}"
+    target_folder: "10_DOMAINS/seiyuu_staff"
+    template: atomic_staff_template
+    create_if_missing: true
+    update_if_exists: false
+
+  - id: index_qdrant
+    name: Indexation Qdrant (RAG)
+    action: upsert_vectors
+    input: enriched_items
+    collection: anime_knowledge
+    embedding_field: description
+    metadata_fields: [title, studios, season, seasonYear, source, _reliability_score]
+
+output:
+  format: json
+  summary_fields: [title, studios, season, seasonYear, _reliability_score, report_path]
+  report_path: "vault/reports/anime_staff_{season}_{date}.md"
+
+schedule:
+  default_interval_minutes: 360
+  min_interval_minutes: 60

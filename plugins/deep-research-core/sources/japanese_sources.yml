@@ -1,0 +1,165 @@
+# japanese_sources.yml -- TricorderKit deep-research-core
+# Sources japonaises officielles
+# Version : 0.1.0 -- 15/05/2026
+
+magazines:
+  - name: Weekly Shonen Jump (Shueisha)
+    url: https://www.shonenjump.com/j/
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 3600
+    language: ja
+    content: [serialization_schedule, chapter_release, rankings]
+
+  - name: Jump+ (Shueisha numerique)
+    url: https://shonenjumpplus.com
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 1800
+    language: ja
+    content: [digital_releases, free_chapters, new_series]
+
+  - name: Weekly Shonen Magazine (Kodansha)
+    url: https://shonenmagazine.com
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 3600
+    language: ja
+
+  - name: Morning (Kodansha)
+    url: https://morning.kodansha.co.jp
+    type: scrape
+    reliability: 0.93
+    cache_ttl: 3600
+    language: ja
+    content: [serialization_schedule, seinen_series]
+
+  - name: Gangan Online (Square Enix)
+    url: https://www.ganganonline.com
+    type: scrape
+    reliability: 0.90
+    cache_ttl: 3600
+    language: ja
+
+publishers:
+  - name: Shueisha Books
+    url: https://www.shueisha.co.jp/books/
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 7200
+    language: ja
+
+  - name: Kodansha JP
+    url: https://www.kodansha.co.jp
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 7200
+    language: ja
+
+  - name: Shogakukan JP
+    url: https://www.shogakukan.co.jp
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 7200
+    language: ja
+
+  - name: Hakusensha
+    url: https://www.hakusensha.co.jp
+    type: scrape
+    reliability: 0.93
+    cache_ttl: 7200
+    language: ja
+
+sales:
+  - name: Oricon JP
+    url: https://www.oricon.co.jp/rank/bm/
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 3600
+    language: ja
+    content: [weekly_manga_ranking, volume_sales]
+    notes: "Reference absolue ventes JP."
+
+  - name: BookWalker JP
+    url: https://bookwalker.jp/category/1/
+    type: scrape
+    reliability: 0.90
+    cache_ttl: 1800
+    language: ja
+    content: [digital_rankings, new_releases, preorders]
+
+  - name: Amazon JP Books
+    url: https://www.amazon.co.jp/s?i=books
+    type: scrape
+    reliability: 0.88
+    cache_ttl: 1800
+    language: ja
+
+news:
+  - name: Natalie.mu Manga
+    url: https://natalie.mu/comic
+    type: scrape
+    reliability: 0.92
+    cache_ttl: 1800
+    language: ja
+    content: [news, announcements, interviews, new_series]
+    notes: "Site news manga JP le plus repute."
+
+  - name: Natalie.mu Anime
+    url: https://natalie.mu/comic/anime
+    type: scrape
+    reliability: 0.92
+    cache_ttl: 1800
+    language: ja
+
+  - name: Anime! Anime!
+    url: https://animeanime.jp
+    type: scrape
+    reliability: 0.85
+    cache_ttl: 1800
+    language: ja
+
+studios:
+  - name: MAPPA Official
+    url: https://mappa.co.jp
+    type: scrape
+    reliability: 0.98
+    cache_ttl: 86400
+    language: ja
+
+  - name: Ufotable Official
+    url: https://www.ufotable.com
+    type: scrape
+    reliability: 0.98
+    cache_ttl: 86400
+    language: ja
+
+  - name: Wit Studio Official
+    url: https://www.witstudio.co.jp
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 86400
+    language: ja
+
+  - name: CloverWorks Official
+    url: https://cloverworks.co.jp
+    type: scrape
+    reliability: 0.97
+    cache_ttl: 86400
+    language: ja
+
+  - name: Madhouse Official
+    url: https://www.madhouse.co.jp
+    type: scrape
+    reliability: 0.95
+    cache_ttl: 86400
+    language: ja
+
+scoring_weights_jp:
+  official_publisher_jp: 0.97
+  official_magazine_jp: 0.95
+  official_studio_jp: 0.97
+  sales_ranking_jp: 0.95
+  news_jp: 0.90
+  digital_platform_jp: 0.88
+  aggregator_jp: 0.80
