@@ -1,0 +1,33 @@
+name: eval-lab
+version: "0.1.0"
+description: "Plugin non-régression et validation contrat output — évalue chaque skill contre skill_output.schema.json"
+service: tricorderkit-core
+language: python
+entrypoint: eval_runner.py
+token_budget: 400
+cache:
+  backend: sqlite
+  ttl_seconds: 86400
+  path: .cache/eval-lab.db
+dry_run: true
+output_format: json
+output_schema: core/contracts/skill_output.schema.json
+safe_commands:
+  - eval
+  - validate-schema
+  - report
+  - dry-run
+priority: HIGH
+
+eval:
+  schema_path: core/contracts/skill_output.schema.json
+  baseline_db: data/eval-lab/baselines.sqlite
+  reports_dir: reports/eval-lab/
+  fixture_dir: plugins/eval-lab/fixtures/
+  severity_exit_codes:
+    CRITICAL: 2
+    HIGH: 1
+    MEDIUM: 0
+    LOW: 0
+  auto_update_baseline: false
+  skills_registry: plugins/cli-forge/registry.yml
