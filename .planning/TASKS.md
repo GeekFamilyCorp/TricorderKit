@@ -33,9 +33,9 @@
 - [x] plugins/deep-research-core/sources/japanese_sources.yml
 - [x] plugins/deep-research-core/pipelines/github_research.yml
 - [x] plugins/deep-research-core/pipelines/anime_staff_research.yml
-- [ ] plugins/deep-research-core/scripts/deduplicate_findings.py
-- [ ] plugins/deep-research-core/scripts/export_report.py
-- [ ] Test live MangaDex + Jikan (appels réseau réels)
+- [x] plugins/deep-research-core/scripts/deduplicate_findings.py (Deduplicator 2 passes : exact + fuzzy Jaccard, merge cross-source, all_sources[] — 16/05/2026)
+- [x] plugins/deep-research-core/scripts/export_report.py (formats markdown + obsidian, frontmatter YAML auto, --emit-json — 16/05/2026)
+- [ ] **[EN ATTENTE]** Test live MangaDex + Jikan (appels réseau réels) — après validation dry-run complète
 - [ ] Indexation Qdrant (collection manga_knowledge)
 
 ---
@@ -125,4 +125,4 @@
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Hook Layer v0.2.0 COMPLET (activities + worker + hook_stats)*
+*Dernière mise à jour : 16/05/2026 — Phase 4 : deduplicate_findings.py + export_report.py complétés*

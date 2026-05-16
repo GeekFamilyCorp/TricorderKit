@@ -67,7 +67,7 @@ npx ts-node scripts/start_worker.ts
 |---|---|---|
 | cli-forge | ✅ Scaffold + github-goat + source-watch-goat (dry_run_validated) | S |
 | workflow-engine | ✅ Scaffold + source_watch + usage_observer v0.2.0 + skill_eval v0.2.0 + activities + worker | S |
-| deep-research-core | ✅ Scripts collect+score validés + japanese_sources.yml + pipelines github+anime | S |
+| deep-research-core | ✅ Scripts collect+score+dedup+export validés + japanese_sources.yml + pipelines | S |
 | hook-layer | ✅ v0.2.0 COMPLET — core/hooks/ (7 fichiers, 25 tests) + activities (2 fichiers) + worker + hook_stats | S |
 | memory-boot | 🔲 À migrer v0.8 | S |
 | token-hygiene | 🔲 À migrer v0.8 | S |
@@ -118,10 +118,10 @@ npx ts-node scripts/start_worker.ts
 
 ```text
 Phase 4 — Deep Research (priorité principale) :
-  1. Implémenter deduplicate_findings.py
-  2. Implémenter export_report.py (générateur Markdown)
-  3. Test live MangaDex + Jikan (appels réseau réels)
-  4. Indexation Qdrant (collection manga_knowledge)
+  ✅ deduplicate_findings.py — Deduplicator 2 passes (exact + fuzzy Jaccard, merge cross-source)
+  ✅ export_report.py — formats markdown + obsidian, frontmatter YAML auto
+  ⏸ Test live MangaDex + Jikan (EN ATTENTE — appels réseau réels)
+  ⬜ Indexation Qdrant (collection manga_knowledge)
 
 Hook Layer (action manuelle courte) :
   5. cd plugins/workflow-engine && npm install @temporalio/worker ts-node typescript
@@ -131,4 +131,4 @@ Hook Layer (action manuelle courte) :
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Hook Layer v0.2.0 COMPLET — KI-004 réduit à une commande npm + run*
+*Dernière mise à jour : 16/05/2026 — Phase 4 : deduplicate_findings.py + export_report.py validés*
