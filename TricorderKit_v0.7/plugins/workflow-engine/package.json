@@ -1,0 +1,21 @@
+{
+  "name": "tricorderkit-workflow-engine",
+  "version": "0.2.0",
+  "description": "TricorderKit Temporal worker — Hook Layer v0.2.0",
+  "main": "dist/scripts/start_worker.js",
+  "scripts": {
+    "start": "ts-node scripts/start_worker.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@temporalio/activity": "*",
+    "@temporalio/client": "*",
+    "@temporalio/worker": "*",
+    "@temporalio/workflow": "*"
+  },
+  "devDependencies": {
+    "ts-node": "*",
+    "typescript": "*",
+    "@types/node": "*"
+  }
+}
