@@ -1,21 +1,11 @@
-version: "3.8"
+# TricorderKit v0.8 — Infrastructure locale
+# Démarrage : docker compose up -d
+# Arrêt     : docker compose down
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║  ⚠️  DEV / LOCAL ONLY — NE PAS UTILISER TEL QUEL EN PRODUCTION          ║
-# ║                                                                          ║
-# ║  Avant tout déploiement VPS / cloud :                                   ║
-# ║  • Remplacer TOUS les secrets par défaut (change_this_* et langfuse)    ║
-# ║  • Utiliser un secrets manager (Vault, AWS Secrets, Docker Secrets…)    ║
-# ║  • Restreindre les ports — ne pas exposer 7474/7687/6333/7233/3000      ║
-# ║    directement sur l'interface publique                                  ║
-# ║  • Activer TLS sur Neo4j Bolt, Qdrant et Temporal                       ║
-# ║  • Remplacer postgres user/password langfuse/langfuse par des valeurs   ║
-# ║    fortes définies dans .env                                             ║
+# ║  Remplacer tous les secrets avant tout déploiement VPS / cloud.          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-
-# TricorderKit v0.7 — Infrastructure locale
-# Démarrage : docker compose up -d
-# Arrêt     : docker compose down
 
 services:
 
@@ -40,7 +30,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # ── Qdrant — Vector Search / RAG ──────────────────────────────────────────────
+  # ── Qdrant — Vector Search / RAG ─────────────────────────────────────────
   qdrant:
     image: qdrant/qdrant:v1.8.4
     container_name: tricorder-qdrant
@@ -58,27 +48,51 @@ services:
       timeout: 10s
       retries: 5
 
-  # ── Temporal — Workflow Engine ───────────────────────────────────────────────
+  # ── Temporal DB — PostgreSQL pour Temporal ────────────────────────────────
+  # Règle 3 : temporalio/auto-setup ne supporte PAS sqlite.
+  # Drivers valides : postgres12, postgres12_pgx, mysql8, cassandra.
+  temporal-db:
+    image: postgres:15
+    container_name: tricorder-temporal-db
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal   # ⚠️ hardcoded dev — à externaliser en prod
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal_db:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Temporal — Workflow Engine ────────────────────────────────────────────
   temporal:
     image: temporalio/auto-setup:1.23
     container_name: tricorder-temporal
     ports:
       - "7233:7233"   # Frontend gRPC
     environment:
-      DB: sqlite
-      DYNAMIC_CONFIG_FILE_PATH: /etc/temporal/config/dynamicconfig.yml
-    volumes:
-      - temporal_data:/etc/temporal/data
-      - ./config/temporal:/etc/temporal/config
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: temporal-db
+    depends_on:
+      temporal-db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "tctl", "--address", "localhost:7233", "cluster", "health"]
+      test: ["CMD-SHELL", "tctl --address localhost:7233 cluster health 2>/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10
+      start_period: 30s
 
+  # ── Temporal UI — Interface Web (optionnel) ───────────────────────────────
   temporal-ui:
-    image: temporalio/ui:2.25
+    image: temporalio/ui:latest
     container_name: tricorder-temporal-ui
     ports:
       - "8080:8080"   # UI Web
@@ -89,10 +103,11 @@ services:
       - temporal
     restart: unless-stopped
 
-  # ── Langfuse — Observabilité tokens + traces ─────────────────────────────────
+  # ── Langfuse — Observabilité tokens + traces ──────────────────────────────
   langfuse:
-    image: langfuse/langfuse:2
+    image: langfuse/langfuse:2.92.0
     container_name: tricorder-langfuse
+    pull_policy: if_not_present
     ports:
       - "3000:3000"   # UI + API
     environment:
@@ -120,8 +135,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-# ── Volumes persistants ─────────────────────────────────────────────────────
+# ── Volumes persistants ───────────────────────────────────────────────────
 volumes:
   neo4j_data:
     name: tricorder_neo4j_data
@@ -129,12 +145,12 @@ volumes:
     name: tricorder_neo4j_logs
   qdrant_data:
     name: tricorder_qdrant_data
-  temporal_data:
-    name: tricorder_temporal_data
+  temporal_db:
+    name: tricorder_temporal_db
   langfuse_db:
     name: tricorder_langfuse_db
 
-# ── Network ───────────────────────────────────────────────────────────────────
+# ── Network ───────────────────────────────────────────────────────────────
 networks:
   default:
     name: tricorder-network
