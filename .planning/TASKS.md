@@ -26,7 +26,7 @@
 
 ---
 
-## ✅ Phase 4 Deep Research — COMPLÈTE (tests live EN ATTENTE)
+## ✅ Phase 4 Deep Research — COMPLÈTE (sauf tests live EN ATTENTE)
 
 - [x] plugins/deep-research-core/scripts/collect_sources.py (pipeline dry-run validé 2026-05-15)
 - [x] plugins/deep-research-core/scripts/score_reliability.py (pipeline dry-run validé 2026-05-15)
@@ -35,9 +35,9 @@
 - [x] plugins/deep-research-core/pipelines/anime_staff_research.yml
 - [x] plugins/deep-research-core/scripts/deduplicate_findings.py (Deduplicator 2 passes : exact + fuzzy Jaccard, merge cross-source, all_sources[] — 16/05/2026)
 - [x] plugins/deep-research-core/scripts/export_report.py (formats markdown + obsidian, frontmatter YAML auto, --emit-json — 16/05/2026)
+- [ ] **[EN ATTENTE]** Test live MangaDex + Jikan (appels réseau réels) — `pytest tests/ --live`
 - [x] plugins/deep-research-core/scripts/index_qdrant.py (HashEmbedder + sentence-transformers fallback, UUID5, upsert batch, indexes payload complets — 16/05/2026)
 - [x] plugins/deep-research-core/tests/test_live_sources.py (7 classes pytest live : MangaDex, Jikan, AniList, pipeline complet — 16/05/2026)
-- [ ] **[EN ATTENTE]** Tests live : `pytest tests/ --live` (nécessite accès réseau)
 
 ---
 
@@ -101,13 +101,13 @@
 
 ---
 
-## 🔲 Phase 5 — Quality Loop (DÉBLOQUÉE — prête à démarrer)
+## ✅ Phase 5 — Quality Loop (COMPLÈTE — 16/05/2026)
 
-- [ ] plugins/obsidian-agent-layer/
-- [ ] plugins/security-audit-cli/
-- [ ] plugins/eval-lab/
-- [ ] scripts/health_check.py (scaffold existant à compléter)
-- [ ] Dashboard HTML santé système
+- [x] plugins/obsidian-agent-layer/ — vault_router (routing claude-vault/notes-vault), note_builder, obsidian_client
+- [x] plugins/security-audit-cli/ — security_runner Typer : audit, check-anon, scan-secrets, check-patterns, dry-run
+- [x] plugins/eval-lab/ — eval_runner Typer : eval, validate-schema, report, dry-run + baseline_store + regression_checker + tests/
+- [x] scripts/health_check.py — v0.8, check_services/plugins/planning/docker, generate_html dark-theme (fix utcnow → now(timezone.utc))
+- [x] Dashboard HTML santé système — `python health_check.py --output html` → vault/reports/health_{ts}.html
 
 ---
 
@@ -126,4 +126,4 @@
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 4 COMPLÈTE — Phase 5 Quality Loop débloquée*
+*Dernière mise à jour : 16/05/2026 — Phase 5 COMPLÈTE — Toutes les phases 0→5 finalisées*
