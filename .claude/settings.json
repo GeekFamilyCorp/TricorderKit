@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 core/hooks/post_session_hook.py"
+            "command": "python core/hooks/post_session_hook.py"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c \"import sys, json; from core.hooks.post_execution_hook import run_post_execution_hook; data=json.load(sys.stdin); run_post_execution_hook(data.get('plan',{}), data.get('result',{}))\""
+            "command": "python -c \"import sys, json; from core.hooks.post_execution_hook import run_post_execution_hook; data=json.load(sys.stdin); run_post_execution_hook(data.get('plan',{}), data.get('result',{}))\""
           }
         ]
       }
