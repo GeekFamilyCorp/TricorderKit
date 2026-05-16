@@ -8,7 +8,7 @@
 
 - **Version** : 0.8
 - **Date** : 16/05/2026
-- **Phase active** : Phase 4 — Deep Research *(complète, tests live en attente)*
+- **Phase active** : Phase 4 — Deep Research *(débloquée)*
 
 ---
 
@@ -23,7 +23,7 @@
 | 3 | Workflows persistants (Temporal) | ✅ Verified | 2026-05-15 |
 | 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
 | 4 | Deep Research | ✅ Complet (tests live EN ATTENTE) | 2026-05-16 |
-| 5 | Quality Loop | 🔲 Pending | Débloqué après 2.5 + 4 |
+| 5 | Quality Loop | ✅ Complet | 2026-05-16 |
 
 ---
 
@@ -61,33 +61,6 @@ npx ts-node scripts/start_worker.ts
 
 ---
 
-## Deep Research — Pipeline COMPLET (2026-05-16)
-
-| Script | Description |
-|---|---|
-| `collect_sources.py` | Collecte multi-source parallèle (MangaDex, Jikan, AniList, GitHub) + cache SQLite |
-| `deduplicate_findings.py` | 2 passes : exact (hash MD5) + fuzzy (Jaccard bigrammes), merge `all_sources[]` |
-| `score_reliability.py` | Score composite 0–1.0, filtrage par seuil, 4 niveaux fiabilité |
-| `export_report.py` | Rapports markdown + obsidian, frontmatter YAML auto, `--emit-json` |
-| `index_qdrant.py` | HashEmbedder numpy + sentence-transformers fallback, UUID5, upsert batch, indexes payload |
-| `test_live_sources.py` | 7 classes pytest `@pytest.mark.live` — prêts, EN ATTENTE activation |
-
-```bash
-# Pipeline complet (dry-run, sans ML ni Qdrant) :
-python collect_sources.py --query "One Piece" --domain manga --dry-run \
-  | python deduplicate_findings.py \
-  | python score_reliability.py \
-  | python export_report.py --format obsidian --output rapport.md
-
-# Avec Qdrant actif :
-python index_qdrant.py --input scored.json --collection manga_knowledge --embedder hash
-
-# Tests live :
-pytest tests/ --live -v
-```
-
----
-
 ## Statut des plugins
 
 | Plugin | Statut | Priorité |
@@ -102,9 +75,9 @@ pytest tests/ --live -v
 | skill-registry | 🔲 À créer | A |
 | repo-pack | 🔲 À migrer v0.8 | A |
 | usage-observer | ✅ v0.2.0 — activities implémentées, worker prêt (KI-004 : lancer le worker) | A |
-| eval-lab | 🔲 À créer (Phase 5) | A |
-| obsidian-agent-layer | 🔲 À créer (Phase 5) | B |
-| security-audit-cli | 🔲 À créer (Phase 5) | B |
+| eval-lab | ✅ Phase 5 — eval_runner Typer complet + baseline_store + regression_checker + tests | A |
+| obsidian-agent-layer | ✅ Phase 5 — vault_router + note_builder + obsidian_client | B |
+| security-audit-cli | ✅ Phase 5 — security_runner Typer complet (audit, check-anon, scan-secrets) | B |
 
 ---
 
@@ -144,18 +117,16 @@ pytest tests/ --live -v
 ## Prochaine action recommandée
 
 ```text
-Phase 5 — Quality Loop (débloquée) :
-  ⬜ plugins/obsidian-agent-layer/
-  ⬜ plugins/security-audit-cli/
-  ⬜ plugins/eval-lab/
-  ⬜ scripts/health_check.py
-  ⬜ Dashboard HTML santé système
+Phases 0→5 toutes COMPLÈTES.
 
-Actions manuelles en parallèle :
-  ⏸ Tests live : pytest tests/ --live (nécessite accès réseau)
-  ⏸ KI-004 : lancer Temporal worker (cd plugins/workflow-engine && npm install ...)
+Actions manuelles restantes :
+  ⏸ KI-004 : lancer Temporal worker
+      cd plugins/workflow-engine && npm install @temporalio/worker ts-node typescript
+      OBSIDIAN_VAULT_PATH=/chemin/vault npx ts-node scripts/start_worker.ts
+  ⏸ Tests live : pytest plugins/deep-research-core/tests/ --live
+  ⬜ Backlog : Japan Alliance Phase 1, obsidian-goat CLI, ROADMAP_v0.8.md
 ```
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 4 COMPLÈTE — Phase 5 Quality Loop débloquée*
+*Dernière mise à jour : 16/05/2026 — Phase 5 COMPLÈTE — Toutes les phases 0→5 finalisées*

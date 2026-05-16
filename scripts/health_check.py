@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-health_check.py — TricorderKit v0.7
+health_check.py — TricorderKit v0.8
 Dashboard santé système : vérifie Docker services + CLIs + registry + planning.
 Usage :
     python scripts/health_check.py
@@ -14,7 +14,7 @@ import json
 import socket
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -170,13 +170,13 @@ def generate_html(data: dict) -> str:
     )
     cli_rows = "".join(
         f'<tr><td>{c["name"]}</td>'
-        f'<td style="color:{"#22c55e" if c["status"]=="ready" else "#f59e0b"}">'  
+        f'<td style="color:{"#22c55e" if c["status"]=="ready" else "#f59e0b"}">'
         f'{"✅ ready" if c["status"]=="ready" else "⚠️ incomplete"}</td></tr>'
         for c in data["cli"]["clis"]
     )
     plugin_rows = "".join(
         f'<tr><td>{p["name"]}</td>'
-        f'<td style="color:{"#22c55e" if p["status"]=="complete" else "#f59e0b"}">'  
+        f'<td style="color:{"#22c55e" if p["status"]=="complete" else "#f59e0b"}">'
         f'{"✅" if p["status"]=="complete" else "⚠️"} {p["status"]}</td></tr>'
         for p in data["plugins"]["plugins"]
     )
@@ -249,7 +249,7 @@ def generate_html(data: dict) -> str:
 
 # ── Main ───────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="health_check — TricorderKit v0.7")
+    parser = argparse.ArgumentParser(description="health_check — TricorderKit v0.8")
     parser.add_argument("--output", choices=["pretty", "json", "html"], default="pretty")
     args = parser.parse_args()
 
@@ -261,7 +261,7 @@ def main():
     score    = compute_global_score(services, cli, planning, plugins)
 
     data = {
-        "timestamp":    datetime.utcnow().isoformat() + "Z",
+        "timestamp":    datetime.now(timezone.utc).isoformat(),
         "global_score": score,
         "status":       "healthy" if score >= 80 else ("partial" if score >= 50 else "critical"),
         "services":     services,
