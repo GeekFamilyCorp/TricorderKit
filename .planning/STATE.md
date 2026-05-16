@@ -42,21 +42,19 @@
 | `usage_observer.workflow.ts` | `5f9c57b` | Signal TERMINATE, max_runs, return structuré |
 | `skill_eval.workflow.ts` | `0f4d883` | eval-lab Phase 5, EvalSummary, budget par phase |
 | `activities/usage_observer.activities.ts` | `eee49eb` | readHookLogs (checkpoint), aggregateStats, writeUsageStats |
-| `activities/skill_eval.activities.ts` | `9fd035c` | runCliContracts (pytest), runEvalLabScenarios, writeEvalResults |
-| `activities/index.ts` | `92b7f86` | Barrel exports + Activities union type pour proxyActivities |
+| `activities/skill_eval.activities.ts` | `9fd035c` | runCliContracts, runEvalLabScenarios, writeEvalResults |
+| `activities/index.ts` | `be0b762` | Barrel exports (sans types fantômes) |
 | `scripts/start_worker.ts` | `6152ac8` | Temporal worker — enregistre tous workflows et activities |
 | `scripts/hook_stats.py` | `9749338` | CLI /tk:hook-stats — tableau Markdown agrégé |
+| `tsconfig.json` | `41a36e9` | CommonJS — résout ESM/ts-node conflict |
+| `workflows/index.ts` | `8b0616d` | Barrel obligatoire pour workflowsPath |
+| **docker-compose.yml** | `8b0616d` | postgres12 + temporal-db + tags fixés |
 | **MainBrain v1.5** | `c1017e4` | Étapes 0 (Pre-Intent), 2.5 (Pre-Execution), 7bis (Post-Execution) câblées |
 
-**Seul blocant restant (KI-004)** : lancer le worker Temporal sur la machine hôte.
+**KI-004 RÉSOLU (2026-05-16)** : Worker Temporal confirmé RUNNING en local.
 
-```bash
-# Prérequis (une seule fois)
-cd plugins/workflow-engine && npm install @temporalio/worker ts-node typescript
-
-# Lancement
-OBSIDIAN_VAULT_PATH=/chemin/vers/vault \
-npx ts-node scripts/start_worker.ts
+```
+state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 ```
 
 ---
@@ -66,7 +64,7 @@ npx ts-node scripts/start_worker.ts
 | Plugin | Statut | Priorité |
 |---|---|---|
 | cli-forge | ✅ Scaffold + github-goat + source-watch-goat (dry_run_validated) | S |
-| workflow-engine | ✅ Scaffold + source_watch + usage_observer v0.2.0 + skill_eval v0.2.0 + activities + worker | S |
+| workflow-engine | ✅ Scaffold + source_watch + usage_observer v0.2.0 + skill_eval v0.2.0 + activities + worker RUNNING | S |
 | deep-research-core | ✅ Pipeline complet validé : collect+dedup+score+export+index_qdrant — tests live prêts | S |
 | hook-layer | ✅ v0.2.0 COMPLET — core/hooks/ (7 fichiers, 25 tests) + activities (2 fichiers) + worker + hook_stats | S |
 | memory-boot | 🔲 À migrer v0.8 | S |
@@ -74,7 +72,7 @@ npx ts-node scripts/start_worker.ts
 | agents-standard | 🔲 À créer | A |
 | skill-registry | 🔲 À créer | A |
 | repo-pack | 🔲 À migrer v0.8 | A |
-| usage-observer | ✅ v0.2.0 — activities implémentées, worker prêt (KI-004 : lancer le worker) | A |
+| usage-observer | ✅ v0.2.0 — activities implémentées, worker RUNNING | A |
 | eval-lab | ✅ Phase 5 — eval_runner Typer complet + baseline_store + regression_checker + tests | A |
 | obsidian-agent-layer | ✅ Phase 5 — vault_router + note_builder + obsidian_client | B |
 | security-audit-cli | ✅ Phase 5 — security_runner Typer complet (audit, check-anon, scan-secrets) | B |
@@ -87,8 +85,8 @@ npx ts-node scripts/start_worker.ts
 |---|---|
 | Neo4j | ✅ Actif via Docker Compose |
 | Qdrant | ✅ Actif via Docker Compose |
-| Langfuse | ✅ Actif via Docker Compose |
-| Temporal | 🟡 Worker prêt (start_worker.ts déployé) — à lancer manuellement (KI-004) |
+| Langfuse | 🟡 Port 3000 en conflit — à résoudre |
+| Temporal | ✅ RUNNING — worker actif sur tricorderkit-hooks |
 | graph-server MCP | ✅ ping / store / relate / retrieve opérationnels |
 | QualityGuard | ✅ Semgrep 1.162.0 + Trivy 0.70.0 + Gitleaks 8.30.1 |
 | error_memory SQLite | ✅ SHA-256 + block-check actif |
@@ -101,7 +99,6 @@ npx ts-node scripts/start_worker.ts
 | ID | Description | Niveau |
 |---|---|---|
 | KI-003 | GitHub MCP deprecated → migration vers `@github/mcp-server@latest` manuelle requise | Moyen |
-| KI-004 | Temporal worker à lancer manuellement — activities déployées, boucle non active | Faible |
 
 ---
 
@@ -111,22 +108,21 @@ npx ts-node scripts/start_worker.ts
 |---|---|---|---|
 | ERR-T-001 | UUID Qdrant invalide (chars non-hex) → SHA-1 hex pur | — | 2026-05-13 |
 | ERR-T-002 | `${CLAUDE_PLUGIN_ROOT}` → chemin absolu + `datetime.utcnow()` → `datetime.now(timezone.utc)` | `40d3166` | 2026-05-15 |
+| KI-004 | Temporal worker : tsconfig CommonJS + DB postgres12 + workflows/index.ts barrel + docker rm containers orphelins | `8b0616d` | 2026-05-16 |
 
 ---
 
 ## Prochaine action recommandée
 
 ```text
-Phases 0→5 toutes COMPLÈTES.
+Phases 0→5 toutes COMPLÈTES. KI-004 résolu — worker RUNNING.
 
-Actions manuelles restantes :
-  ⏸ KI-004 : lancer Temporal worker
-      cd plugins/workflow-engine && npm install @temporalio/worker ts-node typescript
-      OBSIDIAN_VAULT_PATH=/chemin/vault npx ts-node scripts/start_worker.ts
+Actions restantes :
   ⏸ Tests live : pytest plugins/deep-research-core/tests/ --live
-  ⬜ Backlog : Japan Alliance Phase 1, obsidian-goat CLI, ROADMAP_v0.8.md
+  ⏸ Langfuse : port 3000 en conflit — changer port ou libérer
+  ⬜ Backlog : Japan Alliance Phase 1, obsidian-goat CLI, ROADMAP_v0.8.md, KI-003
 ```
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 5 COMPLÈTE — Toutes les phases 0→5 finalisées*
+*Dernière mise à jour : 16/05/2026 — KI-004 RÉSOLU — Worker Temporal RUNNING — Toutes phases + blockers critiques finalisés*
