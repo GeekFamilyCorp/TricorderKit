@@ -26,7 +26,7 @@
 
 ---
 
-## 🔶 Phase 4 Deep Research — En cours
+## ✅ Phase 4 Deep Research — COMPLÈTE (tests live EN ATTENTE)
 
 - [x] plugins/deep-research-core/scripts/collect_sources.py (pipeline dry-run validé 2026-05-15)
 - [x] plugins/deep-research-core/scripts/score_reliability.py (pipeline dry-run validé 2026-05-15)
@@ -35,8 +35,9 @@
 - [x] plugins/deep-research-core/pipelines/anime_staff_research.yml
 - [x] plugins/deep-research-core/scripts/deduplicate_findings.py (Deduplicator 2 passes : exact + fuzzy Jaccard, merge cross-source, all_sources[] — 16/05/2026)
 - [x] plugins/deep-research-core/scripts/export_report.py (formats markdown + obsidian, frontmatter YAML auto, --emit-json — 16/05/2026)
-- [ ] **[EN ATTENTE]** Test live MangaDex + Jikan (appels réseau réels) — après validation dry-run complète
-- [ ] Indexation Qdrant (collection manga_knowledge)
+- [x] plugins/deep-research-core/scripts/index_qdrant.py (HashEmbedder + sentence-transformers fallback, UUID5, upsert batch, indexes payload complets — 16/05/2026)
+- [x] plugins/deep-research-core/tests/test_live_sources.py (7 classes pytest live : MangaDex, Jikan, AniList, pipeline complet — 16/05/2026)
+- [ ] **[EN ATTENTE]** Tests live : `pytest tests/ --live` (nécessite accès réseau)
 
 ---
 
@@ -100,7 +101,7 @@
 
 ---
 
-## 🔲 Phase 5 — Quality Loop (pending — après Phase 4)
+## 🔲 Phase 5 — Quality Loop (DÉBLOQUÉE — prête à démarrer)
 
 - [ ] plugins/obsidian-agent-layer/
 - [ ] plugins/security-audit-cli/
@@ -125,4 +126,4 @@
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 4 : deduplicate_findings.py + export_report.py complétés*
+*Dernière mise à jour : 16/05/2026 — Phase 4 COMPLÈTE — Phase 5 Quality Loop débloquée*

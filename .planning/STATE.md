@@ -8,7 +8,7 @@
 
 - **Version** : 0.8
 - **Date** : 16/05/2026
-- **Phase active** : Phase 4 — Deep Research *(débloquée)*
+- **Phase active** : Phase 4 — Deep Research *(complète, tests live en attente)*
 
 ---
 
@@ -22,7 +22,7 @@
 | 2.5 | QualityGuard | ✅ Verified | 2026-05-15 |
 | 3 | Workflows persistants (Temporal) | ✅ Verified | 2026-05-15 |
 | 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
-| 4 | Deep Research | 🔶 En cours | — |
+| 4 | Deep Research | ✅ Complet (tests live EN ATTENTE) | 2026-05-16 |
 | 5 | Quality Loop | 🔲 Pending | Débloqué après 2.5 + 4 |
 
 ---
@@ -61,13 +61,40 @@ npx ts-node scripts/start_worker.ts
 
 ---
 
+## Deep Research — Pipeline COMPLET (2026-05-16)
+
+| Script | Description |
+|---|---|
+| `collect_sources.py` | Collecte multi-source parallèle (MangaDex, Jikan, AniList, GitHub) + cache SQLite |
+| `deduplicate_findings.py` | 2 passes : exact (hash MD5) + fuzzy (Jaccard bigrammes), merge `all_sources[]` |
+| `score_reliability.py` | Score composite 0–1.0, filtrage par seuil, 4 niveaux fiabilité |
+| `export_report.py` | Rapports markdown + obsidian, frontmatter YAML auto, `--emit-json` |
+| `index_qdrant.py` | HashEmbedder numpy + sentence-transformers fallback, UUID5, upsert batch, indexes payload |
+| `test_live_sources.py` | 7 classes pytest `@pytest.mark.live` — prêts, EN ATTENTE activation |
+
+```bash
+# Pipeline complet (dry-run, sans ML ni Qdrant) :
+python collect_sources.py --query "One Piece" --domain manga --dry-run \
+  | python deduplicate_findings.py \
+  | python score_reliability.py \
+  | python export_report.py --format obsidian --output rapport.md
+
+# Avec Qdrant actif :
+python index_qdrant.py --input scored.json --collection manga_knowledge --embedder hash
+
+# Tests live :
+pytest tests/ --live -v
+```
+
+---
+
 ## Statut des plugins
 
 | Plugin | Statut | Priorité |
 |---|---|---|
 | cli-forge | ✅ Scaffold + github-goat + source-watch-goat (dry_run_validated) | S |
 | workflow-engine | ✅ Scaffold + source_watch + usage_observer v0.2.0 + skill_eval v0.2.0 + activities + worker | S |
-| deep-research-core | ✅ Scripts collect+score+dedup+export validés + japanese_sources.yml + pipelines | S |
+| deep-research-core | ✅ Pipeline complet validé : collect+dedup+score+export+index_qdrant — tests live prêts | S |
 | hook-layer | ✅ v0.2.0 COMPLET — core/hooks/ (7 fichiers, 25 tests) + activities (2 fichiers) + worker + hook_stats | S |
 | memory-boot | 🔲 À migrer v0.8 | S |
 | token-hygiene | 🔲 À migrer v0.8 | S |
@@ -117,18 +144,18 @@ npx ts-node scripts/start_worker.ts
 ## Prochaine action recommandée
 
 ```text
-Phase 4 — Deep Research (priorité principale) :
-  ✅ deduplicate_findings.py — Deduplicator 2 passes (exact + fuzzy Jaccard, merge cross-source)
-  ✅ export_report.py — formats markdown + obsidian, frontmatter YAML auto
-  ⏸ Test live MangaDex + Jikan (EN ATTENTE — appels réseau réels)
-  ⬜ Indexation Qdrant (collection manga_knowledge)
+Phase 5 — Quality Loop (débloquée) :
+  ⬜ plugins/obsidian-agent-layer/
+  ⬜ plugins/security-audit-cli/
+  ⬜ plugins/eval-lab/
+  ⬜ scripts/health_check.py
+  ⬜ Dashboard HTML santé système
 
-Hook Layer (action manuelle courte) :
-  5. cd plugins/workflow-engine && npm install @temporalio/worker ts-node typescript
-  6. OBSIDIAN_VAULT_PATH=/chemin/vault npx ts-node scripts/start_worker.ts
-  → Résout KI-004 et active la boucle d'auto-amélioration complète
+Actions manuelles en parallèle :
+  ⏸ Tests live : pytest tests/ --live (nécessite accès réseau)
+  ⏸ KI-004 : lancer Temporal worker (cd plugins/workflow-engine && npm install ...)
 ```
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 4 : deduplicate_findings.py + export_report.py validés*
+*Dernière mise à jour : 16/05/2026 — Phase 4 COMPLÈTE — Phase 5 Quality Loop débloquée*
