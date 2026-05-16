@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Any
 
 # Résolution du path pour imports absolus ou relatifs
 _HERE = Path(__file__).parent
-_PROJECT_ROOT = _HERE.parent.parent  # TricorderKit_v0.7/
+_PROJECT_ROOT = _HERE.parent.parent  # TricorderKit_Project/
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 

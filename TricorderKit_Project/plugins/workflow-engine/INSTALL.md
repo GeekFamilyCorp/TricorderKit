@@ -24,14 +24,14 @@ Ce guide couvre l'installation complète du Temporal Worker TricorderKit, depuis
 
 ```powershell
 git clone https://github.com/GeekFamilyCorp/TricorderKit.git
-cd TricorderKit\TricorderKit_v0.7
+cd TricorderKit\TricorderKit_Project
 ```
 
 ---
 
 ## Étape 2 — Lancer l'infrastructure Docker
 
-Depuis le dossier `TricorderKit_v0.7/` :
+Depuis le dossier `TricorderKit_Project/` :
 
 ```powershell
 docker compose up -d
@@ -120,7 +120,7 @@ Ouvrir `plugins\workflow-engine\start_worker_auto.ps1` et remplacer la valeur de
 Coller dans PowerShell (pas besoin de droits admin) :
 
 ```powershell
-$workerScript = "<chemin_absolu_vers_TricorderKit_v0.7>\plugins\workflow-engine\start_worker_auto.ps1"
+$workerScript = "<chemin_absolu_vers_TricorderKit_Project>\plugins\workflow-engine\start_worker_auto.ps1"
 
 $action = New-ScheduledTaskAction `
     -Execute "powershell.exe" `
