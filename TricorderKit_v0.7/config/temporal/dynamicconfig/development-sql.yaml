@@ -1,0 +1,14 @@
+# Temporal Dynamic Config — SQLite local dev
+# TricorderKit v0.7
+
+matching.numTaskqueueReadPartitions:
+  - value: 1
+    constraints: {}
+
+matching.numTaskqueueWritePartitions:
+  - value: 1
+    constraints: {}
+
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}
