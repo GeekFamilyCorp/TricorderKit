@@ -10,20 +10,14 @@
  * dans le Worker Temporal.
  */
 
-// ─── usage_observer activities ────────────────────────────────────────────────
+// ─── usage_observer activities ────────────────────────────────────────────────────────────────
 export {
   readHookLogs,
   aggregateStats,
   writeUsageStats,
 } from './usage_observer.activities';
 
-export type {
-  HookRecord,
-  SkillStat,
-  UsageStats,
-} from './usage_observer.activities';
-
-// ─── skill_eval activities ────────────────────────────────────────────────────
+// ─── skill_eval activities ────────────────────────────────────────────────────────────────
 export {
   runCliContracts,
   runEvalLabScenarios,
@@ -35,7 +29,7 @@ export type {
   EvalSummary,
 } from './skill_eval.activities';
 
-// ─── Activities type (used by proxyActivities) ────────────────────────────────
+// ─── Activities type (used by proxyActivities) ────────────────────────────────────────────
 import type {
   readHookLogs,
   aggregateStats,
