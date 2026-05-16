@@ -4,6 +4,24 @@
 
 ---
 
+## ✅ Phase 3.5 — Hook Layer (deployed 2026-05-16)
+
+- [x] core/hooks/__init__.py — exports propres
+- [x] core/hooks/hook_types.py — TypedDict partagés (0 dépendance externe)
+- [x] core/hooks/pre_intent_hook.py — 9 domaines, scoring multi-match, hook_id UUID
+- [x] core/hooks/pre_execution_hook.py — risk_hint calculé, estimated_tokens
+- [x] core/hooks/post_execution_hook.py — quality_score, schema validation
+- [x] core/hooks/tests/test_hooks.py — 25 tests pytest
+- [x] plugins/workflow-engine/workflows/usage_observer.workflow.ts v0.2.0
+- [x] plugins/workflow-engine/workflows/skill_eval.workflow.ts v0.2.0
+- [x] core/mainbrain/MainBrain_v1.4.md → v1.5 (Étapes 0, 2.5, 7bis câblées)
+- [ ] **[PRIORITÉ A]** plugins/workflow-engine/activities/usage_observer.activities.ts
+- [ ] **[PRIORITÉ A]** plugins/workflow-engine/activities/skill_eval.activities.ts
+- [ ] **[PRIORITÉ A]** Lancer Temporal worker → activer boucle d'observation complète
+- [ ] /tk:hook-stats — commande rapport agrégé depuis .cache/hooks/
+
+---
+
 ## 🔶 Phase 4 Deep Research — En cours
 
 - [x] plugins/deep-research-core/scripts/collect_sources.py (pipeline dry-run validé 2026-05-15)
@@ -22,7 +40,7 @@
 
 - [x] Arborescence v0.8 scaffoldée
 - [x] core/contracts/skill_output.schema.json
-- [x] core/mainbrain/MainBrain_v1.4.md
+- [x] core/mainbrain/MainBrain_v1.4.md → v1.5
 
 ---
 
@@ -72,7 +90,6 @@
 - [x] docker-compose.yml (Neo4j + Qdrant + Langfuse actifs)
 - [x] graph-server MCP opérationnel (ping / store / relate / retrieve)
 - [ ] plugins/workflow-engine/workflows/vault_audit.workflow.ts ← pending
-- [ ] plugins/workflow-engine/workflows/skill_eval.workflow.ts ← pending
 - [ ] plugins/workflow-engine/activities/scan_files.activity.ts ← pending
 - [ ] plugins/workflow-engine/activities/run_cli.activity.ts ← pending
 - [ ] plugins/workflow-engine/scripts/start_worker.ts ← pending (Temporal non lancé)
@@ -103,4 +120,4 @@
 
 ---
 
-*Dernière mise à jour : 15/05/2026*
+*Dernière mise à jour : 16/05/2026*
