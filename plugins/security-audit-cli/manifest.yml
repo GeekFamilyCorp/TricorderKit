@@ -1,0 +1,82 @@
+name: security-audit-cli
+version: "0.1.0"
+description: "Audit de sécurité TricorderKit — secret scanning, dependency CVE, anonymisation check, pattern analysis"
+service: tricorderkit-core
+language: python
+entrypoint: security_runner.py
+token_budget: 500
+cache:
+  backend: sqlite
+  ttl_seconds: 43200    # 12h — résultats audit réutilisables dans la journée
+  path: .cache/security-audit-cli.db
+dry_run: true
+output_format: json
+output_schema: core/contracts/skill_output.schema.json
+safe_commands:
+  - audit
+  - scan-secrets
+  - check-anon
+  - audit-deps
+  - report
+  - dry-run
+priority: CRITICAL      # Priorité maximale — bloque push si CRITICAL
+
+security:
+  reports_dir: reports/security/
+
+  secret_scanner:
+    enabled: true
+    patterns_file: plugins/security-audit-cli/patterns/secrets.yml
+    exclude_dirs:
+      - .git
+      - __pycache__
+      - node_modules
+      - .venv
+    exclude_extensions:
+      - .lock
+      - .png
+      - .jpg
+      - .db
+      - .sqlite
+
+  anonymization:
+    enabled: true
+    private_terms:
+      - "Japan-Alliance"
+      - "MangaTracker"
+      - "mangatracker-cli"
+    public_repo: "GeekFamilyCorp/TricorderKit"
+    private_repo: "GeekFamilyCorp/Japan-Alliance"
+
+  dependency_audit:
+    enabled: true
+    tool: pip-audit          # Fallback: safety
+    manifests:
+      - "**/requirements.txt"
+      - "**/pyproject.toml"
+    cve_threshold:
+      block: 9.0             # CVE score >= 9.0 → CRITICAL
+      warn: 7.0              # CVE score >= 7.0 → HIGH
+
+  pattern_checker:
+    enabled: true
+    rules:
+      - id: eval_usage
+        pattern: 'eval\('
+        severity: HIGH
+        exclude_paths: ["**/tests/**", "**/*.test.py"]
+      - id: subprocess_shell_true
+        pattern: 'subprocess\.[a-z]+\(.*shell=True'
+        severity: HIGH
+      - id: os_system
+        pattern: 'os\.system\('
+        severity: HIGH
+      - id: pickle_loads
+        pattern: 'pickle\.loads\('
+        severity: HIGH
+
+  exit_codes:
+    CRITICAL: 2
+    HIGH: 1
+    MEDIUM: 0
+    LOW: 0

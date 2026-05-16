@@ -1,0 +1,55 @@
+name: obsidian-agent-layer
+version: "0.1.0"
+description: "Couche d'intégration Obsidian — CRUD notes, templates structurés, routing vault, sync HOT_CACHE"
+service: tricorderkit-core
+language: python
+entrypoint: obsidian_client.py
+token_budget: 600
+cache:
+  backend: sqlite
+  ttl_seconds: 3600
+  path: .cache/obsidian-agent-layer.db
+dry_run: true
+output_format: json
+output_schema: core/contracts/skill_output.schema.json
+safe_commands:
+  - read
+  - search
+  - write
+  - patch
+  - update-hot-cache
+  - dry-run
+priority: HIGH
+
+obsidian:
+  vaults:
+    claude-vault:
+      mcp_server: obsidian-claude-vault
+      hot_cache_path: "00_SYSTEM/05_Hot_Cache/HOT_CACHE.md"
+      daily_log_path: "10_INBOX/Daily_Logs/{date}.md"
+    japan-alliance:
+      mcp_server: obsidian-japan-alliance
+      index_path: "00_SYSTEM/INDEX.md"
+
+  templates:
+    manga:
+      target_folder: "Mangas"
+      required_fields: [title, author, publisher, status]
+    anime:
+      target_folder: "Animes"
+      required_fields: [title, studio, status]
+    seiyuu:
+      target_folder: "Personnes/Seiyuu"
+      required_fields: [name, agency]
+    studio:
+      target_folder: "Studios"
+      required_fields: [name, founded]
+
+  write_guards:
+    dry_run_threshold: 10      # Dry-run obligatoire si > 10 notes en une session
+    archive_on_overwrite: true # Conserver version précédente dans _archive/
+    max_ops_per_session: 50    # Rate-limit opérations MCP
+
+  sync:
+    qdrant_enabled: false      # Phase 6 — non connecté en Phase 5
+    sqlite_log: data/obsidian-agent-layer/sync_log.sqlite
