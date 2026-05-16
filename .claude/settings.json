@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 core/hooks/post_session_hook.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys, json; from core.hooks.post_execution_hook import run_post_execution_hook; data=json.load(sys.stdin); run_post_execution_hook(data.get('plan',{}), data.get('result',{}))\""
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "TEMPORAL_ADDRESS": "localhost:7233",
+    "TEMPORAL_NAMESPACE": "default",
+    "TEMPORAL_TASK_QUEUE": "tricorderkit-hooks"
+  }
+}
