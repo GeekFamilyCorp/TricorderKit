@@ -98,7 +98,7 @@ services:
       - "8080:8080"   # UI Web
     environment:
       TEMPORAL_ADDRESS: "temporal:7233"
-      TEMPORAL_CORS_ORIGINS: "http://localhost:3000"
+      TEMPORAL_CORS_ORIGINS: "http://localhost:3001"
     depends_on:
       - temporal
     restart: unless-stopped
@@ -109,11 +109,11 @@ services:
     container_name: tricorder-langfuse
     pull_policy: if_not_present
     ports:
-      - "3000:3000"   # UI + API
+      - "3001:3000"   # UI + API (3000 réservé par Docker Desktop backend)
     environment:
       DATABASE_URL: "postgresql://langfuse:langfuse@langfuse-db:5432/langfuse"
       NEXTAUTH_SECRET: "${LANGFUSE_NEXTAUTH_SECRET:-change_this_nextauth_secret_in_prod}"
-      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_URL: "http://localhost:3001"
       SALT: "${LANGFUSE_SALT:-change_this_salt_in_prod}"
       TELEMETRY_ENABLED: "false"
     depends_on:
