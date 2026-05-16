@@ -294,7 +294,7 @@ Produire output JSON conforme skill_output.schema.json v1.0.0
 ## 🗂️ Structure de fichiers à créer
 
 ```
-TricorderKit_v0.7/skills/tk-orchestrator/
+TricorderKit_Project/skills/tk-orchestrator/
 ├── SKILL.md                  ← Ce fichier
 ├── orchestrator.py           ← CLI Python (Interface A)
 ├── manifest.yml              ← Compatible cli-forge
@@ -319,7 +319,7 @@ TricorderKit_v0.7/skills/tk-orchestrator/
 ## 🚀 Commandes CLI
 
 ```bash
-# Depuis TricorderKit_v0.7/
+# Depuis TricorderKit_Project/
 python skills/tk-orchestrator/orchestrator.py --dry-run route "liste les repos Claude"
 python skills/tk-orchestrator/orchestrator.py budget-check --intent research --input "$(cat query.txt)"
 python skills/tk-orchestrator/orchestrator.py chain --steps '[

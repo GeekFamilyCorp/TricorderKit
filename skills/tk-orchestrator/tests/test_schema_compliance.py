@@ -22,7 +22,7 @@ from budget.token_tracker import TokenBudget
 
 # ── Chargement du schema ────────────────────────────────────────────────────
 
-_ROOT = Path(__file__).parent.parent.parent.parent  # TricorderKit_v0.7/
+_ROOT = Path(__file__).parent.parent.parent.parent  # TricorderKit_Project/
 SCHEMA_PATH = _ROOT / "core" / "contracts" / "skill_output.schema.json"
 
 

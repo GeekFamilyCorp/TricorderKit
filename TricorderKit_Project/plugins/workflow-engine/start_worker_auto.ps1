@@ -3,6 +3,6 @@
 
 $env:OBSIDIAN_VAULT_PATH = "C:\Users\sebas\iCloudDrive\iCloudmdobsidian\Japan-Alliance"
 
-Set-Location "C:\Users\sebas\Documents\Claude\Projects\TricorderKit Autonome\TricorderKit_v0.7\plugins\workflow-engine"
+Set-Location "C:\Users\sebas\Documents\Claude\Projects\TricorderKit Autonome\TricorderKit_Project\plugins\workflow-engine"
 
 npx ts-node scripts/start_worker.ts
