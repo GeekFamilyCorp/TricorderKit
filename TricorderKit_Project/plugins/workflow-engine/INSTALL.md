@@ -20,6 +20,34 @@ Ce guide couvre l'installation complète du Temporal Worker TricorderKit, depuis
 
 ---
 
+## ⚠️ Architecture du repo — À lire avant d'installer
+
+Le repo TricorderKit a une structure en deux niveaux :
+
+```
+TricorderKit/                              ← racine du clone git
+├── plugins/workflow-engine/               ← FICHIERS SOURCE TypeScript
+│   ├── activities/                        ← logique métier des activités
+│   ├── scripts/start_worker.ts            ← point d'entrée du worker
+│   ├── workflows/                         ← définitions des workflows
+│   └── tsconfig.json
+└── TricorderKit_Project/                  ← FICHIERS DE DÉPLOIEMENT
+    └── plugins/workflow-engine/
+        ├── package.json                   ← dépendances npm (installer ici)
+        ├── package-lock.json
+        ├── tsconfig.json
+        ├── start_worker_auto.ps1
+        └── workflows/index.ts             ← barrel export
+```
+
+**Conséquence pratique :**
+- `npm install` → depuis `TricorderKit_Project\plugins\workflow-engine\`
+- `npx ts-node` → pointer vers `..\..\..\..\plugins\workflow-engine\scripts\start_worker.ts` (racine)
+
+Les étapes ci-dessous tiennent compte de cette architecture.
+
+---
+
 ## Étape 1 — Cloner le dépôt
 
 ```powershell
@@ -46,7 +74,7 @@ Services démarrés :
 | `tricorder-temporal-db` | port 5432 (interne) | Base Postgres de Temporal |
 | `tricorder-temporal` | `localhost:7233` | Temporal Frontend (gRPC) |
 | `tricorder-temporal-ui` | `http://localhost:8080` | UI Temporal |
-| `tricorder-langfuse` | `http://localhost:3000` | Observabilité tokens |
+| `tricorder-langfuse` | `http://localhost:3001` | Observabilité tokens (⚠️ port 3000 réservé par Docker Desktop) |
 
 Attendre que tous les healthchecks soient verts (~30 secondes) :
 
@@ -81,10 +109,12 @@ $env:OBSIDIAN_VAULT_PATH = "C:\Users\<votre_user>\iCloudDrive\iCloudmdobsidian\J
 
 ## Étape 5 — Lancer le worker manuellement (test)
 
+> **Note architecture** : `package.json` est dans `TricorderKit_Project\plugins\workflow-engine\`, mais les sources sont à la racine dans `plugins\workflow-engine\`. La commande ts-node doit pointer vers la racine.
+
 ```powershell
-cd plugins\workflow-engine
+# Depuis TricorderKit_Project\plugins\workflow-engine\ (où npm install a été fait)
 $env:OBSIDIAN_VAULT_PATH = "C:\Users\<votre_user>\..."
-npx ts-node scripts\start_worker.ts
+npx ts-node ..\..\..\..\plugins\workflow-engine\scripts\start_worker.ts
 ```
 
 Sortie attendue :
@@ -190,7 +220,7 @@ docker compose down
 
 | Erreur | Cause probable | Solution |
 |---|---|---|
-| `Cannot find module 'workflows'` | `workflows/index.ts` absent | Vérifier que le fichier barrel existe dans `plugins/workflow-engine/workflows/` |
+| `Cannot find module 'workflows'` | `workflows/index.ts` absent | Vérifier que le fichier barrel existe dans `plugins/workflow-engine/workflows/` (racine du repo, pas TricorderKit_Project) |
 | `Connection refused localhost:7233` | Temporal non démarré | `docker compose up -d` puis attendre 30s |
 | `Unsupported driver: sqlite` | Variable `DB=sqlite` dans docker-compose | Utiliser `DB=postgres12` avec le service `temporal-db` |
 | `config_template.yaml not found` | Volume Docker surcharge le dossier config complet | Monter uniquement `./config/temporal/dynamicconfig` et non `./config/temporal` |
