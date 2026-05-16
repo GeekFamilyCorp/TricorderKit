@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 """
 post_execution_hook — standardise les résultats pour l'auto-amélioration.
-Version : 0.2.0
+Version : 0.2.1
 Output : dict JSON-serializable
 
-Améliorations v0.2.0 vs v0.1.0 :
-- mkdir déplacé dans la fonction (plus de side-effect à l'import)
-- Timestamps ISO-8601 UTC
-- quality_score calculé sur la structure du résultat (vs None fixe)
-- tokens_used extrait du résultat si disponible
-- Validation optionnelle contre skill_output.schema.json (si jsonschema installé)
-- Chemin absolu résolu depuis __file__
+Améliorations v0.2.1 vs v0.2.0 :
+- Ajout champ hook_name dans log_record ("post_execution")
+- Ajout champ skill_name extrait du plan (pour hook_stats.py)
+- Alignement avec hook_policy R1 (format de log standardisé)
 """
 from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 HOOKS_CACHE_DIR = _REPO_ROOT / ".cache" / "hooks"
@@ -78,13 +75,21 @@ def run_post_execution_hook(
     - Calcule quality_score et quality_breakdown.
     - Extrait tokens_used si présent dans le résultat.
     - Valide contre skill_output.schema.json si disponible.
-    - Logue en JSON-lines dans post_execution.log.
+    - Logue en JSON-lines dans post_execution.log (format hook_policy R1).
 
     Ne réalise aucune écriture externe (Neo4j, Obsidian) — délégué à Temporal.
     """
     hooks_meta = plan.get("hooks", {})
     hook_run_id: Optional[str] = hooks_meta.get("hook_run_id")
     hook_timestamp = datetime.now(timezone.utc).isoformat()
+
+    # Extraction du nom du skill/goat depuis le plan (pour hook_stats.py)
+    skill_name: Optional[str] = (
+        plan.get("skill")
+        or plan.get("goat")
+        or plan.get("name")
+        or hooks_meta.get("skill_name")
+    )
 
     tokens_used: Optional[int] = (
         result.get("tokens_used")
@@ -107,14 +112,18 @@ def run_post_execution_hook(
         enriched_result["hooks"]["schema_valid"] = schema_valid
         enriched_result["hooks"]["schema_errors"] = schema_errors
 
+    # Format log_record aligné avec hook_policy R1
     log_record = {
-        "hook_run_id": hook_run_id,
-        "timestamp": hook_timestamp,
+        "hook_name":    "post_execution",
+        "skill_name":   skill_name,
+        "hook_run_id":  hook_run_id,
+        "timestamp":    hook_timestamp,
+        "status":       "ok" if schema_valid is not False else "schema_error",
         "quality_score": quality_score,
         "schema_valid": schema_valid,
-        "tokens_used": tokens_used,
+        "tokens_used":  tokens_used,
         "plan_risk_hint": hooks_meta.get("risk_hint"),
-        "result_keys": list(result.keys()),
+        "result_keys":  list(result.keys()),
     }
 
     try:
