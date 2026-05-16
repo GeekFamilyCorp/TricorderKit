@@ -15,10 +15,14 @@
 - [x] plugins/workflow-engine/workflows/usage_observer.workflow.ts v0.2.0
 - [x] plugins/workflow-engine/workflows/skill_eval.workflow.ts v0.2.0
 - [x] core/mainbrain/MainBrain_v1.4.md → v1.5 (Étapes 0, 2.5, 7bis câblées)
-- [ ] **[PRIORITÉ A]** plugins/workflow-engine/activities/usage_observer.activities.ts
-- [ ] **[PRIORITÉ A]** plugins/workflow-engine/activities/skill_eval.activities.ts
-- [ ] **[PRIORITÉ A]** Lancer Temporal worker → activer boucle d'observation complète
-- [ ] /tk:hook-stats — commande rapport agrégé depuis .cache/hooks/
+- [x] plugins/workflow-engine/activities/usage_observer.activities.ts — readHookLogs, aggregateStats, writeUsageStats (commit eee49eb)
+- [x] plugins/workflow-engine/activities/skill_eval.activities.ts — runCliContracts, runEvalLabScenarios, writeEvalResults (commit 9fd035c)
+- [x] plugins/workflow-engine/activities/index.ts — barrel exports + Activities union type (commit 92b7f86)
+- [x] plugins/workflow-engine/scripts/start_worker.ts — Temporal worker enregistrant tous les workflows et activities (commit 6152ac8)
+- [x] scripts/hook_stats.py — CLI /tk:hook-stats, tableau Markdown agrégé depuis .cache/hooks/ (commit 9749338)
+- [ ] **[KI-004]** Lancer Temporal worker sur la machine hôte → activer boucle d'observation complète
+  - Prérequis : `npm install @temporalio/worker` dans plugins/workflow-engine/
+  - Commande : `OBSIDIAN_VAULT_PATH=/chemin/vault npx ts-node plugins/workflow-engine/scripts/start_worker.ts`
 
 ---
 
@@ -89,10 +93,10 @@
 - [x] plugins/workflow-engine/workflows/source_watch.workflow.ts
 - [x] docker-compose.yml (Neo4j + Qdrant + Langfuse actifs)
 - [x] graph-server MCP opérationnel (ping / store / relate / retrieve)
+- [x] plugins/workflow-engine/scripts/start_worker.ts (commit 6152ac8)
 - [ ] plugins/workflow-engine/workflows/vault_audit.workflow.ts ← pending
 - [ ] plugins/workflow-engine/activities/scan_files.activity.ts ← pending
 - [ ] plugins/workflow-engine/activities/run_cli.activity.ts ← pending
-- [ ] plugins/workflow-engine/scripts/start_worker.ts ← pending (Temporal non lancé)
 
 ---
 
@@ -109,6 +113,7 @@
 ## Backlog — À prioriser
 
 - [ ] KI-003 — Migrer GitHub MCP → `@github/mcp-server@latest`
+- [ ] KI-004 — Lancer Temporal worker (voir Phase 3.5 ci-dessus)
 - [ ] Migrer plugin memory-boot → v0.8
 - [ ] Migrer plugin token-hygiene → v0.8
 - [ ] Connecteurs APIs manga (AniList, MangaDex, Jikan)
@@ -120,4 +125,4 @@
 
 ---
 
-*Dernière mise à jour : 16/05/2026*
+*Dernière mise à jour : 16/05/2026 — Hook Layer v0.2.0 COMPLET (activities + worker + hook_stats)*
