@@ -1,11 +1,11 @@
 /**
- * source_watch.workflow.ts — TricorderKit v0.7
- * Veille automatique MangaTracker / AnimeTracker
+ * source_watch.workflow.ts — TricorderKit v0.8
+ * Workflow générique de veille sources (configurable par linked_project)
  *
  * Temporal workflow persistant :
- * - interroge MangaDex + AniList + Jikan toutes les N minutes
+ * - interroge les sources déclarées dans linked_project/pipelines/sources/
  * - filtre les nouvelles sorties
- * - écrit dans Obsidian Japan-Alliance vault
+ * - écrit dans le vault du linked_project actif
  * - génère un rapport Markdown
  * - respecte le budget tokens
  */
