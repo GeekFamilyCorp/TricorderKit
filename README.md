@@ -2,8 +2,8 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-0.7-blue)](CHANGELOG.md)
-[![Status](https://img.shields.io/badge/phase-2%20CLI--first-orange)](/.planning/STATE.md)
+[![Version](https://img.shields.io/badge/version-0.8-blue)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/phase-6%20linked__project-green)](/.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
 ---
@@ -15,6 +15,7 @@ TricorderKit is an **Agentic Knowledge OS** — a local-first system that transf
 ```
 v0.6 definition : memory + skills + token hygiene + observability
 v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
+v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
 ```
 
 It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
@@ -130,19 +131,39 @@ TricorderKit/
 ├── docker-compose.yml      ← local infrastructure (DEV only — see file header)
 ├── .env.example            ← environment variables template
 │
-├── tools/                  ← your domain CLIs (add your own here)
+├── cli/
+│   └── tk.py               ← unified CLI (tk status/health/skill/workflow/vault/research/project)
+│
+├── tools/                  ← domain CLIs (add your own here)
 │   ├── github-goat/        ← GitHub API CLI (example)
-│   └── your-scraper/       ← generic web scraper scaffold (RSS/HTTP/trafilatura)
+│   ├── your-scraper/       ← generic web scraper scaffold (RSS/HTTP/trafilatura)
+│   └── audit/              ← linked_project_audit.py + local_vs_github_audit.py
+│
+├── configs/
+│   ├── shared/defaults.yaml       ← defaults (versioned)
+│   ├── local/                     ← local overrides (gitignored)
+│   └── vps/                       ← VPS overrides (gitignored, future)
+│
+├── templates/
+│   └── linked_project_template/   ← reproducible linked_project template
+│
+├── docs/
+│   └── linked_projects.md         ← linked_project convention
+│
+├── reports/                ← generated audit + research reports
 │
 ├── core/
-│   ├── mainbrain/          ← MainBrain v1.4 decision algorithm
+│   ├── mainbrain/          ← MainBrain v1.5 decision algorithm
 │   └── contracts/          ← JSON schemas (skill output contract)
 │
 ├── plugins/
 │   ├── cli-forge/          ← deterministic CLI generator & scaffolding
-│   │   └── scripts/        ← manifest validator
-│   ├── workflow-engine/    ← Temporal workflows
-│   └── deep-research-core/ ← autonomous research pipelines (generic)
+│   ├── workflow-engine/    ← Temporal workflows + activities + worker
+│   ├── deep-research-core/ ← autonomous research pipelines (generic)
+│   ├── hook-layer/         ← Pre-Intent / Pre-Execution / Post-Execution hooks
+│   ├── eval-lab/           ← quality loop — eval runner + regression checker
+│   ├── obsidian-agent-layer/ ← vault router + note builder
+│   └── security-audit-cli/ ← security runner (audit, secrets, anon-check)
 │
 ├── skills/
 │   └── tk-boot/            ← /tk:boot skill
@@ -157,9 +178,9 @@ TricorderKit/
 └── .planning/
     ├── STATE.md            ← current project state
     ├── TASKS.md            ← active backlog
-    ├── DECISIONS.md        ← architectural decisions log
+    ├── DECISIONS.md        ← architectural decisions log (DEC-001 → DEC-011)
     ├── RISKS.md            ← risk register
-    └── ROADMAP_v0.7.md     ← 5-phase roadmap
+    └── ROADMAP_v0.7.md     ← 6-phase roadmap
 ```
 
 ---
@@ -185,30 +206,40 @@ python tests/cli_contracts/test_github_goat.py
 
 ---
 
-## v0.7 — What's New vs v0.6
+## v0.8 — What's New vs v0.7
 
 See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 
-- **MainBrain v1.4** — upgraded routing engine with Risk Guard, CLI Selector, Token Hygiene Guard, and Dry-run mode
-- **cli-forge plugin** — generates deterministic CLIs for any domain (github-goat included as example), with SQLite cache and dry-run support
-- **workflow-engine plugin** — Temporal-based persistent workflows with token budget guard and pause/resume signals
-- **deep-research-core plugin** — autonomous local-first research engine (configurable sources: RSS, web scraping, GitHub, custom APIs)
+- **linked_project architecture** — TricorderKit is now a generic engine; domain-specific content lives in separate private linked_projects (first: Japan-Alliance)
+- **Hook layer v0.2** — Pre-Intent, Pre-Execution, Post-Execution hooks wired into MainBrain; 25 tests
+- **Quality loop** — eval-lab (eval_runner + baseline_store + regression_checker), security-audit-cli, obsidian-agent-layer
+- **CLI `tk`** — unified entrypoint: `tk status`, `tk health`, `tk skill list`, `tk workflow list`, `tk vault scan`, `tk research run --dry-run`, `tk project *`, `--format json|markdown` everywhere
+- **Audit tools** — `tools/audit/linked_project_audit.py` + `tools/audit/local_vs_github_audit.py`
+- **Template** — `templates/linked_project_template/` reproductible (9 subdirs + configs)
+- **Config layers** — `configs/shared/defaults.yaml` (versioned) + local + vps overrides (gitignored)
+- **GitHub MCP migration** — `@modelcontextprotocol/server-github` → `ghcr.io/github/github-mcp-server` (Docker, official)
+
+## v0.7 — What's New vs v0.6
+
+- **MainBrain v1.4** — Risk Guard, CLI Selector, Token Hygiene Guard, Dry-run mode
+- **cli-forge plugin** — deterministic CLI generator (github-goat example), SQLite cache
+- **workflow-engine plugin** — Temporal persistent workflows with token budget guard
+- **deep-research-core plugin** — autonomous local-first research engine (RSS, web, APIs)
 - **Contract testing** — `skill_output.schema.json` mandatory for all skills
-- **Rate limiting** — `token_budget` per workflow with `pause_and_notify`
 - **docker-compose.yml** — Neo4j + Qdrant + Temporal + Langfuse local stack
-- **5-phase roadmap** with milestone dates in `.planning/ROADMAP_v0.7.md`
 
 ---
 
-## Phase Roadmap (v0.7)
+## Phase Roadmap (v0.8)
 
-| Phase | Name | Status | Target |
+| Phase | Name | Status | Completed |
 |---|---|---|---|
 | 1 | Foundations | ✅ Complete | 10/05/2026 |
-| 2 | CLI-first (cli-forge) | 🔶 In progress | 17/05/2026 |
-| 3 | Persistent workflows (Temporal) | 🔲 Pending | 07/06/2026 |
-| 4 | Deep Research | 🔲 Pending | 21/06/2026 |
-| 5 | Quality loop (eval-lab, security) | 🔲 Pending | 05/07/2026 |
+| 2 | CLI-first (cli-forge) | ✅ Complete | 17/05/2026 |
+| 3 | Persistent workflows (Temporal) | ✅ Complete | 15/05/2026 |
+| 4 | Deep Research | ✅ Complete | 16/05/2026 |
+| 5 | Quality loop (eval-lab, security) | ✅ Complete | 16/05/2026 |
+| 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
 
 ---
 
@@ -220,5 +251,5 @@ This is a personal/research project. If you fork it, please respect the atomic k
 
 ---
 
-*TricorderKit v0.7 — GeekFamilyCorp — 2026*  
+*TricorderKit v0.8 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*
