@@ -4,7 +4,42 @@
 
 ---
 
-## [0.7.0] — 10/05/2026 — En cours
+## [0.8.0] — 17/05/2026 — Linked project architecture + Quality loop
+
+### Ajouté
+- **Architecture linked_project** — séparation moteur générique / domaine privé (DEC-010)
+  - `configs/local/linked_projects.yaml` (non versionné) + `linked_projects.example.yaml` (versionné)
+  - `docs/linked_projects.md` — convention officielle
+  - `templates/linked_project_template/` — template reproductible (9 sous-dossiers + configs)
+  - Japan-Alliance déclaré comme premier linked_project actif
+- **CLI `tk` v0.2.0** — entrypoint unifié : `tk status/health/doctor/skill list/workflow list/vault scan/research run --dry-run/project *` + `--format json|markdown` sur toutes les commandes
+- **Hook layer v0.2** — Pre-Intent, Pre-Execution, Post-Execution hooks câblés dans MainBrain v1.5 ; 25 tests pytest ; activities Temporal + worker RUNNING
+- **Plugins quality loop** — eval-lab (eval_runner, baseline_store, regression_checker), security-audit-cli, obsidian-agent-layer (vault_router, note_builder)
+- **Audit tools** — `tools/audit/linked_project_audit.py` (structure, git, config, secrets, consistency) + `tools/audit/local_vs_github_audit.py` (diff local vs GitHub)
+- **Config layers** — `configs/shared/defaults.yaml` (versionné) + `configs/local/settings.yaml` + `configs/vps/settings.yaml` (gitignorés)
+- **Reports** — `reports/local_first_audit_2026-05-17.md` — premier audit système complet
+- **Tests live deep-research** — MangaDex ✅ + AniList ✅ (Jikan intermittent côté serveur tiers)
+
+### Modifié
+- MainBrain v1.4 → v1.5 (hooks Pre-Intent, Pre-Execution, Post-Execution câblés)
+- `docker-compose.yml` — Langfuse port 3000 → 3001 (conflit Docker Desktop résolu)
+- GitHub MCP — migration `@modelcontextprotocol/server-github` → `ghcr.io/github/github-mcp-server` (Docker officiel, KI-003)
+- `.gitignore` — ajout configs locaux non versionnés
+
+### Décisions
+- DEC-008 : LangGraph pour boucles agentiques courtes
+- DEC-009 : architecture hybride graph+vector (Neo4j + Qdrant)
+- DEC-010 : pattern linked_project — TricorderKit exécute, le projet lié spécialise
+- DEC-011 : VPS extension optionnelle future (non déployé)
+
+### Résolus
+- KI-004 : Temporal worker — tsconfig CommonJS + DB postgres12 + barrel export + docker cleanup
+- ERR-T-002 : `${CLAUDE_PLUGIN_ROOT}` → chemin absolu + `datetime.utcnow()` → timezone-aware
+- KI-003 : GitHub MCP déprécié → migration Docker officielle
+
+---
+
+## [0.7.0] — 10/05/2026 — Complet
 
 ### Ajouté
 - README_FIRST.md — fichier de boot obligatoire
