@@ -86,7 +86,7 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 |---|---|
 | Neo4j | ✅ Actif via Docker Compose |
 | Qdrant | ✅ Actif via Docker Compose |
-| Langfuse | 🟡 Port 3000 en conflit — à résoudre |
+| Langfuse | ✅ Actif sur :3001 (3000 réservé Docker Desktop — résolu commit 0fae3ed) |
 | Temporal | ✅ RUNNING — worker actif sur tricorderkit-hooks |
 | graph-server MCP | ✅ ping / store / relate / retrieve opérationnels |
 | QualityGuard | ✅ Semgrep 1.162.0 + Trivy 0.70.0 + Gitleaks 8.30.1 |
