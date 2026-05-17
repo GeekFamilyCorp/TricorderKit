@@ -50,5 +50,7 @@ logs/
 .vscode/settings.json
 .idea/
 
-# Linked projects — chemins locaux réels (non versionnés)
+# Configs locales — chemins réels et secrets (non versionnés)
 configs/local/linked_projects.yaml
+configs/local/settings.yaml
+configs/vps/settings.yaml

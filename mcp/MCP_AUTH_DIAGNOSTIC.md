@@ -107,11 +107,36 @@ Régénérer sur GitHub et reprendre à l'étape 2.
 
 ## Référence : variables d'environnement des MCPs courants
 
-| MCP package | Variable attendue | Vérifié le |
-|-------------|------------------|------------|
-| `@modelcontextprotocol/server-github` | `GITHUB_PERSONAL_ACCESS_TOKEN` | 2026-05-11 |
+| MCP package | Variable attendue | Vérifié le | Statut |
+|-------------|------------------|------------|--------|
+| `@modelcontextprotocol/server-github` | `GITHUB_PERSONAL_ACCESS_TOKEN` | 2026-05-11 | ❌ Déprécié (avril 2025) |
+| `ghcr.io/github/github-mcp-server` (Docker) | `GITHUB_PERSONAL_ACCESS_TOKEN` | 2026-05-17 | ✅ Officiel actif |
 
 > Mettre à jour ce tableau à chaque nouveau MCP ajouté au projet.
+
+---
+
+## KI-003 — Migration GitHub MCP (résolu le 17/05/2026)
+
+**Problème** : `@modelcontextprotocol/server-github` déprécié en avril 2025. Développement déplacé vers `github/github-mcp-server`.
+
+**Solution appliquée** : migration vers l'image Docker officielle `ghcr.io/github/github-mcp-server`.
+
+Config dans `claude_desktop_config.json` (chemin MSIX réel) :
+
+```json
+"github": {
+  "command": "docker",
+  "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+  "env": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "<TOKEN>"
+  }
+}
+```
+
+**Prérequis** : Docker Desktop actif. La variable `GITHUB_PERSONAL_ACCESS_TOKEN` est inchangée.
+
+**Redémarrage Claude Desktop requis** après modification de la config.
 
 ---
 

@@ -1,0 +1,86 @@
+# configs/shared/defaults.yaml — TricorderKit v0.8
+# Valeurs par défaut communes à tous les environnements (local + VPS futur)
+# Ce fichier EST versionné. Ne jamais y mettre de secrets ou chemins absolus.
+# Les surcharges locales se font dans configs/local/settings.yaml (non versionné)
+# Les surcharges VPS se font dans configs/vps/settings.yaml (non versionné)
+
+tricorderkit:
+  version: "0.8"
+  name: "TricorderKit"
+  description: "Agentic Knowledge OS — local-first generic engine"
+
+# ─── Services par défaut ──────────────────────────────────────────────────────
+services:
+  neo4j:
+    port: 7687
+    http_port: 7474
+    database: "neo4j"
+
+  qdrant:
+    port: 6333
+    collection_prefix: "tk_"
+
+  langfuse:
+    port: 3001                    # 3000 réservé Docker Desktop en local
+    public_key_env: LANGFUSE_PUBLIC_KEY
+    secret_key_env: LANGFUSE_SECRET_KEY
+
+  temporal:
+    port: 7233
+    namespace: "default"
+    task_queue: "tricorderkit-hooks"
+
+# ─── Deep Research defaults ───────────────────────────────────────────────────
+deep_research:
+  max_sources_per_run: 20
+  dedup_threshold: 0.85           # similarité cosinus min pour dédupliquer
+  score_min_pass: 0.5             # score minimum pour inclusion dans le résultat
+  export_format: ["markdown", "json"]
+  rate_limit_rps: 1               # appels/seconde vers APIs tierces
+  user_agent: "TricorderKit-Research/0.8"
+
+# ─── Vault defaults ───────────────────────────────────────────────────────────
+vault:
+  target_note_tokens: 300         # taille cible par note (100-500)
+  frontmatter_required: true
+  atomic_principle: true          # 1 idée = 1 fichier
+
+# ─── Hooks defaults ───────────────────────────────────────────────────────────
+hooks:
+  pre_intent:
+    enabled: true
+    log_path: ".cache/hooks/pre_intent.log"
+  pre_execution:
+    enabled: true
+    log_path: ".cache/hooks/pre_execution.log"
+    estimated_tokens_char_ratio: 1.3
+  post_execution:
+    enabled: true
+    log_path: ".cache/hooks/post_execution.log"
+    quality_score_criteria: 4
+
+# ─── Token budget defaults ────────────────────────────────────────────────────
+token_budget:
+  session_max: 80000
+  warn_threshold_pct: 0.80        # alerte à 80% du budget
+  hard_stop_pct: 0.95             # arrêt forcé à 95%
+
+# ─── Audit defaults ───────────────────────────────────────────────────────────
+audit:
+  git_fetch_timeout_s: 20
+  secret_scan_extensions:
+    - ".py"
+    - ".ts"
+    - ".js"
+    - ".yaml"
+    - ".yml"
+    - ".json"
+    - ".md"
+    - ".env"
+    - ".sh"
+
+# ─── Output defaults ──────────────────────────────────────────────────────────
+output:
+  default_format: "markdown"      # markdown | json
+  encoding: "utf-8"
+  reports_dir: "reports/"

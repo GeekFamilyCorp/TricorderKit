@@ -46,4 +46,33 @@
 - Raison : Neo4j = liens structurels. Qdrant = similarite semantique. Les deux sont non-substituables.
 - Impact : core/contracts/graph.schema.json + sync automatique Neo4j vers Qdrant a chaque ecriture
 
-*Derniere mise a jour : 11/05/2026*
+### DEC-010 — Pattern linked_project : séparation moteur / domaine
+- Date : 17/05/2026 | Statut : Acceptée
+- Décision : TricorderKit est un moteur générique anonymisé. Tout ce qui est domaine-spécifique (sources, scrapers, vocabulaire métier, vault privé) vit dans un linked_project privé séparé.
+- Règle d'or : **TricorderKit exécute. Le projet lié spécialise.**
+- Raison : (1) TricorderKit doit pouvoir être partagé publiquement sans fuites de données privées. (2) Séparer les cycles de vie — le moteur évolue indépendamment du contenu. (3) Permettre plusieurs linked_projects (Japan-Alliance, futurs projets) sur le même moteur.
+- Implémentation :
+  - `configs/local/linked_projects.yaml` (non versionné) — chemins réels locaux
+  - `configs/local/linked_projects.example.yaml` (versionné) — template documentation
+  - `docs/linked_projects.md` — convention officielle
+  - `templates/linked_project_template/` — template reproductible
+  - `tools/audit/linked_project_audit.py` — audit structure + git + config + secrets
+  - `tools/audit/local_vs_github_audit.py` — sync local vs GitHub
+  - CLI `tk project *` — commandes dédiées linked_project
+- Linked projects actifs : **Japan-Alliance** (GeekFamilyCorp/Japan-Alliance — privé)
+- Isolation garantie par :
+  - `.gitignore` TricorderKit exclut tous les fichiers locaux non génériques
+  - `private_terms` dans `project_config/project.yaml` du linked_project
+  - Scan secrets avant push via `linked_project_audit.py`
+- Alternatives rejetées : monorepo (couplage fort, risque de fuite), sous-modules Git (complexité, friction workflow)
+- Impact : Phase 6 complète — commits `5acec97` (TK) + `d8f8696` (JA)
+
+### DEC-011 — VPS : extension optionnelle future (pas encore déployé)
+- Date : 17/05/2026 | Statut : Acceptée — En préparation
+- Décision : TricorderKit reste local-first. Un VPS pourra être ajouté comme extension optionnelle pour la persistance longue durée, le scheduling headless et le partage de rapports.
+- Principe : le VPS ne remplace pas le local, il complète. La machine locale reste le point de vérité.
+- État : `configs/vps/settings.yaml` créé comme template (status: PENDING — non déployé).
+- Prochaines étapes VPS : choisir provider → configurer Docker Compose → configurer reverse proxy (Caddy) → sync sélectif reports/ uniquement.
+- Alternatives rejetées : Cloud-only (dépendance, coût, latence) — aucune migration forcée.
+
+*Dernière mise à jour : 17/05/2026*
