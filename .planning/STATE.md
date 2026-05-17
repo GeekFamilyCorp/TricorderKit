@@ -141,9 +141,9 @@ Phase 6 COMPLÈTE — Architecture linked_project opérationnelle.
 
 Actions restantes :
   ✅ Migration japan-alliance effectuée (2026-05-17)
-  ⏸ Tests live deep-research : pytest plugins/deep-research-core/tests/ --live
+  ✅ Tests live deep-research : MangaDex 3/3 ✅ + AniList 2/2 ✅ — Jikan 504 (serveur tiers intermittent, non bloquant)
   ⏸ Langfuse : port 3000 en conflit — changer port ou libérer
-  ⬜ CLI tk minimal : tk status, tk doctor, tk project list/status
+  ✅ CLI tk minimal v0.1.0 : tk status / doctor / project list / project status (commit 716268b)
   ⬜ KI-003 : migration GitHub MCP vers @github/mcp-server@latest
   ⬜ Cloner Japan-Alliance localement + créer configs/local/linked_projects.yaml
 ```
