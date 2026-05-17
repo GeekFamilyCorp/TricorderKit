@@ -1,0 +1,65 @@
+name: connector-hub
+version: 0.1.0
+description: |
+  Hub d'ingestion passif multi-sources pour TricorderKit.
+  Lit les déclarations sources de chaque linked_project actif,
+  construit un registre unifié et route vers le bon CLI d'ingestion.
+author: GeekFamilyCorp
+type: plugin
+category: ingestion
+
+entrypoint: connector_hub.py
+
+commands:
+  list:
+    description: Lister toutes les sources déclarées (linked_projects + core)
+    flags:
+      - --all         # inclure les sources désactivées
+      - --format json
+  status:
+    description: Vérifier la joignabilité HTTP de chaque source
+    flags:
+      - --dry-run
+      - --format json
+  dispatch:
+    description: Déclencher l'ingestion via le bon CLI (source-watch-goat, github-goat, deep-research-core)
+    flags:
+      - --source <id|type>
+      - --all
+      - --dry-run
+      - --format json
+
+handlers:
+  mangadex:  plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py
+  anilist:   plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py
+  jikan:     plugins/cli-forge/generated/source-watch-goat/source_watch_goat.py
+  github:    plugins/cli-forge/generated/github-goat/github_goat.py
+  rss:       plugins/deep-research-core/scripts/collect_sources.py
+  rest_api:  plugins/deep-research-core/scripts/collect_sources.py
+  graphql:   plugins/deep-research-core/scripts/collect_sources.py
+  web:       plugins/deep-research-core/scripts/collect_sources.py
+
+sources_config:
+  linked_projects: configs/local/linked_projects.yaml  # projet actif → project_config/sources.yaml
+  core:            plugins/deep-research-core/sources/trusted_sources.yml
+
+dependencies:
+  python: ">=3.11"
+  pip:
+    - pyyaml
+    - requests     # optionnel — requis pour cmd_status uniquement
+
+output_contract: core/contracts/skill_output.schema.json
+
+dry_run_support: true
+format_support:
+  - markdown
+  - json
+
+risk_level: LOW  # read-only sauf dispatch (qui appelle des sous-CLIs)
+
+linked_to:
+  - plugins/cli-forge/generated/source-watch-goat/
+  - plugins/cli-forge/generated/github-goat/
+  - plugins/deep-research-core/
+  - plugins/workflow-engine/workflows/source_watch.workflow.ts
