@@ -134,20 +134,36 @@ Règle d'or :
   TricorderKit exécute. Japan-Alliance spécialise. VPS = extension optionnelle.
 ```
 
+## Rank S — Complétés (2026-05-17)
+
+| Item | Statut | Commit |
+|---|---|---|
+| Migration japan-alliance | ✅ | commits précédents |
+| Langfuse port 3001 | ✅ | 0fae3ed |
+| configs/local/linked_projects.yaml | ✅ | local only |
+| Tests live deep-research | ✅ MangaDex + AniList — Jikan 504 non bloquant | — |
+| CLI tk v0.1.0 : status / doctor / project list | ✅ | 716268b |
+| docs/linked_projects.md | ✅ | 5acec97 |
+| templates/linked_project_template/ | ✅ | 5acec97 |
+| project_config/ Japan-Alliance | ✅ | d8f8696 |
+| tools/audit/ (2 scripts) | ✅ | 5acec97 |
+| CLI tk v0.2.0 : 8 nouvelles commandes + --format | ✅ | 5acec97 |
+| Push TricorderKit + Japan-Alliance GitHub | ✅ | TK: 5acec97 / JA: d8f8696 |
+
 ## Prochaine action recommandée
 
 ```text
-Phase 6 COMPLÈTE — Architecture linked_project opérationnelle.
-
-Actions restantes :
-  ✅ Migration japan-alliance effectuée (2026-05-17)
-  ✅ Tests live deep-research : MangaDex 3/3 ✅ + AniList 2/2 ✅ — Jikan 504 (serveur tiers intermittent, non bloquant)
-  ⏸ Langfuse : port 3000 en conflit — changer port ou libérer
-  ✅ CLI tk minimal v0.1.0 : tk status / doctor / project list / project status (commit 716268b)
+Rang A (next sprint) :
+  ⬜ configs/local/settings.yaml + configs/vps/settings.yaml + configs/shared/defaults.yaml
+  ⬜ .planning/DECISIONS.md — entrée architecture linked_project
+  ⬜ reports/local_first_audit_2026-05-17.md
   ⬜ KI-003 : migration GitHub MCP vers @github/mcp-server@latest
-  ⬜ Cloner Japan-Alliance localement + créer configs/local/linked_projects.yaml
+
+Rang B (backlog) :
+  ⬜ tests/test_cli_local.py + tests/test_linked_project.py
+  ⬜ Connector Hub (passive multi-source ingestion)
 ```
 
 ---
 
-*Dernière mise à jour : 17/05/2026 — Phase 6 COMPLÈTE — Migration linked_project japan-alliance effectuée*
+*Dernière mise à jour : 17/05/2026 — Rang S COMPLET — TricorderKit v0.8 + Japan-Alliance linked_project opérationnels*
