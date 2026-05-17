@@ -59,7 +59,7 @@
   - `tools/audit/linked_project_audit.py` — audit structure + git + config + secrets
   - `tools/audit/local_vs_github_audit.py` — sync local vs GitHub
   - CLI `tk project *` — commandes dédiées linked_project
-- Linked projects actifs : **Japan-Alliance** (GeekFamilyCorp/Japan-Alliance — privé)
+- Linked projects actifs : **Japan-Alliance** (GeekFamilyCorp/Japan-Alliance — privé) + **MangaTracker** (GeekFamilyCorp/MangaTracker — privé)
 - Isolation garantie par :
   - `.gitignore` TricorderKit exclut tous les fichiers locaux non génériques
   - `private_terms` dans `project_config/project.yaml` du linked_project
@@ -74,5 +74,21 @@
 - État : `configs/vps/settings.yaml` créé comme template (status: PENDING — non déployé).
 - Prochaines étapes VPS : choisir provider → configurer Docker Compose → configurer reverse proxy (Caddy) → sync sélectif reports/ uniquement.
 - Alternatives rejetées : Cloud-only (dépendance, coût, latence) — aucune migration forcée.
+
+### DEC-012 — Japan-Alliance = vault pur, MangaTracker = assistant CLI
+- Date : 17/05/2026 | Statut : Acceptée
+- Décision : Refonte complète de l’architecture linked_projects. Japan-Alliance devient un **vault Obsidian pur** (données uniquement, aucun code exécutable). MangaTracker devient l’**assistant IA dédié** qui absorbe l’intégralité du code, des CLIs, des skills et des pipelines.
+- Raison :
+  (1) Séparation nette données / logique : Japan-Alliance ne dépend plus d’aucun runtime.
+  (2) Japan-Alliance doit être accessible en lecture à plusieurs LLMs (Claude, ChatGPT, Perplexity, Qwen) via API GitHub — un vault pur est plus simple à partager et documenter.
+  (3) MangaTracker concentre la complexité opérationnelle et évolue indépendamment du vault.
+  (4) Japan-Alliance a vocation à devenir un site web — une structure vault-only est directement exploitable pour la génération statique.
+- Migration effectuée (2026-05-17) :
+  - Tout le code Python, skills, pipelines, plugins migré vers MangaTracker
+  - Japan-Alliance nettoyé : conserve uniquement `vault/`, `templates/`, `README.md`, `CONTEXT.md`
+  - `CONTEXT.md` créé dans Japan-Alliance : guide de navigation pour Claude, ChatGPT, Perplexity, Qwen
+  - `linked_projects.example.yaml` mis à jour : MangaTracker (type: ai_assistant) + Japan-Alliance (type: obsidian_vault, read_only: true)
+- Règle d'or mise à jour : **TricorderKit exécute. MangaTracker spécialise. Japan-Alliance stocke.**
+- Impact : STATE.md Phase 6.5 — commits Japan-Alliance (`84dd260`) + TricorderKit (ce commit)
 
 *Dernière mise à jour : 17/05/2026*
