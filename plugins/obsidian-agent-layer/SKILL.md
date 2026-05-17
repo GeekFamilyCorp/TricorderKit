@@ -37,7 +37,7 @@ plugins/obsidian-agent-layer/
 ├── manifest.yml               ← Compatible cli-forge
 ├── obsidian_client.py         ← Wrapper MCP → API Python unifiée
 ├── note_builder.py            ← Construction frontmatter + body Obsidian
-├── vault_router.py            ← Routing vault (claude-vault / japan-alliance / custom)
+├── vault_router.py            ← Routing vault (claude-vault / linked_project / custom)
 ├── template_registry.py       ← Templates Obsidian par type (manga, anime, seiyū...)
 ├── sync_engine.py             ← Détection changements + propagation Qdrant/SQLite
 └── tests/
@@ -54,9 +54,9 @@ plugins/obsidian-agent-layer/
 
 | Vault ID          | Path Obsidian                        | Usage principal                    |
 |---|---|---|
-| `claude-vault`    | Claude Vault (MCP connecté)          | Mémoire système, daily logs, HOT_CACHE |
-| `japan-alliance`  | Japan-Alliance Vault (MCP connecté)  | Fiches manga, animé, seiyū, studios |
-| `custom`          | Configurable via manifest.yml        | Usage projet spécifique            |
+| `claude-vault`      | Claude Vault (MCP connecté)          | Mémoire système, daily logs, HOT_CACHE |
+| `linked_project`    | Vault du linked_project actif        | Données métier du projet privé connecté |
+| `custom`            | Configurable via manifest.yml        | Usage projet spécifique            |
 
 ---
 
@@ -74,10 +74,10 @@ plugins/obsidian-agent-layer/
       "notes_created": 3,
       "notes_updated": 1,
       "notes_failed": 0,
-      "vault": "japan-alliance",
+      "vault": "linked_project",
       "paths": [
-        "Mangas/Dragon Ball/dragon-ball.md",
-        "Mangakas/Toriyama-Akira.md"
+        "domain/entity-type/entity-name.md",
+        "domain/entity-type/entity-name-2.md"
       ]
     },
     "files_created": [],
@@ -96,10 +96,10 @@ echo '{"path": "Mangas/Test/test.md", "content": "# Test"}' \
   | python plugins/obsidian-agent-layer/obsidian_client.py write
 
 # Recherche full-text
-python plugins/obsidian-agent-layer/obsidian_client.py search "Dragon Ball" --vault japan-alliance
+python plugins/obsidian-agent-layer/obsidian_client.py search "My Query" --vault linked_project
 
-# Construire une fiche manga structurée
-python plugins/obsidian-agent-layer/note_builder.py manga --title "Dragon Ball" --author "Toriyama Akira"
+# Construire une fiche domaine structurée
+python plugins/obsidian-agent-layer/note_builder.py entity --title "Entity Name" --author "Author Name"
 
 # Mettre à jour le HOT_CACHE
 python plugins/obsidian-agent-layer/obsidian_client.py update-hot-cache

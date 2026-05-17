@@ -7,8 +7,8 @@
 ## Version courante
 
 - **Version** : 0.8
-- **Date** : 16/05/2026
-- **Phase active** : Phase 4 — Deep Research *(débloquée)*
+- **Date** : 17/05/2026
+- **Phase active** : Phase 6 — Séparation linked_project *(complète)*
 
 ---
 
@@ -24,6 +24,7 @@
 | 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
 | 4 | Deep Research | ✅ Complet (tests live EN ATTENTE) | 2026-05-16 |
 | 5 | Quality Loop | ✅ Complet | 2026-05-16 |
+| 6 | Séparation linked_project | ✅ Migration japan-alliance effectuée | 2026-05-17 |
 
 ---
 
@@ -112,17 +113,41 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 
 ---
 
+## Architecture linked_project (Phase 6 — 2026-05-17)
+
+```text
+TricorderKit  = moteur générique anonymisé
+Japan-Alliance = linked_project privé spécialisé (GeekFamilyCorp/Japan-Alliance)
+
+Fichiers migrés vers GeekFamilyCorp/Japan-Alliance :
+  tools/mangatracker-cli/    → japan-alliance/tools/mangatracker-cli/
+  tools/jp-scraper/          → japan-alliance/tools/jp-scraper/
+  deep-research-core/sources/japanese_sources.yml → japan-alliance/pipelines/sources/
+  deep-research-core/pipelines/anime_staff_research.yml → japan-alliance/pipelines/
+  deep-research-core/tests/test_live_sources.py → japan-alliance/tests/deep_research/
+
+Lien local déclaré dans :
+  configs/local/linked_projects.yaml (non versionné — chemins réels)
+  configs/local/linked_projects.example.yaml (versionné — template)
+
+Règle d'or :
+  TricorderKit exécute. Japan-Alliance spécialise. VPS = extension optionnelle.
+```
+
 ## Prochaine action recommandée
 
 ```text
-Phases 0→5 toutes COMPLÈTES. KI-004 résolu — worker RUNNING.
+Phase 6 COMPLÈTE — Architecture linked_project opérationnelle.
 
 Actions restantes :
-  ⏸ Tests live : pytest plugins/deep-research-core/tests/ --live
+  ✅ Migration japan-alliance effectuée (2026-05-17)
+  ⏸ Tests live deep-research : pytest plugins/deep-research-core/tests/ --live
   ⏸ Langfuse : port 3000 en conflit — changer port ou libérer
-  ⬜ Backlog : Japan Alliance Phase 1, obsidian-goat CLI, ROADMAP_v0.8.md, KI-003
+  ⬜ CLI tk minimal : tk status, tk doctor, tk project list/status
+  ⬜ KI-003 : migration GitHub MCP vers @github/mcp-server@latest
+  ⬜ Cloner Japan-Alliance localement + créer configs/local/linked_projects.yaml
 ```
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — KI-004 RÉSOLU — Worker Temporal RUNNING — Toutes phases + blockers critiques finalisés*
+*Dernière mise à jour : 17/05/2026 — Phase 6 COMPLÈTE — Migration linked_project japan-alliance effectuée*

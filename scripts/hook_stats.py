@@ -15,7 +15,7 @@ Usage :
   python3 scripts/hook_stats.py
   python3 scripts/hook_stats.py --format json
   python3 scripts/hook_stats.py --last 50
-  python3 scripts/hook_stats.py --skill mangatracker
+  python3 scripts/hook_stats.py --skill my-domain-cli
   python3 scripts/hook_stats.py --domain manga_anime
 """
 

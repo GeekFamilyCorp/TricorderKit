@@ -64,11 +64,17 @@ plugins/security-audit-cli/
 | Connection string DB  | `postgresql://user:pass@host/db`        |
 
 ### Anonymisation — termes privés bloquants (push public)
-| Terme bloquant         | Raison                                 |
-|---|---|
-| `Japan-Alliance`       | Nom du projet privé                    |
-| `MangaTracker`         | Nom de l'app privée                    |
-| `mangatracker-cli`     | Nom de la CLI privée                   |
+Déclarer les termes privés dans `linked_project/project_config/project.yaml` → champ `private_terms[]`.
+TricorderKit charge cette liste au runtime pour bloquer tout push public contenant des données métier.
+
+Exemple de configuration :
+```yaml
+# linked_project/project_config/project.yaml
+private_terms:
+  - MyPrivateProjectName
+  - MyPrivateAppName
+  - my-private-cli
+```
 
 ### Pattern Checker — sévérité HIGH
 - `eval(` dans du code Python non test

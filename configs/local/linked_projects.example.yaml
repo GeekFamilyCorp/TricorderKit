@@ -1,0 +1,48 @@
+# linked_projects.example.yaml — TricorderKit v0.8
+# Convention : TricorderKit = moteur générique. linked_project = projet privé spécialisé.
+#
+# Copier ce fichier en linked_projects.yaml et renseigner les chemins réels.
+# NE PAS versionner linked_projects.yaml (contient des chemins personnels).
+#
+# Règle d'or :
+#   TricorderKit exécute.
+#   Le projet lié spécialise.
+
+tricorderkit_root: C:/Users/<user>/Documents/Projects/TricorderKit
+
+linked_projects:
+
+  - id: japan-alliance
+    name: Japan Alliance
+    type: private_project
+    visibility: private
+    domain: manga_anime_japan_popculture
+    github_repo: GeekFamilyCorp/Japan-Alliance
+    root: C:/Users/<user>/Documents/Projects/Japan-Alliance
+    enabled: true
+    paths:
+      vault: japan-alliance_vault/
+      tools: tools/
+      pipelines: pipelines/
+      sources: pipelines/sources/
+      tests: tests/
+      data: data/
+      docs: docs/
+      skills: skills/
+      plugins: plugins/
+    data_policy:
+      allow_public_export: false
+      allow_anonymized_reports: true
+      allow_private_sources: true
+    execution:
+      allow_tricorderkit_write: true
+      require_human_validation: true
+      default_output_format:
+        - markdown
+        - json
+
+  # Ajouter d'autres projets liés selon le même modèle :
+  # - id: mon-projet-2
+  #   name: Mon Projet 2
+  #   type: private_project
+  #   ...

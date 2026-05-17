@@ -55,7 +55,7 @@ const COMMAND_CATEGORY_MAP: Record<string, IntentCategory> = {
 // ─── Known Registries (stub — à brancher sur cli-forge/registry.yml) ─────
 
 const KNOWN_SKILLS    = ['tk-boot', 'skill-creator', 'skill-manager', 'consolidate-memory'];
-const KNOWN_CLIS      = ['cli-forge', 'mangatracker'];
+const KNOWN_CLIS      = ['cli-forge']; // CLIs domaine : déclarer dans linked_project/config/project.yaml
 const KNOWN_WORKFLOWS = ['daily-report', 'vault-sync', 'deep-research'];
 
 // ─── MainBrain ────────────────────────────────────────────────────────────

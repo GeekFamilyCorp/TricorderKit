@@ -66,7 +66,7 @@ DOMAIN_KEYWORDS: Dict[str, List[str]] = {
 
 # CLI / goat probable par domaine principal
 CLI_HINTS: Dict[str, str] = {
-    "manga_anime":    "may_use_mangatracker_cli",
+    "manga_anime":    "may_use_linked_project_cli",
     "github":         "may_use_github_goat",
     "deep_research":  "may_use_source_watch_goat",
     "obsidian":       "may_use_obsidian_agent_layer",
