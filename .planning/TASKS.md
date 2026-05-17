@@ -111,19 +111,36 @@
 
 ---
 
-## Backlog — À prioriser
+## ✅ Rang A — Complétés (2026-05-17)
 
-- [ ] KI-003 — Migrer GitHub MCP → `@github/mcp-server@latest`
-- [ ] KI-004 — Lancer Temporal worker (voir Phase 3.5 ci-dessus)
-- [ ] Migrer plugin memory-boot → v0.8
-- [ ] Migrer plugin token-hygiene → v0.8
-- [ ] Connecteurs APIs manga (AniList, MangaDex, Jikan)
-- [ ] Skill /tk:boot — wiring commande `.claude/commands/boot.md`
-- [ ] Skill /tk:vault-audit
-- [ ] Skill /tk:deep-research
-- [ ] Japan Alliance Phase 1 — schéma Supabase
-- [ ] Vérifier MCPs Airtable + Filesystem + Hostinger
+- [x] configs/shared/defaults.yaml + configs/local/settings.yaml + configs/vps/settings.yaml (PENDING)
+- [x] .planning/DECISIONS.md — DEC-010 (linked_project pattern) + DEC-011 (VPS optionnel)
+- [x] reports/local_first_audit_2026-05-17.md — premier audit système complet
+- [x] KI-003 — migration GitHub MCP → `ghcr.io/github/github-mcp-server` (Docker officiel) ✅ get_me = GeekFamilyCorp
+- [x] README.md v0.8 badges + What's New
+- [x] CHANGELOG.md — entrée [0.8.0] complète
+
+## ✅ Rang B — Complétés (2026-05-17, commit 3c154d2)
+
+- [x] tests/test_cli_local.py — **36/36 tests PASS** (CLI tk subprocess, JSON contract, encoding)
+- [x] tests/test_linked_project.py — **42/42 tests PASS** (linked_project_audit + local_vs_github_audit)
+- [x] plugins/connector-hub/ v0.1.0 — hub passif multi-sources (list/status/dispatch, 19 sources, routing CLI)
 
 ---
 
-*Dernière mise à jour : 16/05/2026 — Phase 5 COMPLÈTE — Toutes les phases 0→5 finalisées*
+## Backlog v0.9 — À prioriser
+
+- [ ] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub)
+- [ ] cli-forge — obsidian-goat CLI (accès vault depuis subprocess)
+- [ ] Skill /tk:boot — wiring `.claude/commands/boot.md`
+- [ ] Skill /tk:vault-audit
+- [ ] Skill /tk:deep-research
+- [ ] Migrer plugin memory-boot → v0.8
+- [ ] Migrer plugin token-hygiene → v0.8
+- [ ] Japan-Alliance Phase 1 — schéma Supabase (tables manga, anime, mangaka)
+- [ ] .planning/ROADMAP_v0.9.md — définir prochaines phases
+- [ ] KI-004 — Temporal worker monitoring continu (hook boucle complète en prod)
+
+---
+
+*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET — 103 tests verts (36 CLI + 42 audit + 25 hooks)*
