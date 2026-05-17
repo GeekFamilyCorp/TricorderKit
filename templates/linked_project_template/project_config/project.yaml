@@ -1,0 +1,47 @@
+# project.yaml — Configuration métier du linked_project
+# Remplacer toutes les valeurs [PLACEHOLDER] avant utilisation
+
+project_id: [PROJECT_ID]          # ex: japan-alliance
+project_name: [PROJECT_NAME]      # ex: Japan Alliance
+visibility: private
+domain: [DOMAIN]                  # ex: manga_anime_japan_popculture
+tricorderkit_profile: local_first
+default_language: fr
+
+# Termes privés — bloquent tout push public via security-audit-cli
+private_terms:
+  - "[PROJECT_NAME]"
+  - "[PROJECT_ID]"
+  - "[PRIVATE_CLI_NAME]"
+
+data_policy:
+  allow_public_export: false
+  allow_anonymized_reports: true
+  allow_private_sources: true
+
+paths:
+  vault: vault/
+  sources: sources/
+  prompts: prompts/
+  workflows: workflows/
+  skills: skills/
+  reports: reports/
+  exports: exports/
+  logs: project_logs/
+  decisions: project_decisions/
+
+execution:
+  allow_tricorderkit_write: true
+  require_human_validation: true
+  default_output_format:
+    - markdown
+    - json
+
+# Sources officielles prioritaires pour ce domaine
+source_priorities:
+  - name: "[SOURCE_1]"
+    url: "[URL_1]"
+    reliability: high
+  - name: "[SOURCE_2]"
+    url: "[URL_2]"
+    reliability: medium
