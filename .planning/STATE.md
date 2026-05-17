@@ -24,7 +24,8 @@
 | 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
 | 4 | Deep Research | ✅ Complet (tests live EN ATTENTE) | 2026-05-16 |
 | 5 | Quality Loop | ✅ Complet | 2026-05-16 |
-| 6 | Séparation linked_project | ✅ Migration japan-alliance effectuée | 2026-05-17 |
+| 6 | Séparation linked_project | ✅ Migration Japan-Alliance effectuée | 2026-05-17 |
+| 6.5 | Restructuration Japan-Alliance → vault pur | ✅ MangaTracker = agent CLI | 2026-05-17 |
 
 ---
 
@@ -112,32 +113,48 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 
 ---
 
-## Architecture linked_project (Phase 6 — 2026-05-17)
+## Architecture linked_projects (Phase 6 + 6.5 — 2026-05-17)
 
 ```text
-TricorderKit  = moteur générique anonymisé
-Japan-Alliance = linked_project privé spécialisé (GeekFamilyCorp/Japan-Alliance)
+TricorderKit    = moteur générique anonymisé
+MangaTracker    = linked_project assistant IA (GeekFamilyCorp/MangaTracker — privé)
+                  → CLIs Python, pipelines, skills, agents, workflows
+Japan-Alliance  = vault Obsidian pur (GeekFamilyCorp/Japan-Alliance — privé)
+                  → Données uniquement, pas de code exécutable
+                  → Accessible en lecture aux LLMs via token GitHub
+                  → Vocation future : site web
+```
 
-Fichiers migrés vers GeekFamilyCorp/Japan-Alliance :
-  tools/mangatracker-cli/    → japan-alliance/tools/mangatracker-cli/
-  tools/jp-scraper/          → japan-alliance/tools/jp-scraper/
-  deep-research-core/sources/japanese_sources.yml → japan-alliance/pipelines/sources/
-  deep-research-core/pipelines/anime_staff_research.yml → japan-alliance/pipelines/
-  deep-research-core/tests/test_live_sources.py → japan-alliance/tests/deep_research/
+**Migration Phase 6.5 (2026-05-17) :**
+```text
+Code migré depuis Japan-Alliance → MangaTracker :
+  tools/mangatracker-cli/    → MangaTracker/tools/mangatracker-cli/
+  tools/jp-scraper/          → MangaTracker/tools/jp-scraper/
+  plugins/deep-research-core/ → MangaTracker (skills + pipelines)
+  skills/                     → MangaTracker/skills/
+
+Japan-Alliance nettoyé — ne conserve que :
+  vault/           → notes Obsidian (mangas, animés, LN, jeux, seiyû...)
+  templates/       → templates de fiches
+  README.md        → déclaration vault-only
+  CONTEXT.md       → guide navigation LLM (Claude/ChatGPT/Perplexity/Qwen)
+```
 
 Lien local déclaré dans :
   configs/local/linked_projects.yaml (non versionné — chemins réels)
   configs/local/linked_projects.example.yaml (versionné — template)
 
 Règle d'or :
-  TricorderKit exécute. Japan-Alliance spécialise. VPS = extension optionnelle.
-```
+  **TricorderKit exécute. MangaTracker spécialise. Japan-Alliance stocke.**
+
+---
 
 ## Rang S — Complétés (2026-05-17)
 
 | Item | Statut | Commit |
 |---|---|---|
-| Migration japan-alliance | ✅ | commits précédents |
+| Migration japan-alliance (Phase 6) | ✅ | commits précédents |
+| Restructuration JA → vault pur + MangaTracker agent (Phase 6.5) | ✅ | 2026-05-17 |
 | Langfuse port 3001 | ✅ | 0fae3ed |
 | configs/local/linked_projects.yaml | ✅ | local only |
 | Tests live deep-research | ✅ MangaDex + AniList — Jikan 504 non bloquant | — |
@@ -171,9 +188,9 @@ Règle d'or :
 ## Statut global v0.8 — COMPLET
 
 ```text
-Toutes les phases (0→6) + Rang S + Rang A + Rang B : DONE
+Toutes les phases (0→6.5) + Rang S + Rang A + Rang B : DONE
 Tests : 36 (CLI tk) + 42 (audit) + 25 (hooks) = 103 tests pytest verts
-Commit TricorderKit HEAD : 3c154d2
+Commit TricorderKit HEAD : (post 3c154d2 — update STATE + linked_projects.example.yaml)
 ```
 
 ## Prochaine session recommandée
@@ -183,10 +200,11 @@ v0.9 — À définir :
   ⬜ Wiring Temporal → connector_hub.dispatch (déclenchement workflow source_watch)
   ⬜ Obsidian goat CLI (cli-forge)
   ⬜ /tk:boot wiring commande .claude/commands/
-  ⬜ Japan-Alliance Phase 1 — schéma Supabase
+  ⬜ MangaTracker Phase 1 — wiring CLIs + skills avec TricorderKit
+  ⬜ Japan-Alliance Phase 1 — déploiement vault Obsidian (structure + premières fiches)
   ⬜ Migrer memory-boot + token-hygiene → v0.8
 ```
 
 ---
 
-*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET (Rang S + A + B) — 103 tests verts — commit 3c154d2*
+*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET (Phase 6.5) — 103 tests verts — Japan-Alliance = vault pur, MangaTracker = agent CLI*

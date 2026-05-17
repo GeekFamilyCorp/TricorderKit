@@ -12,24 +12,25 @@ tricorderkit_root: C:/Users/<user>/Documents/Projects/TricorderKit
 
 linked_projects:
 
-  - id: japan-alliance
-    name: Japan Alliance
-    type: private_project
+  - id: mangatracker
+    name: MangaTracker
+    type: ai_assistant
     visibility: private
     domain: manga_anime_japan_popculture
-    github_repo: GeekFamilyCorp/Japan-Alliance
-    root: C:/Users/<user>/Documents/Projects/Japan-Alliance
+    github_repo: GeekFamilyCorp/MangaTracker
+    root: C:/Users/<user>/Documents/Projects/MangaTracker
     enabled: true
+    description: |
+      Assistant IA dédié à Japan-Alliance. Contient tous les CLIs Python,
+      pipelines, skills, workflows et agents liés à la pop culture japonaise.
     paths:
-      vault: japan-alliance_vault/
-      tools: tools/
-      pipelines: pipelines/
-      sources: pipelines/sources/
-      tests: tests/
-      data: data/
-      docs: docs/
+      tools: tools/            # mangatracker-cli + jp-scraper
       skills: skills/
       plugins: plugins/
+      pipelines: pipelines/
+      tests: tests/
+      docs: docs/
+    vault_source: japan-alliance
     data_policy:
       allow_public_export: false
       allow_anonymized_reports: true
@@ -40,6 +41,32 @@ linked_projects:
       default_output_format:
         - markdown
         - json
+
+  - id: japan-alliance
+    name: Japan Alliance
+    type: obsidian_vault
+    visibility: private
+    domain: manga_anime_japan_popculture
+    github_repo: GeekFamilyCorp/Japan-Alliance
+    root: C:/Users/<user>/Documents/Projects/Japan-Alliance
+    enabled: true
+    description: |
+      Vault Obsidian pur — sauvegarde GitHub des notes de connaissance.
+      Ne contient aucun code exécutable. Accessible en lecture aux LLMs autorisés
+      via token GitHub (Claude, ChatGPT, Perplexity, Qwen).
+      Vocation future : site web alimenté par TricorderKit.
+    paths:
+      vault: vault/
+      templates: vault/templates/
+    data_policy:
+      allow_public_export: false
+      allow_anonymized_reports: false
+      allow_private_sources: false
+      llm_read_access: true
+    execution:
+      allow_tricorderkit_write: false
+      require_human_validation: true
+      read_only: true
 
   # Ajouter d'autres projets liés selon le même modèle :
   # - id: mon-projet-2
