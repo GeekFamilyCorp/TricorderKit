@@ -138,6 +138,19 @@ Config dans `claude_desktop_config.json` (chemin MSIX réel) :
 
 **Redémarrage Claude Desktop requis** après modification de la config.
 
+**Changement de nommage des outils** (important) : le nouveau serveur expose des outils regroupés.
+
+| Ancien outil (`server-github`) | Nouvel outil (`github-mcp-server`) |
+|---|---|
+| `get_issue` / `list_issues` / `create_issue` | `issue_read` / `issue_write` |
+| `get_pull_request` / `list_pull_requests` | `pull_request_read` |
+| `create_pull_request_review` | `pull_request_review_write` |
+| `get_me` | `get_me` (inchangé) |
+| `list_commits` / `get_commit` | `get_commit` / `list_branches` |
+| `search_issues` / `search_repositories` | `issue_read` (filtres intégrés) |
+
+**Vérifié le 17/05/2026** — `get_me` retourne `GeekFamilyCorp` ✅
+
 ---
 
 ## Sécurité des tokens
