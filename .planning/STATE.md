@@ -97,9 +97,7 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 
 ## Blockers actifs
 
-| ID | Description | Niveau |
-|---|---|---|
-| KI-003 | GitHub MCP deprecated → migration vers `@github/mcp-server@latest` manuelle requise | Moyen |
+*Aucun blocker actif — KI-003 résolu le 17/05/2026 (voir section Bugs résolus)*
 
 ---
 
@@ -110,6 +108,7 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 | ERR-T-001 | UUID Qdrant invalide (chars non-hex) → SHA-1 hex pur | — | 2026-05-13 |
 | ERR-T-002 | `${CLAUDE_PLUGIN_ROOT}` → chemin absolu + `datetime.utcnow()` → `datetime.now(timezone.utc)` | `40d3166` | 2026-05-15 |
 | KI-004 | Temporal worker : tsconfig CommonJS + DB postgres12 + workflows/index.ts barrel + docker rm containers orphelins | `8b0616d` | 2026-05-16 |
+| KI-003 | GitHub MCP déprécié → migration `ghcr.io/github/github-mcp-server` (Docker officiel) — `get_me` ✅ | — | 2026-05-17 |
 
 ---
 
@@ -134,7 +133,7 @@ Règle d'or :
   TricorderKit exécute. Japan-Alliance spécialise. VPS = extension optionnelle.
 ```
 
-## Rank S — Complétés (2026-05-17)
+## Rang S — Complétés (2026-05-17)
 
 | Item | Statut | Commit |
 |---|---|---|
@@ -150,20 +149,44 @@ Règle d'or :
 | CLI tk v0.2.0 : 8 nouvelles commandes + --format | ✅ | 5acec97 |
 | Push TricorderKit + Japan-Alliance GitHub | ✅ | TK: 5acec97 / JA: d8f8696 |
 
-## Prochaine action recommandée
+## Rang A — Complétés (2026-05-17)
+
+| Item | Statut | Commit |
+|---|---|---|
+| configs/shared/defaults.yaml + local/settings.yaml + vps/settings.yaml | ✅ | 1f4b802 |
+| .planning/DECISIONS.md — DEC-010 + DEC-011 | ✅ | 1f4b802 |
+| reports/local_first_audit_2026-05-17.md | ✅ | 1f4b802 |
+| KI-003 — migration GitHub MCP → `ghcr.io/github/github-mcp-server` | ✅ | — (config locale) |
+| README.md v0.8 + badges + What's New | ✅ | 1f4b802 |
+| CHANGELOG.md — entrée [0.8.0] complète | ✅ | 1f4b802 |
+
+## Rang B — Complétés (2026-05-17)
+
+| Item | Statut | Commit | Couverture |
+|---|---|---|---|
+| tests/test_cli_local.py | ✅ 36/36 PASS | 3c154d2 | CLI tk : toutes commandes, encoding, JSON contract |
+| tests/test_linked_project.py | ✅ 42/42 PASS | 3c154d2 | linked_project_audit + local_vs_github_audit |
+| plugins/connector-hub/ v0.1.0 | ✅ | 3c154d2 | list / status / dispatch — 19 sources, routing CLI |
+
+## Statut global v0.8 — COMPLET
 
 ```text
-Rang A (next sprint) :
-  ⬜ configs/local/settings.yaml + configs/vps/settings.yaml + configs/shared/defaults.yaml
-  ⬜ .planning/DECISIONS.md — entrée architecture linked_project
-  ⬜ reports/local_first_audit_2026-05-17.md
-  ⬜ KI-003 : migration GitHub MCP vers @github/mcp-server@latest
+Toutes les phases (0→6) + Rang S + Rang A + Rang B : DONE
+Tests : 36 (CLI tk) + 42 (audit) + 25 (hooks) = 103 tests pytest verts
+Commit TricorderKit HEAD : 3c154d2
+```
 
-Rang B (backlog) :
-  ⬜ tests/test_cli_local.py + tests/test_linked_project.py
-  ⬜ Connector Hub (passive multi-source ingestion)
+## Prochaine session recommandée
+
+```text
+v0.9 — À définir :
+  ⬜ Wiring Temporal → connector_hub.dispatch (déclenchement workflow source_watch)
+  ⬜ Obsidian goat CLI (cli-forge)
+  ⬜ /tk:boot wiring commande .claude/commands/
+  ⬜ Japan-Alliance Phase 1 — schéma Supabase
+  ⬜ Migrer memory-boot + token-hygiene → v0.8
 ```
 
 ---
 
-*Dernière mise à jour : 17/05/2026 — Rang S COMPLET — TricorderKit v0.8 + Japan-Alliance linked_project opérationnels*
+*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET (Rang S + A + B) — 103 tests verts — commit 3c154d2*
