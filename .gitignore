@@ -54,3 +54,11 @@ logs/
 configs/local/linked_projects.yaml
 configs/local/settings.yaml
 configs/vps/settings.yaml
+
+# Pytest — artefacts locaux
+.pytest_tmp/
+.pytest_cache/
+pytest-cache-files-*/
+
+# Fichiers de sauvegarde
+*.bak

@@ -1,0 +1,119 @@
+name: token-optimizer
+version: "0.2.0"
+description: >
+  Plugin d'optimisation des tokens pour les sessions TricorderKit.
+  Routing intelligent (Haiku/Sonnet/Opus), classification des tâches,
+  compression caveman (lite/full/ultra), budget tracking, context compress.
+type: plugin
+tricorderkit_version: ">=0.8"
+updated: "2026-05-18"
+
+skills:
+  - name: budget-tracker
+    path: skills/budget-tracker/SKILL.md
+    triggers:
+      - budget
+      - tokens restants
+      - combien de tokens
+      - budget tracker
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: cli-compress
+    path: skills/cli-compress/SKILL.md
+    triggers:
+      - compress
+      - caveman
+      - lite compress
+      - full compress
+      - ultra compress
+      - compresse la sortie
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: context-compress
+    path: skills/context-compress/SKILL.md
+    triggers:
+      - compresse le contexte
+      - context trop long
+      - pack context
+      - tk:pack-context
+      - handoff
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: docs-fresh
+    path: skills/docs-fresh/SKILL.md
+    triggers:
+      - docs fresh
+      - documentation à jour
+      - fetch docs
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: model-router
+    path: skills/model-router/SKILL.md
+    triggers:
+      - router
+      - quel modèle
+      - route vers
+      - model router
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: task-classifier
+    path: skills/task-classifier/SKILL.md
+    triggers:
+      - classifie
+      - T1
+      - T2
+      - T3
+      - classify task
+    output_schema: core/contracts/skill_output.schema.json
+
+agents:
+  - name: haiku-executor
+    path: agents/haiku-executor.md
+    model: claude-haiku-4-5-20251001
+    tier: T1
+    description: Tâches simples, courtes, répétitives (FAQ, résumé court, traduction, classification basique)
+
+  - name: sonnet-executor
+    path: agents/sonnet-executor.md
+    model: claude-sonnet-4-6
+    tier: T2
+    description: Tâches standard (rédaction longue, analyse documentaire, code non-critique, refactor léger)
+
+  - name: opus-executor
+    path: agents/opus-executor.md
+    model: claude-opus-4-6
+    tier: T3
+    description: Tâches complexes critiques (architecture, code sécurité, raisonnement multi-étapes, debug complexe)
+
+scheduled_tasks:
+  - name: daily-budget-morning-check
+    path: scheduled-tasks/daily-budget-morning-check/SKILL.md
+    schedule: "0 8 * * *"
+    description: Bilan budget tokens du matin avec projection journalière
+
+scripts:
+  - name: budget.py
+    path: scripts/budget.py
+    description: Calcul et tracking du budget tokens (SQLite local)
+    commands: [status, reset, add-entry, report]
+
+  - name: classify.py
+    path: scripts/classify.py
+    description: Classification T1/T2/T3 des tâches pour routing modèle
+    commands: [classify, batch-classify]
+
+config:
+  default_tier: T2
+  budget_alert_threshold: 0.80
+  caveman_mode: lite
+  compress_levels: [lite, full, ultra]
+  budget_db_path: ".cache/token-optimizer/budget.db"
+  classify_db_path: ".cache/token-optimizer/classify.db"
+
+v0_8_changes:
+  - "Ajout manifest.yml conforme v0.8"
+  - "Ajout output_schema référence (skill_output.schema.json)"
+  - "Ajout config block avec chemins et seuils explicites"
+  - "Déclaration agents Haiku/Sonnet/Opus avec tiers T1/T2/T3"
+  - "Déclaration scheduled_tasks daily-budget-morning-check"
+  - "Déclaration scripts budget.py + classify.py"

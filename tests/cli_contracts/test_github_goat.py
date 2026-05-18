@@ -38,7 +38,8 @@ def check(name: str, condition: bool, detail: str = ""):
         print(f"  FAIL  {name}" + (f" — {detail}" if detail else ""))
 
 
-def test_dry_run(command: list, label: str):
+def _dry_run(command: list, label: str):
+    """Helper interne (non collecté par pytest — paramètres positionnels)."""
     data = run([str(SCRIPT), "--dry-run"] + command)
     check(f"dry-run {label} — status=dry_run",
           data.get("status") == "dry_run", str(data.get("status")))
@@ -63,10 +64,10 @@ def main():
     print(f"\nContract tests — github-goat\n{'='*40}")
 
     test_script_exists()
-    test_dry_run(["list-repos", "<owner>"], "list-repos")
-    test_dry_run(["get-repo", "<owner>", "<repo>"], "get-repo")
-    test_dry_run(["search-repos", "TricorderKit"], "search-repos")
-    test_dry_run(["list-issues", "<owner>", "<repo>"], "list-issues")
+    _dry_run(["list-repos", "<owner>"], "list-repos")
+    _dry_run(["get-repo", "<owner>", "<repo>"], "get-repo")
+    _dry_run(["search-repos", "TricorderKit"], "search-repos")
+    _dry_run(["list-issues", "<owner>", "<repo>"], "list-issues")
     test_unknown_command()
 
     total = PASS + FAIL

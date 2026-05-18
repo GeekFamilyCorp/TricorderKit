@@ -1,5 +1,3 @@
-> ⚠️ DÉPRÉCIÉ — Ce fichier a été renommé `MainBrain_v1.5.md` le 2026-05-18. Lire `MainBrain_v1.5.md` à la place.
-
 # MainBrain v1.5 — TricorderKit Agentic Knowledge OS
 
 > Upgrade de MainBrain v1.4 — 16/05/2026  

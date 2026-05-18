@@ -51,7 +51,7 @@ REQUIRED_FILES = [
     ".planning/DECISIONS.md",
     ".planning/RISKS.md",
     ".planning/ROADMAP_v0.7.md",
-    "core/mainbrain/MainBrain_v1.4.md",
+    "core/mainbrain/MainBrain_v1.5.md",
     "core/contracts/skill_output.schema.json",
 ]
 

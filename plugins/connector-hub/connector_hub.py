@@ -404,11 +404,14 @@ def _dispatch_source(src: Source, dry_run: bool) -> DispatchResult:
 def cmd_dispatch(args) -> dict:
     registry = build_registry()
     enabled  = [s for s in registry if s.enabled and s.is_dispatchable]
+    temporal_flag = getattr(args, "temporal", False)
 
     if args.source:
         targets = [s for s in enabled if s.id == args.source or s.source_type == args.source]
         if not targets:
-            # Cherche dans tous les registrés (même type désactivé) pour un meilleur message
+            # En mode Temporal, accepter les types connus directement sans registre
+            if temporal_flag and args.source in DISPATCH_MAP:
+                return _dispatch_via_temporal_types([args.source], args)
             all_ids = [s.id for s in registry]
             return {
                 "connector_hub_version": VERSION,
@@ -417,12 +420,20 @@ def cmd_dispatch(args) -> dict:
             }
     elif args.all:
         targets = enabled
+        # En mode Temporal --all, utiliser toutes les sources connues du DISPATCH_MAP
+        if temporal_flag and not targets:
+            return _dispatch_via_temporal_types(list(DISPATCH_MAP.keys()), args)
     else:
         return {
             "connector_hub_version": VERSION,
             "error": "Spécifier --source <id|type> ou --all",
         }
 
+    # ── Mode Temporal : déléguer à dispatch_temporal.py ──────────────────────
+    if temporal_flag:
+        return _dispatch_via_temporal(targets, args)
+
+    # ── Mode CLI direct (comportement par défaut) ─────────────────────────────
     results = []
     for src in targets:
         result = _dispatch_source(src, dry_run=args.dry_run)
@@ -433,11 +444,78 @@ def cmd_dispatch(args) -> dict:
         "connector_hub_version": VERSION,
         "timestamp": datetime.now(tz=timezone.utc).isoformat(),
         "dry_run": args.dry_run,
+        "mode": "cli-direct",
         "dispatched": len(results),
         "success": success_count,
         "failed": len(results) - success_count,
         "results": results,
     }
+
+
+def _dispatch_via_temporal_types(source_types: list[str], args) -> dict:
+    """Délègue à Temporal avec une liste de types bruts (sans Source objects)."""
+    class _FakeArgs:
+        dry_run = args.dry_run
+        interval = getattr(args, "interval", 60)
+    fake = _FakeArgs()
+    # Build minimal Source proxies
+    class _T:
+        def __init__(self, t): self.source_type = t
+    fake_targets = [_T(t) for t in source_types]
+    return _dispatch_via_temporal(fake_targets, fake)
+
+
+def _dispatch_via_temporal(targets: list, args) -> dict:
+    """Délègue le dispatch à Temporal via dispatch_temporal.py."""
+    source_types = list({s.source_type for s in targets})
+    dispatch_script = REPO_ROOT / "plugins" / "connector-hub" / "scripts" / "dispatch_temporal.py"
+
+    if not dispatch_script.exists():
+        return {
+            "connector_hub_version": VERSION,
+            "error": f"dispatch_temporal.py introuvable: {dispatch_script}",
+            "suggestion": "Vérifier plugins/connector-hub/scripts/",
+        }
+
+    interval = getattr(args, "interval", 60)
+    # --dry-run is a global flag (before subcommand) in dispatch_temporal.py
+    cmd = [sys.executable, str(dispatch_script)]
+    if args.dry_run:
+        cmd.append("--dry-run")
+    cmd += ["dispatch",
+            "--workflow", "source-watch",
+            "--source"] + source_types
+    cmd += ["--interval", str(interval)]
+
+    env = {**os.environ, "PYTHONUTF8": "1"}
+    try:
+        r = subprocess.run(
+            cmd, capture_output=True, text=True,
+            timeout=15, cwd=str(REPO_ROOT), env=env,
+        )
+        if r.stdout.strip():
+            result = json.loads(r.stdout.strip())
+        else:
+            result = {"status": "error", "message": r.stderr.strip()[:500]}
+        return {
+            "connector_hub_version": VERSION,
+            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "dry_run": args.dry_run,
+            "mode": "temporal",
+            "sources": source_types,
+            "temporal_result": result,
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "connector_hub_version": VERSION,
+            "error": "Timeout dispatch_temporal.py (15s)",
+            "suggestion": "Vérifier que Temporal est démarré: docker compose ps",
+        }
+    except json.JSONDecodeError as e:
+        return {
+            "connector_hub_version": VERSION,
+            "error": f"Output non-JSON de dispatch_temporal: {e}",
+        }
 
 
 # ─── Output formatters ────────────────────────────────────────────────────────
@@ -537,6 +615,10 @@ def main() -> None:
                             help="Dispatcher toutes les sources actives")
     p_dispatch.add_argument("--dry-run", action="store_true",
                             help="Simulation — affiche les commandes sans les exécuter")
+    p_dispatch.add_argument("--temporal", action="store_true",
+                            help="Déclencher via Temporal (source-watch.workflow) au lieu du CLI direct")
+    p_dispatch.add_argument("--interval", type=int, default=60,
+                            help="Intervalle en minutes pour le workflow Temporal (défaut: 60)")
 
     args = parser.parse_args()
 

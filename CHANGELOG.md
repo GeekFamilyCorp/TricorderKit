@@ -4,6 +4,36 @@
 
 ---
 
+## [0.9.0] — 18/05/2026 — Orchestration M1+M2 + Japan-Alliance Phase 1
+
+### Ajouté
+- **tk-orchestrator v0.3.0** — budget_guard phase 2 (DEC-006)
+  - Tiers T1/T2/T3 : `haiku-4-5` (query) / `sonnet-4-6` (action/audit) / `opus-4-6` (workflow/research)
+  - `tier_for_intent()`, `tier_from_complexity()` (escalade has_code/multifile/destructive)
+  - `guard_action()` → proceed|pause|abort selon budget session
+  - CLI `budget-guard` + CLI `session-budget` — 25 tests pytest ✅
+- **Pipeline observabilité B2** — `tools/observability/hook_log_to_obsidian.py`
+  - Parse `.cache/hooks/*.log` JSON-lines → note Obsidian `ERRORS.md`
+  - Catégories : HIGH/CRITICAL, qualité <60%, erreurs d'exécution
+- **Pipeline rtk→docmancer M3** — `tools/pipelines/pipeline_rtk_docmancer.py`
+  - 5 étapes : collect→dedup→score→build_note→write_obsidian
+  - Dry-run validé : Chainsaw Man → `Mangas/Chainsaw Man/Chainsaw-Man.md`
+- **Supabase Japan-Alliance** — 7 tables, 5 ENUMs, RLS complet — 29 tests ✅ (DEC-012)
+- **Temporal connector dispatch** — bypass registre + idempotence (DEC-013)
+- **Skills pont Cowork** — token-savior + claude-code-router — 19 tests ✅ (DEC-014)
+- **Plugins v0.8** — memory-boot (21 tests) + token-optimizer (31 tests)
+- **Skills** — rtk + docmancer + `/tk:boot` command
+
+### Décisions
+- DEC-012 : Supabase pour Japan-Alliance
+- DEC-013 : Bypass registre connector_hub en mode Temporal
+- DEC-014 : Skills token-savior + claude-code-router comme ponts Cowork
+
+### Tests
+- **247 PASS** (+25 budget_guard | 10 échecs pré-existants non régressés)
+
+---
+
 ## [0.8.0] — 17/05/2026 — Linked project architecture + Quality loop
 
 ### Ajouté

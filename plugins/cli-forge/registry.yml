@@ -1,10 +1,10 @@
 # registry.yml — TricorderKit cli-forge
 # Registre officiel des CLIs validées
 # Une CLI n'est utilisable par les agents que si elle est enregistrée ici.
-# Version : 0.1.0 — 10/05/2026
+# Version : 0.2.0 — 2026-05-18
 
-version: "0.1.0"
-last_updated: "2026-05-10"
+version: "0.2.0"
+last_updated: "2026-05-18"
 
 # ── CLIs enregistrées ──────────────────────────────────────────────────────────────
 clis:
@@ -29,6 +29,30 @@ clis:
       - list-issues
     notes: "Validé en dry-run le 10/05/2026. Audit sécurité à faire avant prod_ready."
 
+  - name: obsidian-goat
+    version: 0.1.0
+    status: dry_run_validated
+    path: tools/obsidian-goat/obsidian_goat.py
+    manifest: ~
+    description: CLI Obsidian vault — read-note, write-note, update-hot-cache, append-log, check-note, list-notes
+    service: Obsidian (local vault filesystem)
+    auth_required: false
+    safe_for_agents: true
+    dry_run_tested: true
+    dry_run_date: "2026-05-18"
+    prod_audit_done: false
+    tags: [obsidian, vault, notes, hot-cache, daily-log]
+    commands:
+      - read-note
+      - write-note
+      - update-hot-cache
+      - append-log
+      - check-note
+      - list-notes
+    contract_tests: tests/cli_contracts/test_obsidian_goat.py
+    contract_tests_status: "19/19 PASS — 2026-05-18"
+    notes: "Validé dry-run + 19 tests contrats le 18/05/2026. Utiliser OBSIDIAN_VAULT_PATH + OBSIDIAN_JAPAN_VAULT_PATH."
+
 # ── CLIs en attente de validation ───────────────────────────────────────────────
 pending:
 
@@ -36,11 +60,6 @@ pending:
     status: in_progress
     description: CLI veille manga/anime — MangaDex + AniList + Jikan
     priority: S
-
-  - name: obsidian-goat
-    status: planned
-    description: CLI Obsidian vault local — lecture/écriture notes
-    priority: A
 
   - name: vault-audit-goat
     status: planned
