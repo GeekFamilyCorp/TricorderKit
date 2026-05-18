@@ -7,7 +7,7 @@
 
 ## 🎯 Rôle & déclencheurs
 
-L'orchestrateur est le **point d'entrée unique** de toutes les commandes `/tk:*`. Il ne remplace pas le MainBrain v1.4 — il s'y insère comme **Étape 0** (avant la Skill Selector, la CLI Selector et les autres sélecteurs existants).
+L'orchestrateur est le **point d'entrée unique** de toutes les commandes `/tk:*`. Il ne remplace pas le MainBrain v1.5 — il s'y insère comme **Étape 0** (avant la Skill Selector, la CLI Selector et les autres sélecteurs existants).
 
 ### Déclencheurs
 - **Priorité absolue** sur toute commande `/tk:*`
@@ -15,7 +15,7 @@ L'orchestrateur est le **point d'entrée unique** de toutes les commandes `/tk:*
 - Commandes CLI : `/tk:orchestrate`, `/tk:route`, `/tk:chain`, `/tk:budget-check`
 
 ### Ce qu'il N'EST PAS
-- ❌ Un remplacement du MainBrain v1.4
+- ❌ Un remplacement du MainBrain v1.5
 - ❌ Un doublon de `tk-boot` (il consomme les données déjà chargées par boot, il ne relit pas les mêmes fichiers)
 - ❌ Un plugin `skill-registry` (ce plugin est prévu dans STATE.md comme priorité A — l'orchestrateur doit le consommer quand il sera disponible)
 
@@ -27,7 +27,7 @@ L'orchestrateur est le **point d'entrée unique** de toutes les commandes `/tk:*
 |---|---|---|
 | Contrat output JSON | `core/contracts/skill_output.schema.json` | ✅ v1.0.0 actif |
 | Registry CLIs | `plugins/cli-forge/registry.yml` | ✅ Schéma réel défini |
-| MainBrain v1.4 | `core/mainbrain/MainBrain_v1.4.md` | ✅ Actif |
+| MainBrain v1.5 | `core/mainbrain/MainBrain_v1.5.md` | ✅ Actif |
 | Skill tk-boot | `skills/tk-boot/SKILL.md` | ✅ Opérationnel |
 | Cache SQLite github-goat | `.cache/github-goat.db` | ✅ Existant |
 | Cache SQLite source-watch | `.cache/source-watch-goat.db` | ✅ Existant |
@@ -39,10 +39,10 @@ L'orchestrateur est le **point d'entrée unique** de toutes les commandes `/tk:*
 
 ---
 
-## 🔄 Intégration dans MainBrain v1.4
+## 🔄 Intégration dans MainBrain v1.5
 
 ```diff
-# core/mainbrain/MainBrain_v1.4.md — Algorithme de décision
+# core/mainbrain/MainBrain_v1.5.md — Algorithme de décision
 
 + ÉTAPE 0 — Orchestrator Check (NOUVEAU — PRIORITÉ ABSOLUE)
 +   → Si la commande commence par /tk: ou correspond à un pattern orchestrable
@@ -426,7 +426,7 @@ pytest skills/tk-orchestrator/tests/ -v
 
 - `core/contracts/skill_output.schema.json` — v1.0.0 (contrat de sortie réel)
 - `plugins/cli-forge/registry.yml` — schéma réel des CLIs
-- `core/mainbrain/MainBrain_v1.4.md` — architecture d'intégration (Étape 0)
+- `core/mainbrain/MainBrain_v1.5.md` — architecture d'intégration (Étape 0)
 - `skills/tk-boot/SKILL.md` — skill à consommer, pas dupliquer
 - `.planning/STATE.md` — v0.8, Phase 4 active
 - DEC-005 : Output JSON obligatoire
@@ -455,7 +455,7 @@ pytest skills/tk-orchestrator/tests/ -v
 ### DEC-008 — Orchestrator-First Pattern
 - **Date** : 15/05/2026
 - **Statut** : Acceptée
-- **Décision** : Créer tk-orchestrator comme skill prioritaire (Étape 0 du MainBrain v1.4) pour le routing multi-domaine et l'optimisation token
+- **Décision** : Créer tk-orchestrator comme skill prioritaire (Étape 0 du MainBrain v1.5) pour le routing multi-domaine et l'optimisation token
 - **Raison** : Réduire les tokens en chargeant uniquement le contexte nécessaire, appliquer CLI-first systématiquement, unifier les deux interfaces (CLI Python + Cowork)
 - **Alternatives rejetées** : Router directement dans MainBrain (trop couplé, non testable), LLM-only routing (trop coûteux), duplication tk-boot (redondance)
 - **Impact** : Toutes les commandes /tk:* passent par cet orchestrateur ; min_cli_status = dry_run_validated ; gains token estimés 30–60% ; source-watch-goat intégré seulement après passage prod_ready
@@ -469,7 +469,7 @@ pytest skills/tk-orchestrator/tests/ -v
 |---|---|---|
 | Schéma JSON output | ✅ Confirmé | Ancré sur `skill_output.schema.json` v1.0.0 réel |
 | Registry CLIs | ✅ Confirmé | Ancré sur `registry.yml` réel v0.1.0 |
-| Intégration MainBrain | ✅ Confirmé | Injection Étape 0 vérifiée contre `MainBrain_v1.4.md` réel |
+| Intégration MainBrain | ✅ Confirmé | Injection Étape 0 vérifiée contre `MainBrain_v1.5.md` réel |
 | État projet | ✅ Confirmé | v0.8 Phase 4, vérifié dans `STATE.md` du 15/05/2026 |
 | `source-watch-goat` exclu | ✅ Confirmé | `in_progress` dans registry — exclusion documentée |
 | Token counting heuristique | 🟡 Probable | 4 chars/token valide pour latin ; moins précis pour texte japonais (kanji ~1-2 chars/token) |

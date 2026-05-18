@@ -21,6 +21,12 @@ from __future__ import annotations
 import json
 import sys
 import time
+
+# Forcer UTF-8 sur stdout/stderr (Windows cp1252 ne supporte pas les caractères Unicode)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from pathlib import Path
 from typing import Optional
 
@@ -175,7 +181,8 @@ def cmd_eval(
         typer.echo(f"\n  → {skill_name}", err=True)
         result = _eval_single(skill_name, store, update_baseline=update_baseline)
         results.append(result)
-        _print_result_summary(result)
+        if not output_json:
+            _print_result_summary(result)
 
     duration_ms = int((time.monotonic() - start) * 1000)
 

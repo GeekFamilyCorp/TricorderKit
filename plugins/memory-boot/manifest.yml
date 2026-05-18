@@ -1,0 +1,50 @@
+name: memory-boot
+version: "0.2.0"
+description: >
+  Initialise la mémoire de session Claude depuis le vault Obsidian.
+  Lit HOT_CACHE, patterns d'erreurs, erreurs récentes.
+  Produit un résumé de démarrage structuré et logue dans le Daily Log.
+type: plugin
+tricorderkit_version: ">=0.8"
+updated: "2026-05-18"
+
+skills:
+  - name: memory-boot
+    path: skills/memory-boot/SKILL.md
+    triggers:
+      - boot
+      - reprends le contexte
+      - charge ta mémoire
+      - hot cache
+      - memoire
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: rapport
+    path: skills/rapport/SKILL.md
+    triggers:
+      - rapport
+      - status
+      - bilan
+      - avancées
+      - fin de session
+    output_schema: core/contracts/skill_output.schema.json
+
+dependencies:
+  mcp:
+    - name: obsidian-claude-vault
+      required: true
+      reason: Lecture/écriture HOT_CACHE + Daily Logs
+
+config:
+  hot_cache_path: "00_SYSTEM/05_Hot_Cache/HOT_CACHE.md"
+  patterns_path: "40_ERRORS/Patterns/PATTERNS_INDEX.md"
+  errors_path: "40_ERRORS/Error_Log/ERRORS.md"
+  daily_log_path: "10_INBOX/Daily_Logs/{YYYY-MM-DD}.md"
+  hot_cache_stale_days: 7
+
+v0_8_changes:
+  - "Ajout manifest.yml conforme v0.8"
+  - "Ajout output_schema référence (skill_output.schema.json)"
+  - "Ajout config block avec chemins explicites"
+  - "Ajout dependencies MCP déclarées"
+  - "Alerte HOT_CACHE stale > 7j documentée"

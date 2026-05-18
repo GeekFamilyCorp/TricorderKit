@@ -40,6 +40,9 @@ try:
     )
     from skills.tk_orchestrator.budget.token_tracker import (
         TokenBudget, budget_report, estimate_tokens,
+        tier_for_intent, tier_from_complexity, guard_action,
+        TASK_TIERS, SESSION_BUDGET_DEFAULT, SESSION_ALERT_THRESHOLD,
+        INTENT_BUDGETS, ORCHESTRATOR_BASE_BUDGET,
     )
     from skills.tk_orchestrator.budget.session_cache import (
         get_boot_context, log_orchestration, store_session_value,
@@ -57,7 +60,7 @@ except ModuleNotFoundError:
         load_cli_registry, load_skill_registry,
         find_cli_for_domain, CLIEntry,
     )
-    from budget.token_tracker import TokenBudget, budget_report, estimate_tokens  # type: ignore
+    from budget.token_tracker import TokenBudget, budget_report, estimate_tokens, tier_for_intent, tier_from_complexity, guard_action, TASK_TIERS, SESSION_BUDGET_DEFAULT, SESSION_ALERT_THRESHOLD, INTENT_BUDGETS, ORCHESTRATOR_BASE_BUDGET  # type: ignore
     from budget.session_cache import get_boot_context, log_orchestration, store_session_value  # type: ignore
     from context.context_manager import run_cli_tool, load_skill_minimal, dry_run_preview  # type: ignore
     from context.chain_executor import ChainExecutor, ChainStep  # type: ignore
@@ -469,6 +472,251 @@ def cmd_status(root: Optional[Path] = None) -> Dict:
     )
 
 
+
+# ── Commande : compress (caveman mode — R15) ─────────────────────────────────
+
+def cmd_compress(raw_output: str, level: str = "lite") -> Dict:
+    """
+    Compresse une sortie sous-agent en caveman lite/full/ultra (R15 Workflow Standard).
+    Élimine prose narrative, conserve précision technique.
+    Niveaux : lite (-50%) | full (-75%) | ultra (-90% tokens)
+    """
+    t_start = time.time()
+    try:
+        parsed = json.loads(raw_output)
+        if isinstance(parsed, dict) and "output" in parsed:
+            data = parsed["output"].get("data", parsed["output"])
+            status = parsed.get("status", "ok")
+            tokens_in = parsed.get("tokens_used", {}).get("total", len(raw_output) // 4)
+        else:
+            data = parsed
+            status = "ok"
+            tokens_in = len(raw_output) // 4
+    except json.JSONDecodeError:
+        lines = [l.strip() for l in raw_output.split("\n") if l.strip()]
+        data = {"lines": lines[:20]}
+        status = "ok"
+        tokens_in = len(raw_output) // 4
+
+    if level == "ultra":
+        compressed = _ultra_compress(data)
+    elif level == "full":
+        compressed = _full_compress(data)
+    else:
+        compressed = _lite_compress(data)
+
+    compressed_json = json.dumps(compressed, ensure_ascii=False)
+    tokens_out = len(compressed_json) // 4
+    savings_pct = round((1 - tokens_out / max(tokens_in, 1)) * 100)
+    duration_ms = int((time.time() - t_start) * 1000)
+
+    return _build_output(
+        status="success",
+        summary=f"Compress {level}: {tokens_in}→{tokens_out} tokens ({savings_pct}% saved)",
+        data={"compressed": compressed, "level": level,
+              "tokens_in": tokens_in, "tokens_out": tokens_out, "savings_pct": savings_pct},
+        duration_ms=duration_ms,
+        next_steps=["Injecter compressed dans le contexte principal (R15 compliant)"],
+    )
+
+
+def _lite_compress(data):
+    NARRATIVE_KEYS = {"description","note","notes","comment","comments","details","explanation","prose","rationale"}
+    if isinstance(data, dict):
+        return {k: _lite_compress(v) for k, v in data.items() if k not in NARRATIVE_KEYS}
+    if isinstance(data, list):
+        return [_lite_compress(i) for i in data[:50]]
+    return data
+
+def _full_compress(data):
+    KEEP = {"id","name","status","type","count","total","version","domain","intent",
+            "tool","command","level","score","tokens_used","duration_ms","next_steps","error","data"}
+    if isinstance(data, dict):
+        r = {k: _full_compress(v) for k, v in data.items() if k in KEEP}
+        return r or data
+    if isinstance(data, list):
+        return [_full_compress(i) for i in data[:20]]
+    return data
+
+def _ultra_compress(data):
+    if isinstance(data, dict):
+        r = {}
+        for k, v in list(data.items())[:10]:
+            if isinstance(v, list): r[k] = f"[{len(v)}]"
+            elif isinstance(v, dict): r[k] = _ultra_compress(v)
+            elif isinstance(v, str) and len(v) > 100: r[k] = v[:50] + "…"
+            else: r[k] = v
+        return r
+    if isinstance(data, list): return f"[{len(data)} items]"
+    return data
+
+# ── Commande : budget-guard ──────────────────────────────────────────────────
+
+def cmd_budget_guard(
+    intent_type: str,
+    session_used: int = 0,
+    session_budget: int = SESSION_BUDGET_DEFAULT,
+    alert_threshold: float = SESSION_ALERT_THRESHOLD,
+    on_budget_exceeded: str = "pause_and_notify",
+    request: str = "",
+    has_code: bool = False,
+    has_multifile: bool = False,
+    is_destructive: bool = False,
+    root: Optional[Path] = None,
+) -> Dict:
+    """
+    Budget guard phase 2 : évalue si une tâche peut s'exécuter
+    selon l'état du budget session et son tier T1/T2/T3.
+
+    Actions possibles :
+      proceed — budget OK, continuer
+      pause   — seuil atteint ou dépassement projeté → notifier
+      abort   — budget épuisé avec on_budget_exceeded=abort
+
+    Intègre aussi la classification tier T1/T2/T3 avec escalade contextuelle.
+    """
+    t_start = time.time()
+    root = root or _find_project_root()
+
+    # Tier avec escalade contextuelle
+    tier = tier_from_complexity(
+        intent_type=intent_type,
+        request_length=len(request),
+        has_code=has_code,
+        has_multifile=has_multifile,
+        is_destructive=is_destructive,
+    )
+
+    # Guard decision
+    guard = guard_action(
+        intent_type=intent_type,
+        session_used=session_used,
+        session_budget=session_budget,
+        alert_threshold=alert_threshold,
+        on_budget_exceeded=on_budget_exceeded,
+    )
+
+    # Log dans session cache si root disponible
+    if guard.action in ("pause", "abort"):
+        store_session_value(
+            root=root,
+            key="budget_guard_last_alert",
+            value={
+                "action": guard.action,
+                "session_pct": guard.session_pct,
+                "alert_level": guard.alert_level,
+                "intent_type": intent_type,
+                "timestamp": _now_iso(),
+            },
+            source="budget-guard",
+        )
+
+    duration_ms = int((time.time() - t_start) * 1000)
+
+    status = "success" if guard.action == "proceed" else (
+        "warning" if guard.action == "pause" else "error"
+    )
+
+    summary = (
+        f"budget-guard: {guard.action.upper()} — "
+        f"{tier.level} ({tier.label}) → {tier.model_target} — "
+        f"session {guard.session_pct*100:.0f}% [{guard.alert_level}]"
+    )
+
+    next_steps: List[str] = []
+    if guard.action == "pause":
+        next_steps.append("Activer token-savior (mode lite ou full) pour réduire la consommation")
+        next_steps.append(f"Budget restant: {session_budget - session_used} tokens")
+    elif guard.action == "abort":
+        next_steps.append("Session épuisée — ouvrir une nouvelle session ou augmenter le budget")
+    elif tier.level == "T1":
+        next_steps.append(f"Déléguer à haiku-executor (T1 économique — max {tier.max_tokens} tokens)")
+    elif tier.level == "T2":
+        next_steps.append(f"Utiliser sonnet-executor (T2 standard — max {tier.max_tokens} tokens)")
+
+    return _build_output(
+        status=status,
+        summary=summary,
+        data={
+            "guard": guard.to_dict(),
+            "tier_detail": {
+                "level": tier.level,
+                "label": tier.label,
+                "model_target": tier.model_target,
+                "max_tokens": tier.max_tokens,
+                "description": tier.description,
+            },
+            "context_flags": {
+                "has_code": has_code,
+                "has_multifile": has_multifile,
+                "is_destructive": is_destructive,
+                "request_length": len(request),
+            },
+            "all_tiers": {
+                k: {"model": v.model_target, "max_tokens": v.max_tokens, "intents": v.intents}
+                for k, v in TASK_TIERS.items()
+            },
+        },
+        duration_ms=duration_ms,
+        next_steps=next_steps,
+    )
+
+
+def cmd_session_budget(
+    session_used: int = 0,
+    session_budget: int = SESSION_BUDGET_DEFAULT,
+    root: Optional[Path] = None,
+) -> Dict:
+    """Rapport de statut du budget de session."""
+    t_start = time.time()
+    root = root or _find_project_root()
+
+    # Récupérer depuis le cache si disponible
+    boot_ctx = get_boot_context(root)
+    cached_used = session_used
+
+    if boot_ctx and "session_tokens_used" in boot_ctx:
+        cached_used = max(session_used, int(boot_ctx["session_tokens_used"]))
+
+    pct = cached_used / session_budget if session_budget > 0 else 1.0
+    alert_level = "SAFE"
+    for threshold, label in [
+        (1.00, "CRITICAL"), (0.80, "ALERT"), (0.50, "WATCH"), (0.00, "SAFE")
+    ]:
+        if pct >= threshold:
+            alert_level = label
+            break
+
+    remaining = max(0, session_budget - cached_used)
+
+    # Estimer combien de tâches restent possibles par tier
+    tasks_remaining = {}
+    for intent, cost in INTENT_BUDGETS.items():
+        task_cost = cost + ORCHESTRATOR_BASE_BUDGET
+        tasks_remaining[intent] = max(0, remaining // task_cost) if task_cost > 0 else 0
+
+    duration_ms = int((time.time() - t_start) * 1000)
+
+    return _build_output(
+        status="success",
+        summary=f"Session budget: {cached_used}/{session_budget} tokens ({pct*100:.0f}%) — {alert_level}",
+        data={
+            "session_used": cached_used,
+            "session_budget": session_budget,
+            "session_remaining": remaining,
+            "session_pct": round(pct * 100, 1),
+            "alert_level": alert_level,
+            "alert_threshold_pct": int(SESSION_ALERT_THRESHOLD * 100),
+            "tasks_remaining_estimate": tasks_remaining,
+            "boot_cache_available": bool(boot_ctx),
+        },
+        duration_ms=duration_ms,
+        next_steps=(
+            ["Activer token-savior pour préserver le budget restant"] if alert_level in ("ALERT", "CRITICAL") else []
+        ),
+    )
+
+
 # ── CLI Interface (argparse) ──────────────────────────────────────────────────
 
 def build_parser() -> argparse.ArgumentParser:
@@ -521,6 +769,38 @@ Exemples:
     )
     budget_p.add_argument("--input", dest="input_text", default="", help="Texte d'entrée à estimer")
 
+    # compress (caveman mode R15)
+    compress_p = subparsers.add_parser("compress", help="Caveman compress: sortie sous-agent → JSON structuré minimal (R15)")
+    compress_p.add_argument("raw_output", help="JSON ou texte brut à compresser")
+    compress_p.add_argument("--level", choices=["lite","full","ultra"], default="lite",
+                            help="Niveau de compression: lite(-50%%)|full(-75%%)|ultra(-90%%)")
+
+    # budget-guard (phase 2)
+    guard_p = subparsers.add_parser("budget-guard",
+        help="Vérifie le budget session et détermine l'action (proceed|pause|abort)")
+    guard_p.add_argument("--intent", choices=["query", "action", "workflow", "research", "audit", "unknown"],
+        default="query", help="Type d'intention à évaluer")
+    guard_p.add_argument("--session-used", type=int, default=0, dest="session_used",
+        help="Tokens déjà consommés dans la session courante")
+    guard_p.add_argument("--session-budget", type=int, default=SESSION_BUDGET_DEFAULT, dest="session_budget",
+        help=f"Budget total de la session (défaut: {SESSION_BUDGET_DEFAULT})")
+    guard_p.add_argument("--alert-threshold", type=float, default=SESSION_ALERT_THRESHOLD, dest="alert_threshold",
+        help=f"Seuil d'alerte 0.0-1.0 (défaut: {SESSION_ALERT_THRESHOLD})")
+    guard_p.add_argument("--on-exceeded", choices=["pause_and_notify", "abort", "continue"],
+        default="pause_and_notify", dest="on_budget_exceeded",
+        help="Action si budget dépassé")
+    guard_p.add_argument("--request", default="", help="Texte de la requête (pour estimation longueur)")
+    guard_p.add_argument("--has-code", action="store_true", dest="has_code", help="La tâche contient du code")
+    guard_p.add_argument("--has-multifile", action="store_true", dest="has_multifile", help="La tâche est multi-fichiers")
+    guard_p.add_argument("--is-destructive", action="store_true", dest="is_destructive", help="La tâche est destructive")
+
+    # session-budget
+    session_p = subparsers.add_parser("session-budget", help="Rapport de budget session cumulatif")
+    session_p.add_argument("--session-used", type=int, default=0, dest="session_used",
+        help="Tokens consommés dans la session")
+    session_p.add_argument("--session-budget", type=int, default=SESSION_BUDGET_DEFAULT, dest="session_budget",
+        help=f"Budget total de la session (défaut: {SESSION_BUDGET_DEFAULT})")
+
     # status
     subparsers.add_parser("status", help="Statut du système d'orchestration")
 
@@ -544,6 +824,12 @@ def _format_table(result: Dict) -> str:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    # Forcer UTF-8 sur stdout/stderr (Windows cp1252 ne supporte pas les caractères Unicode)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -567,6 +853,27 @@ def main(argv: Optional[List[str]] = None) -> int:
         result = cmd_budget_check(
             intent_type=args.intent,
             input_text=args.input_text,
+        )
+    elif args.command == "compress":
+        result = cmd_compress(raw_output=args.raw_output, level=args.level)
+    elif args.command == "budget-guard":
+        result = cmd_budget_guard(
+            intent_type=args.intent,
+            session_used=args.session_used,
+            session_budget=args.session_budget,
+            alert_threshold=args.alert_threshold,
+            on_budget_exceeded=args.on_budget_exceeded,
+            request=args.request,
+            has_code=args.has_code,
+            has_multifile=args.has_multifile,
+            is_destructive=args.is_destructive,
+            root=args.root,
+        )
+    elif args.command == "session-budget":
+        result = cmd_session_budget(
+            session_used=args.session_used,
+            session_budget=args.session_budget,
+            root=args.root,
         )
     elif args.command == "status":
         result = cmd_status(root=args.root)

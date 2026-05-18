@@ -14,7 +14,7 @@
 - [x] core/hooks/tests/test_hooks.py — 25 tests pytest
 - [x] plugins/workflow-engine/workflows/usage_observer.workflow.ts v0.2.0
 - [x] plugins/workflow-engine/workflows/skill_eval.workflow.ts v0.2.0
-- [x] core/mainbrain/MainBrain_v1.4.md → v1.5 (Étapes 0, 2.5, 7bis câblées)
+- [x] core/mainbrain/MainBrain_v1.5.md → v1.5 (Étapes 0, 2.5, 7bis câblées)
 - [x] plugins/workflow-engine/activities/usage_observer.activities.ts — readHookLogs, aggregateStats, writeUsageStats (commit eee49eb)
 - [x] plugins/workflow-engine/activities/skill_eval.activities.ts — runCliContracts, runEvalLabScenarios, writeEvalResults (commit 9fd035c)
 - [x] plugins/workflow-engine/activities/index.ts — barrel exports + Activities union type (commit 92b7f86)
@@ -45,7 +45,7 @@
 
 - [x] Arborescence v0.8 scaffoldée
 - [x] core/contracts/skill_output.schema.json
-- [x] core/mainbrain/MainBrain_v1.4.md → v1.5
+- [x] core/mainbrain/MainBrain_v1.5.md → v1.5
 
 ---
 

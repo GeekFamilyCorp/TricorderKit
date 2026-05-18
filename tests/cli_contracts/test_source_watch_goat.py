@@ -38,7 +38,8 @@ def check(name: str, condition: bool, detail: str = ""):
         print(f"  FAIL  {name}" + (f" — {detail}" if detail else ""))
 
 
-def test_dry_run_returns_valid_structure(command: str):
+def _dry_run_returns_valid_structure(command: str):
+    """Helper interne (non collecté par pytest — paramètre positionnel)."""
     data = run([str(SCRIPT), "--dry-run", command])
     check(f"dry-run {command} — status=dry_run",
           data.get("status") == "dry_run", str(data.get("status")))
@@ -74,11 +75,11 @@ def main():
     print(f"\nContract tests — source-watch-goat\n{'='*40}")
 
     test_script_exists()
-    test_dry_run_returns_valid_structure("trending-manga")
-    test_dry_run_returns_valid_structure("search-manga")
-    test_dry_run_returns_valid_structure("trending-anime")
-    test_dry_run_returns_valid_structure("seasonal-anime")
-    test_dry_run_returns_valid_structure("latest-manga")
+    _dry_run_returns_valid_structure("trending-manga")
+    _dry_run_returns_valid_structure("search-manga")
+    _dry_run_returns_valid_structure("trending-anime")
+    _dry_run_returns_valid_structure("seasonal-anime")
+    _dry_run_returns_valid_structure("latest-manga")
     test_output_fields()
     test_unknown_command()
 
