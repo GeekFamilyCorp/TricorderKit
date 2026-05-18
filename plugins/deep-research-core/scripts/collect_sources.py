@@ -207,7 +207,12 @@ def _fetch_anilist(base_url: str, query: str, timeout: int) -> list:
       }
     }
     """
-    resp = requests.post(base_url, json={"query": gql, "variables": {"search": query}}, timeout=timeout)
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "TricorderKit/0.7 MangaTracker deep-research (https://github.com/GeekFamilyCorp/TricorderKit)",
+    }
+    resp = requests.post(base_url, json={"query": gql, "variables": {"search": query}}, headers=headers, timeout=timeout)
     resp.raise_for_status()
     items = []
     for m in resp.json().get("data", {}).get("Page", {}).get("media", []):

@@ -1,42 +1,80 @@
-# trusted_sources.yml — TricorderKit deep-research-core
-# Trusted sources allowed for autonomous research
-# Version: 0.1.0 — stub (replace with your domain sources)
+# trusted_sources.yml — TricorderKit deep-research-core / MangaTracker
+# Version: 0.3.0 — Sources officielles JP completes (2026-05-18)
+# manga: MangaDex+Jikan (fetchers actifs) | anime: AniList+Jikan (fetchers actifs)
+# github: GitHub REST (fetcher actif) | autres domaines: stubs a implementer
 
-# ── Primary API sources ──────────────────────────────────────────────────────
-primary_api:
-  - name: Your Primary API
-    url: https://api.your-source.com
+manga:
+  - name: MangaDex API
+    url: https://api.mangadex.org
     type: api_rest
-    reliability: 0.92
-    rate_limit: 5/min
+    reliability: 0.95
+    rate_limit: 5/sec
     cache_ttl: 900
-    notes: "Replace with your actual primary API source."
+    auth_required: false
+    notes: "API REST MangaDex. /manga?title=<query>. Fetcher actif."
+  - name: Jikan API
+    url: https://api.jikan.moe/v4
+    type: api_rest
+    reliability: 0.90
+    rate_limit: 3/sec
+    cache_ttl: 1800
+    auth_required: false
+    notes: "Wrapper MAL. /manga?q=<query>. Fetcher actif."
+  - name: Comic Natalie RSS
+    url: https://natalie.mu/comic/feed
+    type: rss
+    reliability: 0.92
+    rate_limit: 10/min
+    cache_ttl: 3600
+    auth_required: false
+    notes: "RSS Comic Natalie. News manga JP. [stub fetcher RSS]"
+  - name: BookWalker JP Manga
+    url: https://bookwalker.jp
+    type: scrape_stub
+    reliability: 0.88
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Ebook Kadokawa — ISBN, prix, jaquette. [stub]"
 
-  - name: Your Secondary API
-    url: https://api.your-second-source.com
+anime:
+  - name: AniList GraphQL
+    url: https://graphql.anilist.co
+    type: api_graphql
+    reliability: 0.95
+    rate_limit: 90/min
+    cache_ttl: 1800
+    auth_required: false
+    notes: "GraphQL AniList. media(search, type: ANIME). Fetcher actif."
+  - name: Jikan API (anime)
+    url: https://api.jikan.moe/v4
     type: api_rest
     reliability: 0.88
     rate_limit: 3/sec
     cache_ttl: 1800
-    notes: "Replace with your actual secondary API source."
-
-# ── Scraped sources ──────────────────────────────────────────────────────────
-secondary:
-  - name: Your Ranking Source
-    url: https://www.your-ranking-source.com
-    type: scrape
-    reliability: 0.85
+    auth_required: false
+    notes: "Wrapper MAL cote anime. /anime?q=<query>. Fetcher actif."
+  - name: LiveChart
+    url: https://www.livechart.me
+    type: scrape_stub
+    reliability: 0.87
     cache_ttl: 3600
-    notes: "Replace with your actual ranking/aggregator source."
-
-  - name: Your News Source
-    url: https://www.your-news-source.com
-    type: scrape
-    reliability: 0.88
+    auth_required: false
+    notes: "Calendrier anime saisonnier. [stub]"
+  - name: AniDB
+    url: https://anidb.net
+    type: scrape_stub
+    reliability: 0.85
+    cache_ttl: 7200
+    auth_required: false
+    notes: "BDD anime communautaire — OVA, specials, staff. [stub]"
+  - name: Anime News Network
+    url: https://www.animenewsnetwork.com
+    type: scrape_stub
+    reliability: 0.90
     cache_ttl: 1800
-    notes: "Replace with your actual news source."
+    auth_required: false
+    notes: "Media anglophone anime. RSS disponible. [stub]"
 
-# ── GitHub / Tech ────────────────────────────────────────────────────────────
 github:
   - name: GitHub API
     url: https://api.github.com
@@ -44,19 +82,289 @@ github:
     reliability: 0.99
     rate_limit: 5000/hour
     cache_ttl: 300
-    auth_required: true
+    auth_required: false
     auth_method: token
-    notes: "Primary source for GitHub repo ingestion."
-
+    notes: "API GitHub REST. /search/repositories. Fetcher actif."
   - name: GitHub Search
     url: https://api.github.com/search
     type: api_rest
     reliability: 0.97
     rate_limit: 30/min
     cache_ttl: 300
-    notes: "Code, repo, issues search."
+    auth_required: false
+    notes: "Recherche code, repos, issues GitHub."
 
-# ── Global scoring weights ──────────────────────────────────────────────────
+news:
+  - name: Comic Natalie
+    url: https://natalie.mu/comic/
+    type: scrape_stub
+    rss_url: https://natalie.mu/comic/feed
+    reliability: 0.92
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Media manga JP. RSS: https://natalie.mu/comic/feed. [stub]"
+  - name: Mantan Web
+    url: https://mantan-web.jp/
+    type: scrape_stub
+    reliability: 0.88
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Media JP manga/anime Mainichi. [stub]"
+  - name: Animate Times
+    url: https://www.animatetimes.com/
+    type: scrape_stub
+    reliability: 0.85
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Officiel Animate — events, goodies, series. [stub]"
+  - name: RealSound Manga
+    url: https://realsound.jp/
+    type: scrape_stub
+    reliability: 0.82
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Media culturel JP — interviews, critiques. [stub]"
+
+rankings:
+  - name: Oricon JP Manga
+    url: https://www.oricon.co.jp/category/manga/
+    type: scrape_stub
+    reliability: 0.95
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Rankings ventes manga hebdo. J0 Top10 -> J+4 Top50. Voir sources_oricon_v1.md. [stub]"
+  - name: Oricon JP Anime
+    url: https://www.oricon.co.jp/category/anime/
+    type: scrape_stub
+    reliability: 0.93
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Categorie anime ORICON JP. [stub]"
+  - name: Oricon US Rankings
+    url: https://us.oricon-group.com/category/ranking/
+    type: scrape_stub
+    reliability: 0.90
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Rankings manga/LN ORICON US en anglais. Fallback JP. [stub]"
+  - name: BookWalker Ranking
+    url: https://bookwalker.jp
+    type: scrape_stub
+    reliability: 0.85
+    cache_ttl: 1800
+    auth_required: false
+    notes: "Classements numeriques BookWalker. [stub]"
+
+light_novels:
+  - name: Syosetu API
+    url: https://api.syosetu.com/novelapi/api/
+    type: api_rest_stub
+    reliability: 0.88
+    rate_limit: 1/sec
+    cache_ttl: 3600
+    auth_required: false
+    notes: "API officielle Syosetu. Titres JP/romaji, auteur, tags, URL. [stub fetcher]"
+  - name: Kakuyomu
+    url: https://kakuyomu.jp/
+    type: scrape_stub
+    reliability: 0.84
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Plateforme WN Kadokawa. [stub]"
+  - name: RanobeDB
+    url: https://ranobedb.org/
+    type: api_rest_stub
+    reliability: 0.82
+    cache_ttl: 7200
+    auth_required: false
+    notes: "BDD LN communautaire. Relations WN->LN->manga. [stub]"
+  - name: Oricon LN Rankings
+    url: https://us.oricon-group.com/category/light-novel/
+    type: scrape_stub
+    reliability: 0.88
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Rankings LN hebdo ORICON US. [stub]"
+
+publishers:
+  - name: Shueisha
+    url: https://www.shueisha.co.jp/
+    type: scrape_stub
+    reliability: 0.97
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Weekly Shonen Jump", frequency: "hebdo", day: "lundi"}
+      - {name: "Jump+", frequency: "online"}
+      - {name: "Jump Square", frequency: "mensuel", day: 4}
+      - {name: "Ultra Jump", frequency: "mensuel", day: 19}
+      - {name: "Young Jump", frequency: "hebdo", day: "jeudi"}
+    notes: "Source canonique Shueisha. Pages shinkan/oshirase. [stub]"
+  - name: Kodansha
+    url: https://www.kodansha.co.jp/
+    type: scrape_stub
+    reliability: 0.97
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Weekly Shonen Magazine", frequency: "hebdo", day: "mercredi"}
+      - {name: "Monthly Shonen Magazine", frequency: "mensuel", day: 6}
+      - {name: "Morning", frequency: "hebdo", day: "jeudi"}
+      - {name: "Afternoon", frequency: "mensuel", day: 25}
+    notes: "K-Manga: https://comic.k-manga.com/. [stub]"
+  - name: Shogakukan
+    url: https://www.shogakukan.co.jp/
+    type: scrape_stub
+    reliability: 0.95
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Weekly Shonen Sunday", frequency: "hebdo", day: "mercredi"}
+      - {name: "Big Comic Spirits", frequency: "hebdo", day: "vendredi"}
+      - {name: "Sunday GX", frequency: "mensuel", day: 19}
+    notes: "[stub]"
+  - name: Hakusensha
+    url: https://www.hakusensha.co.jp/
+    type: scrape_stub
+    reliability: 0.93
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Young Animal", frequency: "bimensuel", days: [10, 25]}
+      - {name: "Hana to Yume", frequency: "bimensuel", days: [5, 20]}
+    notes: "[stub]"
+  - name: Kadokawa
+    url: https://www.kadokawa.co.jp/
+    type: scrape_stub
+    reliability: 0.93
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Shonen Ace", frequency: "mensuel", day: 26}
+      - {name: "Comp Ace", frequency: "mensuel", day: 26}
+      - {name: "Young Ace", frequency: "mensuel", day: 4}
+    notes: "Inclut Dengeki Bunko (LN), Fantasia Bunko. [stub]"
+  - name: Akita Shoten
+    url: https://www.akitashoten.co.jp/
+    type: scrape_stub
+    reliability: 0.90
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Weekly Shonen Champion", frequency: "hebdo", day: "jeudi"}
+      - {name: "Young Champion", frequency: "bimensuel", days: [2, 17]}
+    notes: "[stub]"
+  - name: Square Enix
+    url: https://magazine.jp.square-enix.com/
+    type: scrape_stub
+    reliability: 0.90
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Monthly Shonen Gangan", frequency: "mensuel", day: 12}
+      - {name: "Gangan Joker", frequency: "mensuel", day: 22}
+      - {name: "Gangan Online", frequency: "online"}
+    notes: "[stub]"
+  - name: Alphapolis
+    url: https://www.alphapolis.co.jp/
+    type: scrape_stub
+    reliability: 0.85
+    cache_ttl: 7200
+    auth_required: false
+    magazines:
+      - {name: "Alphapolis Web Manga", frequency: "online"}
+      - {name: "Regina", frequency: "mensuel", day: 10}
+    notes: "Fort en isekai/fantasy. [stub]"
+
+ebooks:
+  - name: BookWalker JP
+    url: https://bookwalker.jp/
+    type: scrape_stub
+    reliability: 0.92
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Kadokawa ebook — reference ISBN/prix JP. [stub]"
+  - name: ebookjapan
+    url: https://ebookjapan.yahoo.co.jp/
+    type: scrape_stub
+    reliability: 0.88
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Yahoo! Japan ebook. [stub]"
+  - name: Amazon JP Kindle
+    url: https://www.amazon.co.jp/kindle-dbs/comics-store
+    type: api_rest_stub
+    reliability: 0.90
+    cache_ttl: 1800
+    auth_required: true
+    auth_method: pa_api
+    notes: "Amazon PA-API — prix, jaquette, ISBN. [stub]"
+  - name: Line Manga
+    url: https://manga.line.me/
+    type: scrape_stub
+    reliability: 0.82
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Plateforme LINE mobile. [stub]"
+  - name: CMOA
+    url: https://www.cmoa.jp/
+    type: scrape_stub
+    reliability: 0.80
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Comic Seymour / Manga Okoku. [stub]"
+  - name: Honto
+    url: https://honto.jp/
+    type: scrape_stub
+    reliability: 0.80
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Hybride physique/numerique. ISBN cross-check. [stub]"
+
+shops:
+  - name: AmiAmi
+    url: https://www.amiami.com
+    type: scrape_stub
+    reliability: 0.88
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Figures / goodies JP. Precommandes. [stub]"
+  - name: CDJapan
+    url: https://www.cdjapan.co.jp
+    type: scrape_stub
+    reliability: 0.87
+    cache_ttl: 3600
+    auth_required: false
+    notes: "Musique JP + manga + goodies. [stub]"
+  - name: Mandarake
+    url: https://order.mandarake.co.jp
+    type: scrape_stub
+    reliability: 0.85
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Occasion / collector manga, doujin, figures. [stub]"
+  - name: Good Smile Company
+    url: https://www.goodsmile.com/ja
+    type: scrape_stub
+    reliability: 0.90
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Nendoroid/figma. Annonces officielles. [stub]"
+  - name: 1999 (Hobby Search)
+    url: https://www.1999.co.jp
+    type: scrape_stub
+    reliability: 0.83
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Hobby Search — figures, kits, goodies. [stub]"
+  - name: Crunchyroll Store
+    url: https://store.crunchyroll.com
+    type: scrape_stub
+    reliability: 0.78
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Goodies anime marche occidental. [stub]"
+
 scoring_weights:
   official_api: 1.0
   official_site: 0.9
