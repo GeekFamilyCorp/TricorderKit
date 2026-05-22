@@ -1,0 +1,89 @@
+# skills.example.yaml — Skills exposés par le projet lié à TricorderKit
+# Chaque skill est une capacité callable depuis l'orchestrateur TricorderKit.
+# Copier vers skills.yaml et adapter aux skills réels du projet.
+
+skills:
+
+  # ── Skill de recherche domaine ─────────────────────────────────────────────
+  - id: domain-research
+    name: "Recherche domaine"
+    version: "1.0.0"
+    description: |
+      Recherche des informations sur un sujet dans le domaine spécialisé
+      du projet lié. Utilise les sources configurées dans sources.yaml.
+    entrypoint: skills/domain-research/run.py
+    input:
+      query:
+        type: string
+        required: true
+      depth:
+        type: string
+        enum: [shallow, medium, deep]
+        default: medium
+      max_results:
+        type: integer
+        default: 5
+    output:
+      type: markdown
+      schema: skill_output.schema.json
+    complexity: T2              # T1 (haiku) | T2 (sonnet) | T3 (opus)
+    dry_run_supported: true
+    enabled: true
+    tags: [research, domain-specific]
+
+  # ── Skill de génération de fiche ───────────────────────────────────────────
+  - id: generate-entry
+    name: "Génération de fiche"
+    version: "1.0.0"
+    description: |
+      Génère une fiche structurée (note Obsidian avec frontmatter YAML)
+      à partir des données collectées par domain-research.
+    entrypoint: skills/generate-entry/run.py
+    depends_on:
+      - domain-research
+    input:
+      subject:
+        type: string
+        required: true
+      template:
+        type: string
+        default: default
+        description: "Nom du template dans vault/templates/"
+      overwrite:
+        type: boolean
+        default: false
+    output:
+      type: markdown
+      destination: vault
+      path_pattern: "Category/{subject}/{subject}.md"
+    complexity: T1
+    dry_run_supported: true
+    enabled: true
+    tags: [obsidian, generation]
+
+  # ── Skill d'audit ──────────────────────────────────────────────────────────
+  - id: audit-project
+    name: "Audit projet"
+    version: "1.0.0"
+    description: |
+      Audit statique du projet lié : couverture de tests, dépendances,
+      qualité du code. Retourne un rapport JSON.
+    entrypoint: skills/audit-project/run.py
+    input:
+      scope:
+        type: string
+        enum: [quick, full]
+        default: quick
+    output:
+      type: json
+    complexity: T2
+    dry_run_supported: false
+    enabled: true
+    tags: [audit, quality]
+
+# ── Politique d'exécution globale ─────────────────────────────────────────────
+execution_policy:
+  require_dry_run_first: true    # tout skill doit passer en dry_run avant write
+  max_concurrent_skills: 2
+  default_timeout_seconds: 120
+  token_budget_per_skill: 5000   # T2 skills (sonnet)

@@ -1,0 +1,64 @@
+# sources.example.yaml — Sources de données du projet lié
+# Utilisé par connector_hub pour collecter des données externes.
+# Copier vers sources.yaml et renseigner les URLs et clés réelles.
+
+sources:
+
+  # ── Flux RSS ──────────────────────────────────────────────────────────────
+  rss:
+    - id: source-rss-1
+      name: "Nom du flux RSS"
+      url: "https://example.com/rss.xml"
+      enabled: true
+      tags: [domain-tag-1, domain-tag-2]
+      refresh_interval: 3600   # secondes
+
+    - id: source-rss-2
+      name: "Autre flux RSS"
+      url: "https://another-example.com/feed"
+      enabled: false
+      tags: [domain-tag-1]
+
+  # ── APIs externes ─────────────────────────────────────────────────────────
+  apis:
+    - id: api-source-1
+      name: "Nom de l'API"
+      base_url: "https://api.example.com/v1"
+      auth_type: bearer          # bearer | api_key | basic | none
+      auth_env_key: YOUR_API_KEY_ENV_VAR   # nom de la variable dans .env
+      endpoints:
+        search:  /search
+        detail:  /item/{id}
+      rate_limit:
+        requests_per_minute: 60
+        requests_per_day: 1000
+      enabled: true
+
+    - id: api-source-2
+      name: "Autre API"
+      base_url: "https://api2.example.com"
+      auth_type: none
+      enabled: true
+
+  # ── Scraping ──────────────────────────────────────────────────────────────
+  scraping:
+    - id: scrape-source-1
+      name: "Nom du site"
+      url: "https://site.example.com"
+      method: puppeteer          # puppeteer | requests | playwright
+      selectors:
+        title:   "h1.entry-title"
+        content: "div.entry-content"
+        date:    "time[datetime]"
+      enabled: false             # désactivé par défaut (vérifier légalité)
+      robots_txt_compliant: true
+
+  # ── Bases de données locales ──────────────────────────────────────────────
+  local_db:
+    - id: local-db-1
+      type: sqlite               # sqlite | postgres | supabase
+      path: data/local.db        # relatif à la racine du projet lié
+      tables:
+        - items
+        - metadata
+      enabled: true
