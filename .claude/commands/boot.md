@@ -3,7 +3,7 @@ description: Boot TricorderKit session — charge le contexte, HOT_CACHE, patter
 allowed-tools: Read, Bash, mcp__obsidian-claude-vault__read_note, mcp__obsidian-claude-vault__patch_note
 ---
 
-Exécute la séquence de démarrage TricorderKit v0.8.
+Exécute la séquence de démarrage TricorderKit v0.9.
 
 ## Séquence obligatoire
 
@@ -15,7 +15,7 @@ Si TIER 1 + lessons.md suffisent pour la demande → aller directement à l'acti
 
 ### TIER 2 — Si TIER 1 insuffisant (~2 500 tokens)
 3. Lire `.planning/STATE.md` — état détaillé du projet
-4. Lire `.planning/TASKS.md` — pending/in_progress uniquement
+4. Lire `.planning/TASKS.md` — pending/in_progress uniquement (exclure ✅)
 5. Lire `.planning/DECISIONS.md` — 5 dernières entrées uniquement
 
 ### TIER 3 — À la demande (~10 000 tokens)
@@ -27,22 +27,56 @@ Si TIER 1 + lessons.md suffisent pour la demande → aller directement à l'acti
 11. `docs/06_workflow_standard.md`
 
 ## HOT_CACHE Obsidian (si MCP disponible)
-- Lire `00_SYSTEM/05_Hot_Cache/HOT_CACHE.md` dans le vault claude-vault
+- Lire `00_SYSTEM/05_Hot_Cache/HOT_CACHE.md` dans le vault `claude-vault`
+  → via `mcp__obsidian-claude-vault__read_note`
 - Vérifier si stale (> 7 jours depuis `updated:`)
-- Si stale → signaler et proposer mise à jour
+- Si stale → signaler et proposer mise à jour via `/tk:orchestrator`
 
 ## Patterns d'erreurs actifs
-- PATTERN-ARCH-001 : hooks inerts → implémenter dans SKILL.md, pas hooks/
-- PATTERN-ENV-001 : chemins MSIX → utiliser %LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\
-- PATTERN-OPS-001 : scheduled task OOM → limiter tokens, segmenter
-- PATTERN-ARCH-002 : system prompt server-side → pas de hook pre_session Cowork
+
+| Code | Règle |
+|------|-------|
+| ARCH-001 | Hooks Cowork inertes → comportement auto dans SKILL.md orchestrateur |
+| ENV-001 | MSIX paths → utiliser LOCALAPPDATA pour fichiers Claude Desktop |
+| OPS-001 | Scheduled tasks → prompt ≤ 300 tokens (OOM sinon) |
+| ARCH-002 | System prompt Cowork côté serveur → estimation uniquement |
+
+## État infrastructure (vérifier si `--check-infra`)
+
+```bash
+docker compose ps        # Neo4j 7474 · Qdrant 6333 · Langfuse 3001 · Temporal 7233
+```
+
+- Temporal worker `tricorderkit-hooks` : task queue `tricorderkit-hooks`
+- Redémarrer si nouvelles activities déployées :
+  `npx ts-node plugins/workflow-engine/scripts/start_worker.ts`
+
+## Plugins actifs (v0.9)
+
+`cli-forge` · `workflow-engine` · `deep-research-core` · `hook-layer v0.2.0`
+`eval-lab` · `obsidian-agent-layer` · `security-audit-cli` · `connector-hub v0.1.0`
+`memory-boot v0.8` · `token-optimizer v0.8`
+
+## CLIs enregistrées
+
+`github-goat` dry_run_validated · `obsidian-goat` dry_run_validated (manifest ✅ + 19 tests)
 
 ## Output attendu
 
-Résumé structuré : version, commit, tests, Docker, prochaines priorités, patterns actifs.
-Terminer par : "Prêt. Quelle est la prochaine tâche ?"
+Résumé structuré :
+- Version et commit HEAD
+- Tests : N PASS, N skipped, 0 FAIL
+- Services Docker : statut
+- Prochaines priorités (backlog `[ ]`)
+- Patterns actifs
+
+Terminer par : **"Prêt. Quelle est la prochaine tâche ?"**
 
 ## Variantes
-- `--summary-only` : TIER 1 uniquement
-- `--check-workflows` : ajouter docker compose ps + tk workflow list
-- `--update-summary` : mettre à jour BOOT_SUMMARY.md après les tâches
+
+| Flag | Action |
+|------|--------|
+| `--summary-only` | TIER 1 uniquement (BOOT_SUMMARY + lessons) |
+| `--check-infra` | + `docker compose ps` + liste des workers Temporal |
+| `--update-summary` | Mettre à jour `BOOT_SUMMARY.md` après session |
+| `--full` | TIER 1 + TIER 2 complet |
