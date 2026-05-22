@@ -10,7 +10,7 @@
 | Champ | Valeur |
 |---|---|
 | Version | **v0.9** (M1+M2+M3 COMPLETS — M4 ✅) |
-| Commit HEAD | `74bbe65` → push M4 en cours |
+| Commit HEAD | `a293b2f` (GitHub sync ✅) |
 | Dernière session | 2026-05-22 |
 | Tests | **377 PASS** (359+20 observabilité M4), 15 skipped (live) |
 | Blockers actifs | Aucun |
