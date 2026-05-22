@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1→M7 COMPLETS — obsidian-goat manifest + /tk:boot ✅) |
-| Commit HEAD | `796dd2a` (GitHub sync ✅) |
+| Version | **v0.9** (M1→M4 COMPLETS — STATUS.md + tk doctor/rapport + INSTALL.md + examples ✅) |
+| Commit HEAD | `f1a5a54` |
 | Dernière session | 2026-05-22 |
-| Tests | **413 PASS** (377+36 Supabase Phase 2), 15 skipped (live) |
+| Tests | **435 PASS** (413+22 nouveaux : rapport×8 + doctor×6 + whitelist×8), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -28,16 +28,23 @@
 
 ---
 
-## Prochaines tâches (v0.9 M3)
+## Prochaines tâches (v0.9 M5)
 
-1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
-2. `✅` M4 — Observabilité bout-en-bout Langfuse **DONE 2026-05-22** — 20/20 tests, traces live dans localhost:3001
-3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
-6. `✅` Temporal → connector_hub.dispatch **DONE 2026-05-22** — source_watch.activities.ts + wiring complet
-7. `✅` Japan-Alliance Supabase Phase 2 **DONE 2026-05-22** — 5 tables contenu (manga/anime/mangaka/studios/manga_mangaka) + 36 tests
-8. `✅` obsidian-goat manifest + /tk:boot v0.9 **DONE 2026-05-22** — manifest cli-forge validé + boot.md TIER 1/2/3 v0.9
-4. `✅` Pipeline rtk→docmancer test live **DONE 2026-05-22** — `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
-5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
+1. `⬜` security-audit-cli — CLI manquante + 0 tests → ajouter scripts/ + tests/
+2. `⬜` obsidian-agent-layer — 0 tests + 0 scripts → couverture minimale requise
+3. `⬜` VPS deployment — optionnel — DEC-011 : local-first maintenu, VPS extension future
+
+### Complété session v0.9 M4 ✅ (2026-05-22)
+- **STATUS.md** — Dashboard plugins 10 lignes × 5 colonnes (CLI/Tests/Docs/Production-ready)
+- **tk rapport** — commande CLI : lit BOOT_SUMMARY.md + STATUS.md → `reports/status/latest_status.md` (+ `--json`) · 8 tests PASS
+- **tk doctor** — réécriture [OK]/[WARN]/[FAIL] · 14 checks (Python, Docker, 4 services, .env, 4 dirs, modules, linked_projects, secrets) · 6 tests PASS
+- **Whitelist _check_secrets** — fix faux positifs : `.env.example`, `*.md`, `cli/tk.py` → R17 dans `tasks/lessons.md`
+- **INSTALL.md** — guide installation public : Option 1-3 + linked project + verify + security checks · `tk doctor` commande centrale
+- **examples/linked-project-template/** — 7 fichiers anonymisés : project.config / sources / workflows / skills / .env / README / README_PRIVACY
+- **LESSON-007 R17** — whitelist git grep : 3 cas à valider avant push public
+
+### Complété session v0.9 M3+M4 (précédent) ✅ (2026-05-22)
+- M3-LIVE, M4-OBS — voir entrées ci-dessous
 
 ### Complété session v0.9 M2 ✅ (session 1/2)
 - **S1** — connector_hub `--temporal` opérationnel (dry_run ✅, workflow_id déterministe)
@@ -134,4 +141,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M7 — 2026-05-22 (M3-LIVE ✅, M4-OBS ✅, M5-Temporal ✅, M6-Supabase ✅, M7-cli-forge+boot ✅) — 413 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M4 — 2026-05-22 (M1-boot ✅, M2-infra ✅, M3-pipeline+obs ✅, M4-cli+docs ✅) — 435 tests, 0 FAIL*
