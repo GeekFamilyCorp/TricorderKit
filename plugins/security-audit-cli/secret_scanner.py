@@ -83,7 +83,7 @@ _PATTERNS: list[SecretPattern] = [
         id="db_connection_string",
         description="Connection string base de données",
         pattern=re.compile(
-            r'(?:postgresql|mysql|mongodb|redis|sqlite)://[^"\'\.\s]{10,}:[^"\'\.\s@]{3,}@',
+            r'(?:postgresql|mysql|mongodb|redis|sqlite)://[^"\'\.\s]{3,}:[^"\'\.\s@]{3,}@',
             re.IGNORECASE,
         ),
         severity="CRITICAL",
