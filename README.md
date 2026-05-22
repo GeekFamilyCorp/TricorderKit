@@ -2,8 +2,8 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-0.8-blue)](CHANGELOG.md)
-[![Status](https://img.shields.io/badge/phase-6%20linked__project-green)](/.planning/STATE.md)
+[![Version](https://img.shields.io/badge/version-0.9-blue)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/phase-v0.9_M2-green)](/.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
 ---
@@ -16,6 +16,7 @@ TricorderKit is an **Agentic Knowledge OS** — a local-first system that transf
 v0.6 definition : memory + skills + token hygiene + observability
 v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
 v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
+v0.9 definition : orchestration M1+M2 + budget_guard T1/T2/T3 + observabilité + Japan-Alliance Phase 1
 ```
 
 It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
@@ -33,7 +34,7 @@ It takes inspiration from the Star Trek tricorder — a tool that scans, analyze
 | Vector DB | Qdrant v1.8.4 | Semantic search / RAG |
 | Workflows | Temporal 1.23 | Persistent workflow engine |
 | Observability | Langfuse 2 | Token tracing + cost tracking |
-| Infrastructure | Docker Compose | Local infra |
+| Infrastructure | Docker Compose | Local infra (DEV only) |
 | CLIs | cli-forge (custom) | Deterministic API wrappers |
 
 ---
@@ -178,9 +179,9 @@ TricorderKit/
 └── .planning/
     ├── STATE.md            ← current project state
     ├── TASKS.md            ← active backlog
-    ├── DECISIONS.md        ← architectural decisions log (DEC-001 → DEC-011)
+    ├── DECISIONS.md        ← architectural decisions log (DEC-001 → DEC-014)
     ├── RISKS.md            ← risk register
-    └── ROADMAP_v0.7.md     ← 6-phase roadmap
+    └── ROADMAP_v0.7.md     ← 6-phase roadmap (v0.9 roadmap in STATE.md)
 ```
 
 ---
@@ -206,6 +207,18 @@ python tests/cli_contracts/test_github_goat.py
 
 ---
 
+## v0.9 — What's New vs v0.8
+
+See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
+
+- **tk-orchestrator v0.3.0** — budget_guard phase 2 with T1/T2/T3 tiers (haiku / sonnet / opus)
+- **Observability pipeline B2** — `hook_log_to_obsidian.py`, parse hook logs → Obsidian ERRORS.md
+- **Pipeline rtk→docmancer M3** — 5-step pipeline (collect→dedup→score→build_note→write_obsidian)
+- **Supabase Japan-Alliance** — 7 tables, 5 ENUMs, full RLS — 29 tests ✅
+- **Skills pont Cowork** — token-savior + claude-code-router — 19 tests ✅
+- **Plugins v0.8 migration** — memory-boot (21 tests) + token-optimizer (31 tests)
+- **247 tests PASS** total
+
 ## v0.8 — What's New vs v0.7
 
 See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
@@ -219,18 +232,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 - **Config layers** — `configs/shared/defaults.yaml` (versioned) + local + vps overrides (gitignored)
 - **GitHub MCP migration** — `@modelcontextprotocol/server-github` → `ghcr.io/github/github-mcp-server` (Docker, official)
 
-## v0.7 — What's New vs v0.6
-
-- **MainBrain v1.4** — Risk Guard, CLI Selector, Token Hygiene Guard, Dry-run mode
-- **cli-forge plugin** — deterministic CLI generator (github-goat example), SQLite cache
-- **workflow-engine plugin** — Temporal persistent workflows with token budget guard
-- **deep-research-core plugin** — autonomous local-first research engine (RSS, web, APIs)
-- **Contract testing** — `skill_output.schema.json` mandatory for all skills
-- **docker-compose.yml** — Neo4j + Qdrant + Temporal + Langfuse local stack
-
 ---
 
-## Phase Roadmap (v0.8)
+## Phase Roadmap (v0.9)
 
 | Phase | Name | Status | Completed |
 |---|---|---|---|
@@ -240,6 +244,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 | 4 | Deep Research | ✅ Complete | 16/05/2026 |
 | 5 | Quality loop (eval-lab, security) | ✅ Complete | 16/05/2026 |
 | 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
+| M1 | Orchestration + budget_guard T1/T2/T3 | ✅ Complete | 18/05/2026 |
+| M2 | Japan-Alliance Phase 1 + Supabase | ✅ Complete | 18/05/2026 |
+| M3 | Observabilité + tests live | 🔄 Active | — |
 
 ---
 
@@ -251,5 +258,5 @@ This is a personal/research project. If you fork it, please respect the atomic k
 
 ---
 
-*TricorderKit v0.8 — GeekFamilyCorp — 2026*  
+*TricorderKit v0.9 M2 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*
