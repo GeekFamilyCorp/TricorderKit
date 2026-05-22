@@ -1,0 +1,79 @@
+# manifest.yml — obsidian-goat CLI
+# TricorderKit cli-forge
+
+name: obsidian-goat
+version: 0.1.0
+description: CLI déterministe Obsidian vault — lecture/écriture notes, hot-cache, logs quotidiens
+
+# Obsidian vault local — pas d'API externe
+source_api: file://localhost/obsidian-vault
+source_docs: https://help.obsidian.md/Files+and+folders/Manage+vaults
+auth_required: false
+auth_method: none
+
+output_formats:
+  - json
+  - markdown
+
+safe_commands:
+  - read-note
+  - check-note
+  - list-notes
+
+# Commandes avec effet de bord (contrôlées par --dry-run)
+write_commands:
+  - write-note
+  - update-hot-cache
+  - append-log
+
+forbidden_commands:
+  - delete-note       # Non implémenté — destructif
+  - wipe-vault        # Non implémenté — destructif
+  - overwrite-config  # Non implémenté — destructif
+
+dry_run: true
+
+cache:
+  sqlite: true
+  ttl_seconds: 300
+  offline_search: true
+
+# Obsidian local = pas de rate limit réseau
+rate_limit:
+  requests_per_minute: 300
+  retry_after_seconds: 0
+
+mcp_server:
+  generated: false
+  notes: "obsidian-mcp disponible séparément via Docker MCP"
+
+security_status:
+  audited: false
+  # audit_date: not yet scheduled
+  prompt_injection_checked: true
+  shell_commands_checked: true    # pas de subprocess ni shell=True
+  network_access_checked: true    # pas d'accès réseau (filesystem local uniquement)
+  sensitive_files_checked: false
+  notes: >
+    Dry-run validé 2026-05-18 (19 tests PASS).
+    Accès limité au vault déclaré dans OBSIDIAN_VAULT_PATH / OBSIDIAN_JAPAN_VAULT_PATH.
+    Paths validés avant tout accès (no path traversal).
+    À compléter : audit sensitive_files (clés dans notes ?).
+
+token_budget:
+  max_per_call: 1500
+  warn_at: 1000
+
+# Environnement requis
+env:
+  - OBSIDIAN_VAULT_PATH     # chemin absolu vault principal (claude-vault)
+  - OBSIDIAN_JAPAN_VAULT_PATH  # chemin absolu vault Japan-Alliance (optionnel)
+
+# Chemins vault standards
+vault_paths:
+  hot_cache: "00_SYSTEM/05_Hot_Cache/HOT_CACHE.md"
+  daily_logs: "10_INBOX/Daily_Logs"
+
+# Tests contrats
+contract_tests: tests/cli_contracts/test_obsidian_goat.py
+contract_tests_status: "19/19 PASS — 2026-05-18"

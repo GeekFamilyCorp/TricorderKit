@@ -33,7 +33,7 @@ clis:
     version: 0.1.0
     status: dry_run_validated
     path: tools/obsidian-goat/obsidian_goat.py
-    manifest: ~
+    manifest: plugins/cli-forge/generated/obsidian-goat/manifest.yml
     description: CLI Obsidian vault — read-note, write-note, update-hot-cache, append-log, check-note, list-notes
     service: Obsidian (local vault filesystem)
     auth_required: false
