@@ -236,15 +236,24 @@ def _check_docker_socket() -> bool:
         return False
 
 
+_SECRETS_EXCLUDE = [
+    ":!.env",
+    ":!.env.example",      # *.example ne match pas .env.example sous git
+    ":!*.example",
+    ":!*.example.*",
+    ":!*.md",              # documentation (valeurs toujours vides ou commentées)
+    ":!cli/tk.py",         # source qui définit les patterns — auto-référence
+]
+
+
 def _check_secrets() -> list[str]:
-    """Return secret key names found in tracked files (excluding .env and examples)."""
+    """Return secret key names found in tracked files (excluding whitelisted paths)."""
     patterns = ["ANTHROPIC_API_KEY=", "OPENAI_API_KEY="]
     found = []
     for pattern in patterns:
         try:
             r = subprocess.run(
-                ["git", "grep", "-l", pattern,
-                 "--", ":!.env", ":!*.example", ":!*.example.*"],
+                ["git", "grep", "-l", pattern, "--", *_SECRETS_EXCLUDE],
                 capture_output=True, text=True, encoding="utf-8",
                 cwd=REPO_ROOT, timeout=10,
             )
