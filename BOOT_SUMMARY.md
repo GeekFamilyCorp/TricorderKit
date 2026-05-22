@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1+M2 COMPLETS) |
-| Commit HEAD | `e7cc574` (GitHub sync ✅) |
+| Version | **v0.9** (M1+M2+M3 COMPLETS — M4 ✅) |
+| Commit HEAD | `74bbe65` → push M4 en cours |
 | Dernière session | 2026-05-22 |
-| Tests | **247 PASS** (222 v0.8+M1+M2 + 25 nouveaux budget_guard) |
+| Tests | **377 PASS** (359+20 observabilité M4), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -31,7 +31,7 @@
 ## Prochaines tâches (v0.9 M3)
 
 1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
-2. `⬜` M4 — Observabilité bout-en-bout (Langfuse hooks)
+2. `✅` M4 — Observabilité bout-en-bout Langfuse **DONE 2026-05-22** — 20/20 tests, traces live dans localhost:3001
 3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
 4. `✅` Pipeline rtk→docmancer test live **DONE 2026-05-22** — `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
 5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
@@ -40,6 +40,16 @@
 - **S1** — connector_hub `--temporal` opérationnel (dry_run ✅, workflow_id déterministe)
 - **A2** — Supabase schema Japan-Alliance (29 tests ✅) — 7 tables, RLS complet, seed 10 publishers
 - **B1** — Skills token-savior + claude-code-router (19 tests ✅)
+
+### Complété session v0.9 M3+M4 ✅ (2026-05-22)
+- **M3-LIVE** — Pipeline rtk→docmancer données réelles : `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
+  - Fix collect parser, write_obsidian filesystem, title selection, field normalization
+- **M4-OBS** — Observabilité bout-en-bout Langfuse hooks
+  - `core/hooks/langfuse_observer.py` : REST API directe, no SDK, Python 3.14 compatible
+  - 3 hooks branchés : pre_intent→trace-create · pre_execution/post_execution→span-create
+  - Batch HTTP groupé par cycle (1 seul appel) + trace_id partagé
+  - Langfuse initialisé : projet TricorderKit, clés dans `.env`
+  - `tests/test_observability.py` : 20 tests (init + hooks + no-op + mock HTTP + live)
 
 ### Complété session v0.9 M2 ✅ (session 2/2)
 - **S2** — tk-orchestrator budget_guard phase 2 (25 tests ✅)
@@ -121,4 +131,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M3 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅, M3-LIVE ✅) — 359 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M4 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅, M3-LIVE ✅, M4-OBS ✅) — 377 tests, 0 FAIL*
