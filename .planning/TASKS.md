@@ -149,14 +149,14 @@
 
 ## Backlog v0.9 — À prioriser
 
-- [ ] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub)
-- [ ] cli-forge — obsidian-goat CLI (accès vault depuis subprocess)
+- [x] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub) ✅ M5 — source_watch.activities.ts, 8 activities, commit 87320ca
+- [x] Japan-Alliance Phase 1/2 — schéma Supabase (tables manga, anime, mangaka, studios) ✅ M6 — migration 00002, 5 tables, 5 ENUMs, RLS, 36 tests, seed studios, commit 255003c
+- [ ] cli-forge — obsidian-goat CLI (accès vault depuis subprocess) ← NEXT
 - [ ] Skill /tk:boot — wiring `.claude/commands/boot.md`
 - [ ] Skill /tk:vault-audit
 - [ ] Skill /tk:deep-research
 - [ ] Migrer plugin memory-boot → v0.8
 - [ ] Migrer plugin token-hygiene → v0.8
-- [ ] Japan-Alliance Phase 1 — schéma Supabase (tables manga, anime, mangaka)
 - [ ] .planning/ROADMAP_v0.9.md — définir prochaines phases
 - [ ] KI-004 — Temporal worker monitoring continu (hook boucle complète en prod)
 
