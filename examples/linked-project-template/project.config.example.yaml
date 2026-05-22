@@ -1,0 +1,60 @@
+# project.config.example.yaml — TricorderKit linked project
+# Copier vers project.config.yaml et renseigner les valeurs réelles.
+# NE PAS versionner project.config.yaml (contient des chemins personnels).
+#
+# Règle d'or :
+#   TricorderKit exécute.
+#   Le projet lié spécialise.
+
+project:
+  id: sample-linked-project
+  name: Sample Linked Project
+  type: ai_assistant          # ai_assistant | obsidian_vault | private_project
+  visibility: private
+  domain: your-domain-here    # ex: manga_anime, finance, research, devops
+  github_repo: your-org/your-repo
+
+  root: /path/to/your/project
+  vault: /path/to/private/vault
+
+  description: |
+    Courte description du projet lié.
+    Ce champ est lu par TricorderKit pour contextualiser les requêtes.
+
+# ── Features activées ────────────────────────────────────────────────────────
+features:
+  deep_research:    true   # Pipeline collect→dedup→score→note
+  obsidian_memory:  true   # Lecture/écriture dans le vault Obsidian
+  connector_hub:    true   # Dispatch vers sources externes (RSS, API, scraping)
+  security_audit:   true   # Scan de sécurité sur le code du projet
+  workflow_engine:  true   # Déclenchement de workflows Temporal
+
+# ── Chemins internes du projet lié ───────────────────────────────────────────
+paths:
+  tools:     tools/
+  skills:    skills/
+  plugins:   plugins/
+  pipelines: pipelines/
+  tests:     tests/
+  docs:      docs/
+
+# ── Politique de données ──────────────────────────────────────────────────────
+data_policy:
+  allow_public_export:       false
+  allow_anonymized_reports:  true
+  allow_private_sources:     true
+  llm_read_access:           true
+
+# ── Exécution ────────────────────────────────────────────────────────────────
+execution:
+  allow_tricorderkit_write:  true
+  require_human_validation:  true
+  default_output_format:
+    - markdown
+    - json
+
+# ── Confidentialité ──────────────────────────────────────────────────────────
+privacy:
+  anonymize_project_name:  true   # remplace le nom réel par sample-linked-project
+  block_private_paths:     true   # masque les chemins locaux dans les logs
+  block_api_keys:          true   # masque les clés API dans tous les outputs
