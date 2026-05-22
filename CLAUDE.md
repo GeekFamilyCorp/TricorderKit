@@ -1,27 +1,64 @@
-# CLAUDE.md — TricorderKit v0.7
+# CLAUDE.md — TricorderKit v0.9
 
 > Configuration Claude Code pour ce repo.
+> Mis à jour : 2026-05-22 — Aligné AGENTS.md v0.8 + Extended Thinking policy + rotation session
 
 ---
 
 ## Identité du projet
 
 - **Nom** : TricorderKit
-- **Version** : 0.7
+- **Version** : 0.9
 - **Type** : Agentic Knowledge OS — local-first
 - **Propriétaire** : GeekFamilyCorp
 - **Stack** : Claude Code + Obsidian + MCP + Neo4j + Qdrant + Docker + Temporal
+- **Architecture** : TricorderKit exécute · MangaTracker spécialise · Japan-Alliance stocke
 
 ---
 
-## Fichiers à lire au boot
+## Séquence de boot (lazy-load — économie tokens)
 
 ```text
-README_FIRST.md
-AGENTS.md
-.planning/STATE.md
-.planning/TASKS.md
+TIER 1 — Toujours charger (~500 tokens)
+  1. BOOT_SUMMARY.md            → version, tâches, patterns, statut Docker
+
+TIER 2 — Charger uniquement si TIER 1 ne suffit pas (~2 500 tokens)
+  2. tasks/lessons.md            → règles préventives actives (R12)
+  3. .planning/STATE.md          → état détaillé si phase ou infra à vérifier
+  4. .planning/TASKS.md          → items pending/in_progress uniquement (exclure ✅)
+  5. .planning/DECISIONS.md      → 5 dernières entrées seulement
+
+TIER 3 — À la demande uniquement (~10 000 tokens)
+  - .planning/RISKS.md
+  - docs/00→06
 ```
+
+> Ne charger README_FIRST.md qu'en cas de doute sur les limites du projet.
+> Ne jamais charger AGENTS.md au boot — il est lu par Claude Code automatiquement.
+
+---
+
+## Extended Thinking Policy
+
+**Désactivé par défaut** pour toutes les tâches suivantes :
+- Remplissage de fiches (manga, anime, LN, seiyū, studio, goodie, personnage)
+- Recherche web simple et récupération de données factuelles
+- Génération de fichiers depuis un template existant
+- Exécution de commandes CLI
+
+**Activé uniquement si** le message contient explicitement `[THINK]` ou si la tâche implique :
+- Raisonnement architectural multi-fichiers
+- Débogage de régression complexe
+- Décision irréversible (DEC-NNN)
+
+---
+
+## Session Rotation Policy
+
+- Ouvrir un nouveau fil toutes les **15–20 messages**
+- Avant de fermer : générer `session_capsule.json` compact via `/tk:pack-context`
+- Coller la capsule en premier message du nouveau fil
+- Mettre à jour `BOOT_SUMMARY.md` en fin de session
 
 ---
 
@@ -46,28 +83,22 @@ AGENTS.md
 
 ## Structure des plugins
 
-Chaque plugin dans `plugins/` doit contenir :
-
 ```text
 plugins/<nom>/
-├── README.md           → description + usage
-├── SKILL.md            → instructions pour agents
-├── manifest.yml        → métadonnées + config
-├── scripts/            → scripts exécutables
-└── tests/              → tests du plugin
+├── README.md
+├── SKILL.md
+├── manifest.yml
+├── scripts/
+└── tests/
 ```
-
----
 
 ## Structure des skills
 
-Chaque skill dans `skills/` doit contenir :
-
 ```text
 skills/<nom>/
-├── SKILL.md            → instructions détaillées
-├── examples/           → exemples d'utilisation
-└── tests/              → eval tests
+├── SKILL.md
+├── examples/
+└── tests/
 ```
 
 ---
@@ -75,12 +106,12 @@ skills/<nom>/
 ## Règles de commit
 
 ```text
-feat: <description>     → nouvelle fonctionnalité
-fix: <description>      → correction
-docs: <description>     → documentation
-refactor: <description> → refactoring
-test: <description>     → tests
-chore: <description>    → maintenance
+feat: <description>
+fix: <description>
+docs: <description>
+refactor: <description>
+test: <description>
+chore: <description>
 ```
 
 Chaque commit important → entrée dans `CHANGELOG.md`.
@@ -98,41 +129,14 @@ Chaque commit important → entrée dans `CHANGELOG.md`.
 ## Variables d'environnement requises
 
 ```text
-ANTHROPIC_API_KEY       → Claude Code
-NEO4J_URI               → graph database
-NEO4J_USER              → graph database
-NEO4J_PASSWORD          → graph database
-QDRANT_URL              → vector database
-QDRANT_API_KEY          → vector database (optionnel local)
-TEMPORAL_ADDRESS        → workflow engine
-LANGFUSE_PUBLIC_KEY     → observabilité
-LANGFUSE_SECRET_KEY     → observabilité
-OBSIDIAN_VAULT_PATH     → vault local
+ANTHROPIC_API_KEY
+NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD
+QDRANT_URL / QDRANT_API_KEY
+TEMPORAL_ADDRESS
+LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY
+OBSIDIAN_VAULT_PATH
 ```
 
 ---
 
-## Docker Compose services cibles
-
-```yaml
-services:
-  neo4j:
-    image: neo4j:5
-    ports: ["7474:7474", "7687:7687"]
-  
-  qdrant:
-    image: qdrant/qdrant
-    ports: ["6333:6333"]
-  
-  langfuse:
-    image: langfuse/langfuse
-    ports: ["3000:3000"]
-  
-  temporal:
-    image: temporalio/auto-setup
-    ports: ["7233:7233"]
-```
-
----
-
-*Version 0.7 — 10/05/2026*
+*Version 0.9 — 2026-05-22 — Aligné AGENTS.md v0.8 · Extended Thinking policy · Session rotation*
