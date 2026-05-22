@@ -25,6 +25,9 @@ Commandes :
   tk security check-patterns    → détecter anti-patterns de sécurité
   tk security audit [--report]  → audit complet (secrets + anon + patterns)
   tk security dry-run           → simuler un audit sans persistance
+  tk obsidian vault-list        → lister les vaults configurés
+  tk obsidian build <title>     → construire une note (dry-run)
+  tk obsidian dry-run           → démo Dragon Ball dry-run
 
 Options globales : --format json|md (défaut: markdown)
 
@@ -48,6 +51,9 @@ Usage :
   python cli/tk.py security scan
   python cli/tk.py security audit --report
   python cli/tk.py security check-anon --path plugins/
+  python cli/tk.py obsidian vault-list
+  python cli/tk.py obsidian build "One Piece" --type manga
+  python cli/tk.py obsidian dry-run
 """
 
 from __future__ import annotations
@@ -705,7 +711,8 @@ def cmd_project_workflow_list(args):
 
 # ── security ──────────────────────────────────────────────────────────────────
 
-_SECURITY_RUNNER = PLUGINS_DIR / "security-audit-cli" / "scripts" / "security_runner.py"
+_SECURITY_RUNNER  = PLUGINS_DIR / "security-audit-cli"   / "scripts" / "security_runner.py"
+_OBSIDIAN_RUNNER  = PLUGINS_DIR / "obsidian-agent-layer" / "scripts" / "obsidian_runner.py"
 
 
 def cmd_security(args):
@@ -748,6 +755,45 @@ def cmd_security(args):
         if path_arg: cmd += ["--path", str(path_arg)]
     else:
         _fail(f"Sous-commande inconnue : {sc}")
+        sys.exit(1)
+
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    sys.exit(result.returncode)
+
+
+# ── obsidian ──────────────────────────────────────────────────────────────────
+
+def cmd_obsidian(args):
+    """Délègue à plugins/obsidian-agent-layer/scripts/obsidian_runner.py (Typer CLI)."""
+    if not _OBSIDIAN_RUNNER.exists():
+        if args.format == "json":
+            _jprint({"error": "obsidian_runner.py introuvable", "path": str(_OBSIDIAN_RUNNER)})
+        else:
+            _fail("obsidian_runner.py introuvable", str(_OBSIDIAN_RUNNER))
+        sys.exit(1)
+
+    oc = getattr(args, "obsidian_cmd", None)
+    if not oc:
+        print("Usage: tk obsidian <vault-list|build|dry-run>")
+        return
+
+    base    = [sys.executable, str(_OBSIDIAN_RUNNER)]
+    as_json = getattr(args, "json_output", False)
+
+    if oc == "vault-list":
+        cmd = base + ["vault-list"]
+        if as_json: cmd.append("--json")
+    elif oc == "build":
+        title     = getattr(args, "title", "")
+        note_type = getattr(args, "note_type", "note")
+        author    = getattr(args, "author", None)
+        cmd = base + ["build", title, "--type", note_type]
+        if author:  cmd += ["--author", author]
+        if as_json: cmd.append("--json")
+    elif oc == "dry-run":
+        cmd = base + ["dry-run"]
+    else:
+        _fail(f"Sous-commande inconnue : {oc}")
         sys.exit(1)
 
     result = subprocess.run(cmd, cwd=REPO_ROOT)
@@ -1070,6 +1116,27 @@ def main():
     p_pwll.add_argument("project_id", nargs="?", help="ID projet")
     _add_format(p_pwll)
 
+    # ── obsidian ──
+    p_obsidian = sub.add_parser("obsidian",
+                                 help="Notes Obsidian — vault-list, build, dry-run")
+    _add_format(p_obsidian)
+    obs_sub = p_obsidian.add_subparsers(dest="obsidian_cmd", metavar="<sous-commande>")
+
+    p_ovl = obs_sub.add_parser("vault-list", help="Lister les vaults configurés")
+    p_ovl.add_argument("--json", dest="json_output", action="store_true")
+    _add_format(p_ovl)
+
+    p_ob = obs_sub.add_parser("build", help="Construire une note (dry-run)")
+    p_ob.add_argument("title", help="Titre de la note")
+    p_ob.add_argument("--type", dest="note_type", default="note",
+                      help="Type : manga | anime | seiyuu | studio | note")
+    p_ob.add_argument("--author", dest="author", default=None, help="Auteur")
+    p_ob.add_argument("--json", dest="json_output", action="store_true")
+    _add_format(p_ob)
+
+    p_odr = obs_sub.add_parser("dry-run", help="Démo dry-run Dragon Ball")
+    _add_format(p_odr)
+
     # ── security ──
     p_security = sub.add_parser("security",
                                  help="Audit de sécurité — secrets, anonymisation, patterns")
@@ -1189,6 +1256,12 @@ def main():
             cmd_security(args)
         else:
             p_security.print_help()
+    elif args.command == "obsidian":
+        oc = getattr(args, "obsidian_cmd", None)
+        if oc:
+            cmd_obsidian(args)
+        else:
+            p_obsidian.print_help()
     else:
         parser.print_help()
 

@@ -15,7 +15,7 @@
 | security-audit-cli | ✅ Actif | ✅ | ✅ | ✅ | ✅ |
 | eval-lab | ✅ Actif | ❌ | ✅ | ❌ | ⚠️ Partiel |
 | memory-boot | ✅ Actif v0.8 | ❌ | ✅ | ✅ | ⚠️ Partiel |
-| obsidian-agent-layer | ✅ Actif | ❌ | ❌ | ❌ | ❌ |
+| obsidian-agent-layer | ✅ Actif | ✅ | ✅ | ✅ | ⚠️ Partiel |
 | graphify | 🔧 WIP | ❌ | ❌ | ✅ | ❌ |
 | token-optimizer | ✅ Actif v0.8 | ✅ | ✅ | ✅ | ✅ |
 
@@ -37,8 +37,8 @@
 ## Résumé
 
 - **Prêts production** : 3 / 10 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
-- **Partiels** : 5 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`)
-- **Non prêts** : 1 / 10 (`obsidian-agent-layer`)
+- **Partiels** : 6 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`)
+- **Non prêts** : 0 / 10
 - **WIP** : 1 / 10 (`graphify`)
 
 ---
