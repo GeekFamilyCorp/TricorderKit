@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1→M7 COMPLETS — obsidian-goat manifest + /tk:boot ✅) |
-| Commit HEAD | `796dd2a` (GitHub sync ✅) |
+| Version | **v0.9** (M1→M4 COMPLETS — session 2026-05-22) |
+| Commit HEAD | `f1a5a54` (GitHub sync ✅) |
 | Dernière session | 2026-05-22 |
-| Tests | **413 PASS** (377+36 Supabase Phase 2), 15 skipped (live) |
+| Tests | **435 PASS** (413+20 observabilité+8 rapport+14 doctor−skipped), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -28,51 +28,41 @@
 
 ---
 
-## Prochaines tâches (v0.9 M3)
+## Prochaines tâches (v0.9 M5)
 
-1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
-2. `✅` M4 — Observabilité bout-en-bout Langfuse **DONE 2026-05-22** — 20/20 tests, traces live dans localhost:3001
-3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
-6. `✅` Temporal → connector_hub.dispatch **DONE 2026-05-22** — source_watch.activities.ts + wiring complet
-7. `✅` Japan-Alliance Supabase Phase 2 **DONE 2026-05-22** — 5 tables contenu (manga/anime/mangaka/studios/manga_mangaka) + 36 tests
-8. `✅` obsidian-goat manifest + /tk:boot v0.9 **DONE 2026-05-22** — manifest cli-forge validé + boot.md TIER 1/2/3 v0.9
-4. `✅` Pipeline rtk→docmancer test live **DONE 2026-05-22** — `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
-5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
+1. `⬜` security-audit-cli — CLI + tests manquants (priorité haute)
+2. `⬜` obsidian-agent-layer — couverture tests (priorité moyenne)
+3. `⬜` VPS deployment — optionnel (DEC-011)
 
-### Complété session v0.9 M2 ✅ (session 1/2)
-- **S1** — connector_hub `--temporal` opérationnel (dry_run ✅, workflow_id déterministe)
-- **A2** — Supabase schema Japan-Alliance (29 tests ✅) — 7 tables, RLS complet, seed 10 publishers
-- **B1** — Skills token-savior + claude-code-router (19 tests ✅)
+### Complété session v0.9 M4 ✅ (2026-05-22)
+- **Token Hygiene** — CLAUDE.md v0.9, cowork-boot skill, QUEUE.md, instructions Space Cowork JA
+- **BOOT_SUMMARY_JA.md** — créé dans claude-vault (boot Cowork ≤ 500 tokens)
+- **session_capsule_v0.9_JA.json** — généré et copié dans claude-vault
+- **B3** — Tests live deep-research 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
+- **FIX-CONF** — 359/359 PASS, version strings 0.8→0.9 M2 syncées
+- **M4-OBS** — Langfuse hooks bout-en-bout, 20/20 tests, traces live :3001
+- **M5-Temporal** — 8 activities source_watch → connector_hub.dispatch
+- **M6-Supabase** — 5 tables content + RLS + seed studios, 36/36 tests
+- **M7-boot** — obsidian-goat manifest + /tk:boot v0.9 TIER 1/2/3
+- **M3-LIVE** — Pipeline rtk→docmancer : Chainsaw Man → Obsidian ✅
+- **STATUS.md** — table 10 modules créée
+- **tk rapport** — CLI + --json, 8 tests
+- **tk doctor** — 14 checks, whitelist secrets, 14 tests
+- **DEC-013** — Japan-Alliance vault-only strict (.py interdit)
+- **R16** — version bump → grep tests/ pour strings hard-codées
+- **R17** — _check_secrets whitelist — tester .env.example + *.md + source grep
+- **linked-project template** — examples/ anonymisé, 527 lignes, 0 secret
+- **INSTALL.md** — réécrit structure publique, tk doctor central
 
-### Complété session v0.9 M3+M4 ✅ (2026-05-22)
-- **M3-LIVE** — Pipeline rtk→docmancer données réelles : `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
-  - Fix collect parser, write_obsidian filesystem, title selection, field normalization
-- **M4-OBS** — Observabilité bout-en-bout Langfuse hooks
-  - `core/hooks/langfuse_observer.py` : REST API directe, no SDK, Python 3.14 compatible
-  - 3 hooks branchés : pre_intent→trace-create · pre_execution/post_execution→span-create
-  - Batch HTTP groupé par cycle (1 seul appel) + trace_id partagé
-  - Langfuse initialisé : projet TricorderKit, clés dans `.env`
-  - `tests/test_observability.py` : 20 tests (init + hooks + no-op + mock HTTP + live)
-
-### Complété session v0.9 M2 ✅ (session 2/2)
-- **S2** — tk-orchestrator budget_guard phase 2 (25 tests ✅)
-  - `token_tracker.py` : T1/T2/T3 tiers + `guard_action()` + `tier_from_complexity()`
-  - CLI `budget-guard` : proceed|pause|abort, tier_detail, context_flags
-  - CLI `session-budget` : état session + tasks_remaining_estimate
-  - `SESSION_BUDGET_DEFAULT = 30 000` tokens, `SESSION_ALERT_THRESHOLD = 0.80`
-- **B2** — Pipeline observabilité hook logs → Obsidian (intégration ✅)
-  - `tools/observability/hook_log_to_obsidian.py` : JSON-lines → note ERRORS.md
-  - Catégories : HIGH/CRITICAL pre_exec + qualité basse + erreurs post_exec
-- **M3** — Pipeline rtk→docmancer wiring (intégration ✅)
-  - `tools/pipelines/pipeline_rtk_docmancer.py` : collect→dedup→score→build_note→write_obsidian
-  - Test dry-run validé : Chainsaw Man → `Mangas/Chainsaw Man/Chainsaw-Man.md`
-
-### Complété session v0.9 M1 ✅
+### Complété sessions v0.9 M1→M3 ✅
 - memory-boot + token-optimizer migrés v0.8 (52 tests)
 - skills rtk + docmancer créés
 - obsidian-goat CLI v0.1.0 (19 tests, registry v0.2.0)
 - .claude/commands/boot.md → /tk:boot natif
-- .planning/ROADMAP_v0.9.md créé
+- connector_hub --temporal opérationnel
+- Supabase Japan-Alliance Phase 1+2 (65 tests)
+- tk-orchestrator budget_guard phase 2 (25 tests)
+- B2 observabilité hook logs → Obsidian
 
 ---
 
@@ -91,6 +81,7 @@
 
 | Code | Résumé |
 |---|---|
+| DEC-013 | Japan-Alliance vault-only strict : aucun fichier .py autorisé |
 | DEC-011 | VPS extension optionnelle future — local-first maintenu |
 | DEC-010 | linked_project : TricorderKit exécute, Japan-Alliance spécialise |
 | DEC-009 | Graphify hybride Neo4j + Qdrant |
@@ -125,13 +116,18 @@
 ## Skills disponibles
 
 `tk-boot` ✅ · `tk-orchestrator` ✅ v0.2.0 · `consolidate-memory` ✅
-`rtk` ✅ · `docmancer` ✅ · `token-savior` ✅ NEW · `claude-code-router` ✅ NEW
-`skill-creator` ✅ · `skill-manager` ✅
+`rtk` ✅ · `docmancer` ✅ · `token-savior` ✅ · `claude-code-router` ✅
+`skill-creator` ✅ · `skill-manager` ✅ · `cowork-boot` ✅ NEW
 
 ## CLIs enregistrées (cli-forge registry v0.2.0)
 
-`github-goat` ✅ dry_run_validated · `obsidian-goat` ✅ NEW dry_run_validated (19 tests)
+`github-goat` ✅ dry_run_validated · `obsidian-goat` ✅ dry_run_validated (19 tests)
+
+## Commandes CLI disponibles
+
+`tk boot` ✅ · `tk rapport` ✅ · `tk rapport --json` ✅ · `tk doctor` ✅
+`tk budget-guard` ✅ · `tk session-budget` ✅
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M7 — 2026-05-22 (M3-LIVE ✅, M4-OBS ✅, M5-Temporal ✅, M6-Supabase ✅, M7-cli-forge+boot ✅) — 413 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M4 — 2026-05-22 — 435 tests, 0 FAIL*
