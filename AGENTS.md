@@ -1,7 +1,7 @@
-# AGENTS.md — TricorderKit v0.8
+# AGENTS.md — TricorderKit v0.9
 
 > Instructions pour tous les agents Claude qui travaillent sur ce repo.
-> Mis à jour : 2026-05-18 — Workflow Standard v1.0 + Caveman Protocol + MainBrain v1.5
+> Mis à jour : 2026-05-22 — v0.9 M4 + budget_guard T1/T2/T3 + 435 tests
 
 ---
 
@@ -50,6 +50,19 @@ Référence complète : `core/mainbrain/MainBrain_v1.5.md`
 
 ---
 
+## Budget Guard — Tiers modèles (v0.9)
+
+```text
+T1 — haiku-4-5     → queries simples, lookups, status
+T2 — sonnet-4-6    → actions, audits, génération code
+T3 — opus-4-6      → workflows longs, recherche profonde, arbitrage complexe
+```
+
+Commandes : `tk budget-guard` · `tk session-budget`
+Référence : `plugins/tk-orchestrator/`
+
+---
+
 ## Règles de comportement
 
 ### Outputs — Format contractuel obligatoire
@@ -57,7 +70,7 @@ Référence complète : `core/mainbrain/MainBrain_v1.5.md`
 - Rapport court après chaque action importante : `Action | Résultat | Tokens | Prochaine étape`
 - Jamais de sortie non structurée si une structure est possible
 
-### 🐵 Caveman Protocol — Sorties inter-agents (NOUVEAU v0.8)
+### 🐵 Caveman Protocol — Sorties inter-agents
 
 **Règle R15 — Non-négociable :**
 > Toute sortie d'un sous-agent destinée à être injectée dans le contexte principal
@@ -101,6 +114,7 @@ Budget : max [N] tokens de sortie
 - Utiliser `/tk:pack-context` si contexte > 80% de la fenêtre
 - Préférer CLI déterministe à requête LLM
 - Sous-agents → output caveman lite (R15)
+- Routing modèle → budget_guard T1/T2/T3 (v0.9)
 
 ---
 
@@ -116,6 +130,8 @@ Budget : max [N] tokens de sortie
 | R13 | Bug report → fix autonome (LOW/MEDIUM risk) |
 | R14 | Fix hacky → reformuler vers solution élégante |
 | R15 | Sortie sous-agent → caveman lite obligatoire |
+| R16 | Version bump → grep tests/ pour strings hard-codées |
+| R17 | `_check_secrets` whitelist → tester `.env.example` + `*.md` + source grep |
 
 Référence : `docs/06_workflow_standard.md`
 
@@ -158,7 +174,9 @@ Référence : `docs/06_workflow_standard.md`
 core/          → MainBrain v1.5, router, contracts, hooks
 plugins/       → cli-forge | workflow-engine | deep-research-core | hook-layer
                | eval-lab | obsidian-agent-layer | security-audit-cli | connector-hub
+               | tk-orchestrator | memory-boot | token-optimizer
 skills/        → tk-boot | tk-orchestrator | consolidate-memory | skill-creator | skill-manager
+               | rtk | docmancer | token-savior | claude-code-router | cowork-boot
 cli/           → tk.py (façade unifiée v0.2.0)
 mcp/           → serveurs MCP (Neo4j, Qdrant, Obsidian)
 vault/         → mémoire locale
@@ -182,7 +200,8 @@ configs/       → shared/defaults.yaml | local/settings.yaml | local/linked_pro
 - Retourner une sortie prose narrative depuis un sous-agent (R15)
 - Marquer `done` sans preuve observable (R11)
 - Modifier une entrée existante dans `DECISIONS.md` (immuable — ajouter avec statut `Révoquée` si nécessaire)
+- Utiliser opus-4-6 pour une tâche T1 ou T2 (budget_guard)
 
 ---
 
-*Version 0.8 — 2026-05-18 — Workflow Standard v1.0 + MainBrain v1.5 + Caveman Protocol*
+*Version 0.9 M4 — 2026-05-22 — Workflow Standard v1.0 + MainBrain v1.5 + Caveman Protocol + budget_guard T1/T2/T3*
