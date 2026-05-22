@@ -82,11 +82,11 @@ _PATTERNS: list[SecretPattern] = [
     SecretPattern(
         id="db_connection_string",
         description="Connection string base de données avec credentials",
-        # Username : ≥2 chars, pas de quotes/whitespace/@/:
-        # Password : ≥6 chars (réduit les faux positifs sur des ports courts)
+        # Username : ≥3 chars, pas de quotes/point/whitespace
+        # Password : ≥3 chars, pas de quotes/point/whitespace/@
         # Exclut les DSN sans credentials : postgresql://localhost/db
         pattern=re.compile(
-            r'(?:postgresql|mysql|mongodb|redis|sqlite)://[^"\'\s@:]{2,}:[^"\'\s@]{6,}@',
+            r'(?:postgresql|mysql|mongodb|redis|sqlite)://[^"\'\.\s]{3,}:[^"\'\.\s@]{3,}@',
             re.IGNORECASE,
         ),
         severity="CRITICAL",
