@@ -1,4 +1,4 @@
-# STATE.md — TricorderKit v0.8
+# STATE.md — TricorderKit v0.9
 
 > État courant du projet. Mettre à jour à chaque session.
 
@@ -6,9 +6,9 @@
 
 ## Version courante
 
-- **Version** : 0.8
-- **Date** : 17/05/2026
-- **Phase active** : Phase 6 — Séparation linked_project *(complète)*
+- **Version** : 0.9 M2
+- **Date** : 2026-05-22
+- **Phase active** : v0.9 M3 — Observabilité + tests live
 
 ---
 
@@ -22,7 +22,7 @@
 | 2.5 | QualityGuard | ✅ Verified | 2026-05-15 |
 | 3 | Workflows persistants (Temporal) | ✅ Verified | 2026-05-15 |
 | 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
-| 4 | Deep Research | ✅ Complet (tests live EN ATTENTE) | 2026-05-16 |
+| 4 | Deep Research | ✅ Complet — **B3 tests live PASS 24/24** | 2026-05-22 |
 | 5 | Quality Loop | ✅ Complet | 2026-05-16 |
 | 6 | Séparation linked_project | ✅ Migration Japan-Alliance effectuée | 2026-05-17 |
 | 6.5 | Restructuration Japan-Alliance → vault pur | ✅ MangaTracker = agent CLI | 2026-05-17 |

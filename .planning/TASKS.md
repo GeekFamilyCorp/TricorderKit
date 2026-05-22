@@ -26,7 +26,7 @@
 
 ---
 
-## ✅ Phase 4 Deep Research — COMPLÈTE (sauf tests live EN ATTENTE)
+## ✅ Phase 4 Deep Research — COMPLÈTE (tests live B3 PASS 2026-05-22)
 
 - [x] plugins/deep-research-core/scripts/collect_sources.py (pipeline dry-run validé 2026-05-15)
 - [x] plugins/deep-research-core/scripts/score_reliability.py (pipeline dry-run validé 2026-05-15)
@@ -35,7 +35,7 @@
 - [x] plugins/deep-research-core/pipelines/anime_staff_research.yml
 - [x] plugins/deep-research-core/scripts/deduplicate_findings.py (Deduplicator 2 passes : exact + fuzzy Jaccard, merge cross-source, all_sources[] — 16/05/2026)
 - [x] plugins/deep-research-core/scripts/export_report.py (formats markdown + obsidian, frontmatter YAML auto, --emit-json — 16/05/2026)
-- [ ] **[EN ATTENTE]** Test live MangaDex + Jikan (appels réseau réels) — `pytest tests/ --live`
+- [x] **[B3 DONE 2026-05-22]** Tests live MangaDex + Jikan + AniList + Pipeline — **24/24 PASS** — `pytest tests/test_live_sources.py --live` (Japan-Alliance)
 - [x] plugins/deep-research-core/scripts/index_qdrant.py (HashEmbedder + sentence-transformers fallback, UUID5, upsert batch, indexes payload complets — 16/05/2026)
 - [x] plugins/deep-research-core/tests/test_live_sources.py (7 classes pytest live : MangaDex, Jikan, AniList, pipeline complet — 16/05/2026)
 
