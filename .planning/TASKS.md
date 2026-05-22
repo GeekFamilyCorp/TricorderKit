@@ -162,4 +162,25 @@
 
 ---
 
-*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ + M3-LIVE ✅ — 359 tests, 0 FAIL depuis racine*
+## ✅ M4-OBS — Observabilité bout-en-bout Langfuse (2026-05-22)
+
+- [x] **[M4-OBS]** `core/hooks/langfuse_observer.py` — REST API directe, Python 3.14 compatible
+  - Singleton lazy `LangfuseObserver` — enabled/disabled selon .env
+  - `observe_pre_intent()` → trace-create (hook_id comme traceId)
+  - `observe_pre_execution()` → span-create (risk_hint, estimated_tokens)
+  - `observe_post_execution()` → span-create (quality_score, tokens_used)
+  - `observe_hook_cycle()` → batch groupé 3 events, 1 seul appel HTTP
+  - `send_event()` → trace ponctuelle (pipeline events)
+  - No-op silencieux si clés absentes ou réseau KO
+- [x] **[M4-SETUP]** Langfuse initialisé :
+  - Compte créé : <USER_EMAIL> | Org : GeekFamilyCorp | Projet : TricorderKit
+  - Clés générées et stockées dans `.env` (non versionné)
+  - Traces live vérifiées : `tk.pre_intent` + `tk.pipeline.m3_live` ingérées
+- [x] **[M4-TESTS]** `tests/test_observability.py` — **20/20 PASS**
+  - Init (enabled/disabled/singleton), Hooks purs, No-op mode, Mock HTTP, Live
+- [x] pytest.ini : marker `live` enregistré (supprime warning)
+- Total suite: **377 PASS**, 15 skipped (live), 0 FAIL
+
+---
+
+*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ + M3-LIVE ✅ + M4-OBS ✅ — 377 tests, 0 FAIL depuis racine*
