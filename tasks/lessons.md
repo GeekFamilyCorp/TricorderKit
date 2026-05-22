@@ -50,3 +50,16 @@ grep -rn "\"0\.[0-9]" tests/
 Corriger toute string hardcodée et bumper `cli/tk.py --version` en même temps.
 **Fichiers concernés :** `tests/test_cli_local.py`, `cli/tk.py`, `.planning/STATE.md`
 **Statut :** [RÉSOLU] — version "0.9 M2" alignée dans test + CLI. 359 PASS, 0 FAIL.
+
+## LESSON-007 — 2026-05-22
+**Contexte :** `tk doctor` signalait ANTHROPIC_API_KEY et OPENAI_API_KEY comme secrets dans le repo, alors qu'il s'agissait de faux positifs dans `.env.example`, `*.md` et `cli/tk.py` lui-même.
+**Erreur :** Le glob `*.example` dans git grep ne matche pas `.env.example` (le `*` ne couvre pas le préfixe `.env`). Les fichiers `.md` et le fichier source qui définit les patterns n'étaient pas exclus.
+**Règle préventive (R17) :** Avant tout push public d'un scanner de secrets, valider la whitelist git grep sur trois cas :
+1. `.env.example` (glob `*.example` insuffisant → ajouter `:!.env.example` explicitement)
+2. Fichiers `*.md` (documentation avec variable sans valeur)
+3. Le fichier source lui-même si les patterns y sont définis en dur (auto-référence)
+```bash
+git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*.md" ":!cli/tk.py"
+```
+**Fichiers concernés :** `cli/tk.py` (`_check_secrets`, `_SECRETS_EXCLUDE`)
+**Statut :** [RÉSOLU] — whitelist étendue, `tk doctor` affiche `[OK] Aucun secret dans le repo`.
