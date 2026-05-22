@@ -11,7 +11,7 @@
 |---|---|
 | Version | **v0.9** (M1+M2 COMPLETS) |
 | Commit HEAD | `dd6902f` (M2 local — push M3 recommandé) |
-| Dernière session | 2026-05-18 |
+| Dernière session | 2026-05-22 |
 | Tests | **247 PASS** (222 v0.8+M1+M2 + 25 nouveaux budget_guard) |
 | Blockers actifs | Aucun |
 
@@ -30,7 +30,7 @@
 
 ## Prochaines tâches (v0.9 M3)
 
-1. `⬜` B3 — Tests live deep-research (réseau requis — MangaDex + AniList)
+1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
 2. `⬜` M4 — Observabilité bout-en-bout (Langfuse hooks)
 3. `⬜` Fix conftest conflit eval-lab / tk-orchestrator (10 tests failing pre-existing)
 4. `⬜` Pipeline rtk→docmancer test live (données réelles)
@@ -121,4 +121,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M2 — 2026-05-18*
+*Auto-généré — TricorderKit v0.9 M2 — 2026-05-22 (B3 ✅)*
