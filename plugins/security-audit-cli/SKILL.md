@@ -33,21 +33,17 @@
 
 ```
 plugins/security-audit-cli/
+├── README.md                  ← Guide d'utilisation
 ├── SKILL.md                   ← Ce fichier
 ├── manifest.yml               ← Compatible cli-forge
-├── security_runner.py         ← CLI principale (Typer)
 ├── secret_scanner.py          ← Regex patterns API keys, tokens, passwords
-├── dependency_auditor.py      ← Pip-audit / npm audit wrapper
-├── permission_checker.py      ← Vérification chmod + fichiers sensibles exposés
 ├── pattern_checker.py         ← Anti-patterns code (eval, shell=True, etc.)
 ├── anonymization_checker.py   ← Détection termes privés pour push public
-└── tests/
-    ├── __init__.py
-    ├── conftest.py
-    ├── test_secret_scanner.py
-    ├── test_anonymization_checker.py
-    └── test_security_runner.py
+└── scripts/
+    └── security_runner.py     ← CLI principale (Typer) — entrypoint
 ```
+
+Tests dans `tests/test_security_audit.py` (racine du projet) — 16 tests PASS.
 
 ---
 

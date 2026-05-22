@@ -12,7 +12,7 @@
 | workflow-engine | ✅ Actif | ✅ | ❌ | ❌ | ⚠️ Partiel |
 | deep-research-core | ✅ Actif | ✅ | ✅ | ✅ | ✅ |
 | connector-hub | ✅ Actif v0.1.0 | ✅ | ❌ | ✅ | ⚠️ Partiel |
-| security-audit-cli | ✅ Actif | ❌ | ❌ | ❌ | ❌ |
+| security-audit-cli | ✅ Actif | ✅ | ✅ | ✅ | ✅ |
 | eval-lab | ✅ Actif | ❌ | ✅ | ❌ | ⚠️ Partiel |
 | memory-boot | ✅ Actif v0.8 | ❌ | ✅ | ✅ | ⚠️ Partiel |
 | obsidian-agent-layer | ✅ Actif | ❌ | ❌ | ❌ | ❌ |
@@ -36,9 +36,9 @@
 
 ## Résumé
 
-- **Prêts production** : 2 / 10 (`deep-research-core`, `token-optimizer`)
+- **Prêts production** : 3 / 10 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
 - **Partiels** : 5 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`)
-- **Non prêts** : 2 / 10 (`security-audit-cli`, `obsidian-agent-layer`)
+- **Non prêts** : 1 / 10 (`obsidian-agent-layer`)
 - **WIP** : 1 / 10 (`graphify`)
 
 ---
