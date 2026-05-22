@@ -1,4 +1,4 @@
-# README_FIRST — TricorderKit v0.7
+# README_FIRST — TricorderKit v0.9
 
 > Lis ce fichier AVANT tout autre fichier du repo.
 
@@ -11,8 +11,10 @@ TricorderKit est un **système d'exploitation agentique local-first**.
 Il transforme les intentions utilisateur en workflows traçables, auditables et réutilisables.
 
 ```text
-Ancienne définition (v0.6) : memory + skills + token hygiene + observability
-Nouvelle définition (v0.7) : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
+v0.6 : memory + skills + token hygiene + observability
+v0.7 : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
+v0.8 : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
+v0.9 : orchestration M1+M2 + budget_guard T1/T2/T3 + observabilité + Japan-Alliance Phase 1
 ```
 
 ---
@@ -49,10 +51,22 @@ Obsidian           → vault knowledge (local-first)
 MCP                → connecteurs services
 Neo4j              → graph relationnel
 Qdrant             → vector search / RAG
-Docker             → infra locale
+Docker             → infra locale (DEV — voir docker-compose.yml)
 Temporal           → orchestration workflows persistants
-Langfuse           → observabilité tokens + traces
+Langfuse           → observabilité tokens + traces (:3001)
 ```
+
+---
+
+## Architecture linked_projects
+
+```text
+TricorderKit    → moteur générique (ce repo)
+MangaTracker    → linked_project agent CLI (privé)
+Japan-Alliance  → vault Obsidian pur, données uniquement (privé)
+```
+
+> **TricorderKit exécute. MangaTracker spécialise. Japan-Alliance stocke.**
 
 ---
 
@@ -77,4 +91,4 @@ Déterminisme > Improvisation
 
 ---
 
-*Version 0.7 — 10/05/2026*
+*Version 0.9 M2 — 2026-05-22*
