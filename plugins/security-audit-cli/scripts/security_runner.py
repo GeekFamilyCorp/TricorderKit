@@ -10,19 +10,27 @@ Commandes :
   dry-run         Simuler un audit sans sortie persistée
 
 Usage :
-  python security_runner.py audit
-  python security_runner.py audit --path plugins/
-  python security_runner.py check-anon --path plugins/tk-orchestrator/
-  python security_runner.py scan-secrets --path . --json
-  python security_runner.py dry-run
+  python plugins/security-audit-cli/scripts/security_runner.py audit
+  python plugins/security-audit-cli/scripts/security_runner.py audit --path plugins/
+  python plugins/security-audit-cli/scripts/security_runner.py check-anon --path plugins/tk-orchestrator/
+  python plugins/security-audit-cli/scripts/security_runner.py scan-secrets --path . --json
+  python plugins/security-audit-cli/scripts/security_runner.py dry-run
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Ajoute le répertoire plugin (parent de scripts/) au sys.path
+# pour que les imports des modules frères fonctionnent
+_PLUGIN_ROOT = Path(__file__).resolve().parent.parent
+if str(_PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PLUGIN_ROOT))
+
 import json
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Optional
 
 import typer
@@ -46,8 +54,9 @@ app = typer.Typer(
 
 # -- Chemins ------------------------------------------------------------------
 
-_HERE = Path(__file__).parent
-_REPO_ROOT = _HERE.parent.parent
+_HERE = Path(__file__).parent          # .../scripts/
+_PLUGIN_DIR = _HERE.parent             # .../security-audit-cli/
+_REPO_ROOT = _PLUGIN_DIR.parent.parent # .../plugins/../ = repo root
 _REPORTS_DIR = _REPO_ROOT / "reports" / "security"
 
 SKILL_NAME = "security-audit-cli"
@@ -355,4 +364,8 @@ def cmd_dry_run(
 # -- Entrée principale --------------------------------------------------------
 
 if __name__ == "__main__":
+    import io as _io
+    if sys.platform == "win32":
+        sys.stdout = _io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = _io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
     app()

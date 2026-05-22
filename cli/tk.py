@@ -20,6 +20,11 @@ Commandes :
   tk project audit [id]         → audit complet d'un linked_project
   tk project vault scan [id]    → scanner le vault d'un linked_project
   tk project workflow list [id] → lister les workflows d'un linked_project
+  tk security scan [--path P]   → scanner les secrets hardcodés
+  tk security check-anon [P]    → vérifier anonymisation avant push public
+  tk security check-patterns    → détecter anti-patterns de sécurité
+  tk security audit [--report]  → audit complet (secrets + anon + patterns)
+  tk security dry-run           → simuler un audit sans persistance
 
 Options globales : --format json|md (défaut: markdown)
 
@@ -40,6 +45,9 @@ Usage :
   python cli/tk.py project audit japan-alliance
   python cli/tk.py project vault scan japan-alliance
   python cli/tk.py project workflow list japan-alliance
+  python cli/tk.py security scan
+  python cli/tk.py security audit --report
+  python cli/tk.py security check-anon --path plugins/
 """
 
 from __future__ import annotations
@@ -695,6 +703,57 @@ def cmd_project_workflow_list(args):
     print()
 
 
+# ── security ──────────────────────────────────────────────────────────────────
+
+_SECURITY_RUNNER = PLUGINS_DIR / "security-audit-cli" / "scripts" / "security_runner.py"
+
+
+def cmd_security(args):
+    """Délègue à plugins/security-audit-cli/scripts/security_runner.py (Typer CLI)."""
+    if not _SECURITY_RUNNER.exists():
+        if args.format == "json":
+            _jprint({"error": "security_runner.py introuvable", "path": str(_SECURITY_RUNNER)})
+        else:
+            _fail("security_runner.py introuvable", str(_SECURITY_RUNNER))
+        sys.exit(1)
+
+    sc = getattr(args, "security_cmd", None)
+    if not sc:
+        print("Usage: tk security <scan|check-anon|check-patterns|audit|dry-run>")
+        return
+
+    base = [sys.executable, str(_SECURITY_RUNNER)]
+    path_arg = getattr(args, "path", None)
+    as_json  = getattr(args, "json_output", False)
+
+    if sc == "scan":
+        cmd = base + ["scan-secrets"]
+        if path_arg: cmd += ["--path", str(path_arg)]  # typer Argument → positional
+        if as_json:  cmd.append("--json")
+    elif sc == "check-anon":
+        cmd = base + ["check-anon"]
+        if path_arg: cmd.append(str(path_arg))          # positional Argument
+        if as_json:  cmd.append("--json")
+    elif sc == "check-patterns":
+        cmd = base + ["check-patterns"]
+        if path_arg: cmd.append(str(path_arg))
+        if as_json:  cmd.append("--json")
+    elif sc == "audit":
+        cmd = base + ["audit"]
+        if path_arg: cmd += ["--path", str(path_arg)]
+        if as_json:  cmd.append("--json")
+        if getattr(args, "report", False): cmd.append("--report")
+    elif sc == "dry-run":
+        cmd = base + ["dry-run"]
+        if path_arg: cmd += ["--path", str(path_arg)]
+    else:
+        _fail(f"Sous-commande inconnue : {sc}")
+        sys.exit(1)
+
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    sys.exit(result.returncode)
+
+
 # ── rapport ──────────────────────────────────────────────────────────────────
 
 def _parse_boot_field(text: str, key: str) -> str:
@@ -1011,6 +1070,37 @@ def main():
     p_pwll.add_argument("project_id", nargs="?", help="ID projet")
     _add_format(p_pwll)
 
+    # ── security ──
+    p_security = sub.add_parser("security",
+                                 help="Audit de sécurité — secrets, anonymisation, patterns")
+    _add_format(p_security)
+    sec_sub = p_security.add_subparsers(dest="security_cmd", metavar="<sous-commande>")
+
+    p_ss = sec_sub.add_parser("scan", help="Scanner les secrets hardcodés")
+    p_ss.add_argument("--path", type=Path, default=None, help="Répertoire à scanner (défaut: repo root)")
+    p_ss.add_argument("--json", dest="json_output", action="store_true", help="Sortie JSON")
+    _add_format(p_ss)
+
+    p_sca = sec_sub.add_parser("check-anon", help="Vérifier l'anonymisation avant push public")
+    p_sca.add_argument("--path", type=Path, default=None, help="Répertoire à vérifier")
+    p_sca.add_argument("--json", dest="json_output", action="store_true")
+    _add_format(p_sca)
+
+    p_scp = sec_sub.add_parser("check-patterns", help="Vérifier les anti-patterns de sécurité")
+    p_scp.add_argument("--path", type=Path, default=None, help="Répertoire à analyser")
+    p_scp.add_argument("--json", dest="json_output", action="store_true")
+    _add_format(p_scp)
+
+    p_sa = sec_sub.add_parser("audit", help="Audit de sécurité complet")
+    p_sa.add_argument("--path", type=Path, default=None, help="Répertoire à auditer")
+    p_sa.add_argument("--json", dest="json_output", action="store_true")
+    p_sa.add_argument("--report", action="store_true", help="Sauvegarder rapport JSON dans reports/security/")
+    _add_format(p_sa)
+
+    p_sdr = sec_sub.add_parser("dry-run", help="Simuler un audit sans persistance")
+    p_sdr.add_argument("--path", type=Path, default=None)
+    _add_format(p_sdr)
+
     # ── rapport ──
     p_rapport = sub.add_parser("rapport",
                                 help="Rapport plugins depuis BOOT_SUMMARY.md + STATUS.md")
@@ -1093,6 +1183,12 @@ def main():
             cmd_report_show(args)
         else:
             p_report.print_help()
+    elif args.command == "security":
+        sc = getattr(args, "security_cmd", None)
+        if sc:
+            cmd_security(args)
+        else:
+            p_security.print_help()
     else:
         parser.print_help()
 

@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1→M4 COMPLETS — STATUS.md + tk doctor/rapport + INSTALL.md + examples ✅) |
-| Commit HEAD | `f1a5a54` |
+| Version | **v0.9** (M1→M5p COMPLETS — security-audit-cli scripts/ + tk security + 16 tests ✅) |
+| Commit HEAD | `53a6a95` |
 | Dernière session | 2026-05-22 |
-| Tests | **435 PASS** (413+22 nouveaux : rapport×8 + doctor×6 + whitelist×8), 15 skipped (live) |
+| Tests | **451 PASS** (435+16 nouveaux : security_audit×16), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -30,9 +30,11 @@
 
 ## Prochaines tâches (v0.9 M5)
 
-1. `⬜` security-audit-cli — CLI manquante + 0 tests → ajouter scripts/ + tests/
+1. `✅` security-audit-cli — scripts/security_runner.py + tk security + README + 16 tests PASS
+2. `⬜` obsidian-agent-layer — 0 tests + 0 scripts → couverture minimale requise
 2. `⬜` obsidian-agent-layer — 0 tests + 0 scripts → couverture minimale requise
 3. `⬜` VPS deployment — optionnel — DEC-011 : local-first maintenu, VPS extension future
+
 
 ### Complété session v0.9 M4 ✅ (2026-05-22)
 - **STATUS.md** — Dashboard plugins 10 lignes × 5 colonnes (CLI/Tests/Docs/Production-ready)

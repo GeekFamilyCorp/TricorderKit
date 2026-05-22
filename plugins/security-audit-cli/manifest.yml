@@ -3,7 +3,7 @@ version: "0.1.0"
 description: "Audit de sécurité TricorderKit — secret scanning, dependency CVE, anonymisation check, pattern analysis"
 service: tricorderkit-core
 language: python
-entrypoint: security_runner.py
+entrypoint: scripts/security_runner.py
 token_budget: 500
 cache:
   backend: sqlite
