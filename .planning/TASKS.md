@@ -134,6 +134,19 @@
 
 ---
 
+## ✅ M3-LIVE — Pipeline rtk→docmancer test live (2026-05-22)
+
+- [x] **[M3-LIVE]** `pipeline_rtk_docmancer.py --query "Chainsaw Man" --no-dry-run` → note réelle créée
+  - Chemin : `japan-alliance_vault/Mangas/Chainsaw Man/Chainsaw-Man.md`
+  - Titre ✅ `Chainsaw Man` · Auteur ✅ `Fujimoto, Tatsuki` · Titre JP ✅ `チェンソーマン` · Statut ✅ `completed`
+  - Fix collect parser : `output.data.items` (was looking for `findings` key)
+  - Fix write_obsidian : filesystem direct via `linked_projects.yaml` (ObsidianClient MCP-only)
+  - Fix field normalization : `authors[]→author`, `title_japanese→title_jp`
+  - Fix title selection : exact-match first (`_best_finding`), merge fields from all exact matches
+  - Publisher/volumes : non retournés par Jikan search — enhancement future
+
+---
+
 ## Backlog v0.9 — À prioriser
 
 - [ ] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub)
@@ -149,4 +162,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ — 359 tests, 0 FAIL depuis racine*
+*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ + M3-LIVE ✅ — 359 tests, 0 FAIL depuis racine*

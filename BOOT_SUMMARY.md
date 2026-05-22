@@ -33,7 +33,7 @@
 1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
 2. `⬜` M4 — Observabilité bout-en-bout (Langfuse hooks)
 3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
-4. `⬜` Pipeline rtk→docmancer test live (données réelles)
+4. `✅` Pipeline rtk→docmancer test live **DONE 2026-05-22** — `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
 5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
 
 ### Complété session v0.9 M2 ✅ (session 1/2)
@@ -121,4 +121,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M2 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅) — 359 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M3 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅, M3-LIVE ✅) — 359 tests, 0 FAIL*

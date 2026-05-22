@@ -118,8 +118,14 @@ def step_collect(result: PipelineResult, dry_run: bool) -> List[Dict]:
             return []
 
         findings = json.loads(proc.stdout)
-        if isinstance(findings, dict) and "findings" in findings:
-            findings = findings["findings"]
+        if isinstance(findings, dict):
+            # collect_sources schema: {"output": {"data": {"items": [...]}}}
+            if "findings" in findings:
+                findings = findings["findings"]
+            elif "output" in findings and "data" in findings["output"] and "items" in findings["output"]["data"]:
+                findings = findings["output"]["data"]["items"]
+            else:
+                findings = []
         elif not isinstance(findings, list):
             findings = []
 
@@ -218,27 +224,65 @@ def _infer_note_type(domain: str, findings: List[Dict]) -> str:
     return "note"
 
 
+def _best_finding(query: str, findings: List[Dict]) -> Optional[Dict]:
+    """Return the finding whose title best matches the query (exact → prefix → first)."""
+    if not findings:
+        return None
+    q = query.lower().strip()
+    for f in findings:
+        t = (f.get("title") or f.get("name") or "").lower().strip()
+        if t == q:
+            return f
+    for f in findings:
+        t = (f.get("title") or f.get("name") or "").lower().strip()
+        if t.startswith(q):
+            return f
+    return findings[0]
+
+
 def _extract_title(query: str, findings: List[Dict]) -> str:
-    if findings:
-        for f in findings:
-            title = f.get("title") or f.get("name") or f.get("romaji") or f.get("english")
-            if title:
-                return str(title)
+    best = _best_finding(query, findings)
+    if best:
+        title = best.get("title") or best.get("name") or best.get("romaji") or best.get("english")
+        if title:
+            return str(title)
     return query
 
 
-def _extract_fields(findings: List[Dict], domain: str) -> Dict[str, Any]:
+def _extract_fields(findings: List[Dict], domain: str, query: str = "") -> Dict[str, Any]:
     if not findings:
         return {}
-    top = findings[0]
-    fields = {}
-    # Champs communs
+    # Merge fields from all exact-title matches to capture author/publisher from richer sources
+    q = query.lower().strip() if query else ""
+    exact_matches = [f for f in findings if (f.get("title") or "").lower().strip() == q] if q else []
+    top = exact_matches[0] if exact_matches else (_best_finding(query, findings) if query else findings[0])
+    fields: Dict[str, Any] = {}
+    # Merge: collect from all exact matches, first non-empty value wins
+    merge_sources = exact_matches if exact_matches else [top]
     for key in ("title", "genres", "status", "year", "url", "score", "description",
                 "authors", "publishers", "volumes", "chapters", "episodes",
-                "romaji", "english", "japanese", "startDate", "endDate",
-                "coverImage", "source", "reliability_score"):
-        if key in top:
-            fields[key] = top[key]
+                "romaji", "english", "japanese", "title_japanese",
+                "startDate", "endDate", "coverImage", "source", "reliability_score"):
+        for src in merge_sources:
+            val = src.get(key)
+            if val is not None and val != "" and val != [] and val != {}:
+                fields[key] = val
+                break
+    # Normalize Jikan/AniList field names to note_builder conventions
+    if "authors" in fields and not fields.get("author"):
+        authors = fields.pop("authors")
+        if isinstance(authors, list):
+            fields["author"] = ", ".join(authors)
+        elif isinstance(authors, str):
+            fields["author"] = authors
+    if "title_japanese" in fields and not fields.get("title_jp"):
+        fields["title_jp"] = fields.pop("title_japanese")
+    if "publishers" in fields and not fields.get("publisher"):
+        pubs = fields.pop("publishers")
+        if isinstance(pubs, list):
+            fields["publisher"] = ", ".join(pubs) if pubs else ""
+        elif isinstance(pubs, str):
+            fields["publisher"] = pubs
     # Synthèse multi-findings
     if len(findings) > 1:
         all_urls = list({f["url"] for f in findings if "url" in f})
@@ -259,7 +303,7 @@ def step_build_note(
     try:
         ntype = note_type or _infer_note_type(result.domain, findings)
         title = _extract_title(result.query, findings)
-        fields = _extract_fields(findings, result.domain)
+        fields = _extract_fields(findings, result.domain, result.query)
 
         # Corps libre : résumé des findings
         body_lines = []
@@ -293,6 +337,25 @@ def step_build_note(
 
 # ── Étape 5 — Write Obsidian ──────────────────────────────────────────────────
 
+def _resolve_vault_fs_path(vault_name: str) -> Optional[Path]:
+    """Resolve filesystem path for a vault from linked_projects.yaml config."""
+    config_file = ROOT_DIR / "configs" / "local" / "linked_projects.yaml"
+    if not config_file.exists():
+        return None
+    try:
+        import yaml  # type: ignore
+        with open(config_file, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        for proj in cfg.get("linked_projects", []):
+            if proj.get("id") == vault_name or proj.get("name", "").lower().replace(" ", "-") == vault_name:
+                root = Path(proj["root"])
+                vault_rel = proj.get("paths", {}).get("vault", "")
+                return root / vault_rel if vault_rel else root
+    except Exception:
+        pass
+    return None
+
+
 def step_write_obsidian(
     content: str,
     note_path: str,
@@ -304,19 +367,19 @@ def step_write_obsidian(
         return True
 
     try:
-        sys.path.insert(0, str(OBSIDIAN_LAYER_DIR))
-        from obsidian_client import ObsidianClient
-        vault_name = result.vault
-
-        client = ObsidianClient(vault=vault_name)
-        ok = client.write_note(note_path, content)
-        if ok:
-            result.add_step("write_obsidian", "ok", f"Écrit : {note_path} (vault: {vault_name})")
-            result.note_path = note_path
-            return True
-        else:
-            result.add_step("write_obsidian", "error", "client.write_note returned False")
+        vault_fs = _resolve_vault_fs_path(result.vault)
+        if vault_fs is None:
+            result.errors.append(f"Vault '{result.vault}' introuvable dans linked_projects.yaml")
+            result.add_step("write_obsidian", "error", "vault path non résolu")
             return False
+
+        target = vault_fs / note_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        result.add_step("write_obsidian", "ok", f"Écrit : {target}")
+        result.note_path = note_path
+        return True
+
     except Exception as e:
         result.errors.append(f"write_obsidian error: {e}")
         result.add_step("write_obsidian", "error", str(e))
