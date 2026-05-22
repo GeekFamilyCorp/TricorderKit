@@ -9,7 +9,8 @@
     "outDir": "./dist",
     "rootDir": ".",
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
