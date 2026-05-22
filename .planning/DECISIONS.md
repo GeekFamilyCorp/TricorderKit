@@ -91,4 +91,17 @@
 - Règle d'or mise à jour : **TricorderKit exécute. MangaTracker spécialise. Japan-Alliance stocke.**
 - Impact : STATE.md Phase 6.5 — commits Japan-Alliance (`84dd260`) + TricorderKit (ce commit)
 
-*Dernière mise à jour : 17/05/2026*
+### DEC-013 — Japan-Alliance vault-only strict : aucun fichier .py autorisé
+- Date : 2026-05-22 | Statut : Acceptée
+- Décision : Japan-Alliance est un vault Obsidian **pur** — aucun fichier `.py` (ni script, ni test, ni conftest) n'est autorisé dans ce repo. Seuls sont autorisés : Markdown (`.md`), YAML (`.yml`), JSON (`.json`), images et assets statiques.
+- Raison :
+  (1) Renforcement de DEC-012 : la règle vault-only doit être vérifiable mécaniquement (tout `.py` = violation).
+  (2) Un conftest.py avait été créé par erreur dans `Japan-Alliance/plugins/deep-research-core/tests/` pour faire fonctionner des imports Python — cette violation a conduit à cette décision explicite.
+  (3) Les tests Python et la logique d'orchestration appartiennent à MangaTracker (linked_project assistant IA), pas au vault.
+- Règle d'application :
+  - `conftest.py`, `test_*.py`, `*.py` → MangaTracker ou TricorderKit
+  - Sources YAML (`trusted_sources.yml`, etc.) → Japan-Alliance autorisé (données)
+  - CI recommandé : `find Japan-Alliance/ -name "*.py" | grep . && exit 1` dans pre-commit
+- Impact : conftest.py supprimé de Japan-Alliance, déplacé dans `MangaTracker/plugins/deep-research-core/tests/` — commit 2026-05-22
+
+*Dernière mise à jour : 2026-05-22*
