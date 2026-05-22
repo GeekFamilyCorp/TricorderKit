@@ -85,9 +85,8 @@ def test_scan_secrets_to_dict_keys(tmp_path):
 def test_scan_secrets_db_connection_string(tmp_path):
     """Connection string DB avec credentials → CRITICAL."""
     f = tmp_path / "db.py"
-    # Le pattern exige ≥10 chars avant ':' — on utilise un username long
     f.write_text(
-        'DSN = "postgresql://admin_user_prod:supersecret@db.example.com:5432/prod"\n',
+        'DSN = "postgresql://admin:supersecret@db.example.com:5432/prod"\n',
         encoding="utf-8",
     )
     result = scan_secrets(f)
