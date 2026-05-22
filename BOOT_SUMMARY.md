@@ -10,7 +10,7 @@
 | Champ | Valeur |
 |---|---|
 | Version | **v0.9** (M1+M2 COMPLETS) |
-| Commit HEAD | `dd6902f` (M2 local — push M3 recommandé) |
+| Commit HEAD | `e7cc574` (GitHub sync ✅) |
 | Dernière session | 2026-05-22 |
 | Tests | **247 PASS** (222 v0.8+M1+M2 + 25 nouveaux budget_guard) |
 | Blockers actifs | Aucun |
@@ -34,7 +34,7 @@
 2. `⬜` M4 — Observabilité bout-en-bout (Langfuse hooks)
 3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
 4. `⬜` Pipeline rtk→docmancer test live (données réelles)
-5. `⬜` Push GitHub TricorderKit v0.9 M2 complet
+5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
 
 ### Complété session v0.9 M2 ✅ (session 1/2)
 - **S1** — connector_hub `--temporal` opérationnel (dry_run ✅, workflow_id déterministe)
@@ -121,4 +121,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M2 — 2026-05-22 (B3 ✅, FIX-CONF ✅) — 359 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M2 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅) — 359 tests, 0 FAIL*
