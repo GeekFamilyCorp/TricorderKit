@@ -1,44 +1,37 @@
 {
-  "schema": "session_capsule/v1",
-  "project": "TricorderKit",
-  "version": "0.9",
+  "project": "Japan-Alliance",
+  "linked_engine": "TricorderKit",
+  "version": "v0.9",
   "milestone": "M2",
   "commit": "dd6902f",
+  "status": "active",
   "generated": "2026-05-22",
   "last_session": "2026-05-18",
   "tests_pass": 247,
-  "blockers": [],
+  "domain": "manga/anime/ln/bdd/saas",
+  "architecture": {
+    "tricorderkit": "exécute",
+    "mangatracker": "spécialise",
+    "japan_alliance": "stocke"
+  },
+  "phase_active": "v0.9 M3 — Observabilité + tests live",
+  "vault_claude": "C:/Users/sebas/Documents/Claude/claude-vault",
+  "vault_ja": "C:/Users/sebas/Documents/obsidian/Japan-Alliance",
+  "session_rules": [
+    "CLI avant LLM",
+    "Output JSON obligatoire",
+    "Dry-run avant write",
+    "Ne pas recréer l'existant",
+    "Mettre à jour BOOT_SUMMARY_JA après changement",
+    "Extended Thinking désactivé sauf [THINK]",
+    "Rotation session toutes les 15-20 messages"
+  ],
   "open_tasks": [
-    {
-      "id": "B3",
-      "title": "Tests live deep-research",
-      "priority": "A",
-      "note": "réseau requis — MangaDex + AniList"
-    },
-    {
-      "id": "M4",
-      "title": "Observabilité bout-en-bout (Langfuse hooks)",
-      "priority": "A",
-      "note": ""
-    },
-    {
-      "id": "FIX-CONF",
-      "title": "Fix conftest conflit eval-lab / tk-orchestrator",
-      "priority": "B",
-      "note": "10 tests failing pre-existing"
-    },
-    {
-      "id": "M3-LIVE",
-      "title": "Pipeline rtk→docmancer test live",
-      "priority": "B",
-      "note": "données réelles"
-    },
-    {
-      "id": "PUSH-M2",
-      "title": "Push GitHub TricorderKit v0.9 M2 complet",
-      "priority": "S",
-      "note": "commit dd6902f local — push vers origin/main"
-    }
+    { "id": "B3", "title": "Tests live deep-research (MangaDex + AniList)", "note": "réseau requis" },
+    { "id": "M4", "title": "Observabilité bout-en-bout (Langfuse hooks)", "note": "" },
+    { "id": "FIX-CONF", "title": "Fix conftest conflit eval-lab / tk-orchestrator", "note": "10 tests failing pre-existing" },
+    { "id": "M3-LIVE", "title": "Pipeline rtk→docmancer test live", "note": "données réelles" },
+    { "id": "PUSH-M2", "title": "Push GitHub TricorderKit v0.9 M2 complet", "note": "commit dd6902f local" }
   ],
   "infrastructure": {
     "neo4j": { "port": "7474/7687", "status": "ok" },
@@ -46,29 +39,6 @@
     "langfuse": { "port": "3001", "status": "ok" },
     "temporal": { "port": "7233", "status": "ok", "worker": "tricorderkit-hooks" }
   },
-  "skills": [
-    "tk-boot",
-    "tk-orchestrator@0.2.0",
-    "rtk",
-    "docmancer",
-    "token-savior",
-    "claude-code-router",
-    "skill-creator",
-    "skill-manager",
-    "consolidate-memory"
-  ],
-  "plugins": [
-    "cli-forge",
-    "workflow-engine",
-    "deep-research-core",
-    "hook-layer@0.2.0",
-    "eval-lab",
-    "obsidian-agent-layer",
-    "security-audit-cli",
-    "connector-hub@0.1.0",
-    "memory-boot@0.8",
-    "token-optimizer@0.8"
-  ],
   "decisions": [
     { "code": "DEC-011", "summary": "VPS extension optionnelle — local-first maintenu" },
     { "code": "DEC-010", "summary": "TricorderKit exécute, Japan-Alliance spécialise" },
@@ -81,23 +51,6 @@
     { "code": "OPS-001", "rule": "Scheduled tasks → prompt ≤ 300 tokens" },
     { "code": "ARCH-002", "rule": "System prompt Cowork côté serveur → estimation uniquement" }
   ],
-  "completed_m2": [
-    "S1 — connector_hub --temporal opérationnel (dry_run ✅, workflow_id déterministe)",
-    "A2 — Supabase Japan-Alliance (29 tests) — 7 tables, RLS complet, seed 10 publishers",
-    "B1 — token-savior + claude-code-router (19 tests)",
-    "S2 — budget_guard phase 2 (25 tests) — token_tracker T1/T2/T3 + CLI budget-guard + session-budget",
-    "B2 — hook logs → Obsidian (hook_log_to_obsidian.py)",
-    "M3 — pipeline rtk→docmancer wiring (pipeline_rtk_docmancer.py — dry-run validé Chainsaw Man)"
-  ],
-  "lazy_load": {
-    "vision": "docs/00_WHAT_IS_TRICORDERKIT.md",
-    "architecture": "docs/01_HOW_IT_WORKS.md",
-    "inventory": "docs/02_WHAT_IS_IN_PLACE.md",
-    "backlog": "docs/03_WHAT_TO_DO_NEXT.md",
-    "llm_guide": "docs/04_LLM_OPERATING_GUIDE.md",
-    "workflow_standard": "docs/06_workflow_standard.md",
-    "decisions": ".planning/DECISIONS.md",
-    "risks": ".planning/RISKS.md",
-    "queue": ".planning/QUEUE.md"
-  }
+  "next_action": "Voir BOOT_SUMMARY_JA.md dans claude-vault",
+  "resume_prompt": "Lire BOOT_SUMMARY_JA.md. Charger les templates uniquement si mot-clé déclencheur présent. Mode CLI-first, no speculation."
 }
