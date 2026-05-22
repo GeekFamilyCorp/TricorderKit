@@ -7,6 +7,10 @@ Commandes :
   tk status                     → état général du système
   tk health                     → alias de doctor (health-check rapide)
   tk doctor                     → health-check détaillé tous les services
+  tk rapport                    → rapport plugins depuis BOOT_SUMMARY.md + STATUS.md
+  tk rapport --json             → rapport + latest_status.json
+  tk report generate            → génère STATUS.md + rapport daté dans reports/
+  tk report show                → affiche STATUS.md en terminal
   tk skill list                 → lister les skills disponibles
   tk workflow list              → lister les workflows disponibles
   tk vault scan                 → scanner le vault TricorderKit
@@ -23,9 +27,14 @@ Usage :
   python cli/tk.py status
   python cli/tk.py status --format json
   python cli/tk.py doctor
+  python cli/tk.py rapport
+  python cli/tk.py rapport --json
   python cli/tk.py skill list
   python cli/tk.py workflow list
   python cli/tk.py vault scan
+  python cli/tk.py report generate
+  python cli/tk.py report generate --no-status-md   # rapport seul
+  python cli/tk.py report show
   python cli/tk.py research run "One Piece" --dry-run
   python cli/tk.py project list
   python cli/tk.py project audit japan-alliance
@@ -36,16 +45,13 @@ Usage :
 from __future__ import annotations
 
 import argparse
+import datetime
 import importlib
 import io
 import json
 import subprocess
 import sys
 from pathlib import Path
-
-if sys.platform == "win32":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 REPO_ROOT             = Path(__file__).resolve().parent.parent
@@ -173,6 +179,52 @@ def cmd_status(args):
 
 # ── doctor / health ───────────────────────────────────────────────────────────
 
+def _check_env() -> dict[str, bool]:
+    """Check .env file and required environment variables."""
+    import os
+    env_file = REPO_ROOT / ".env"
+    if not env_file.exists():
+        return {}
+    # Parse .env manually (no python-dotenv required)
+    defined: set[str] = set()
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key = line.split("=", 1)[0].strip()
+            val = line.split("=", 1)[1].strip()
+            if val and not val.startswith("your_") and val not in ("/path/to/your/obsidian/vault",):
+                defined.add(key)
+    required = [
+        "ANTHROPIC_API_KEY",
+        "NEO4J_URI",
+        "QDRANT_URL",
+        "TEMPORAL_ADDRESS",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_SECRET_KEY",
+        "OBSIDIAN_VAULT_PATH",
+    ]
+    return {k: k in defined for k in required}
+
+
+def _check_plugins() -> dict[str, dict]:
+    """Check each plugin has manifest.yml and optional README."""
+    results = {}
+    if not PLUGINS_DIR.exists():
+        return results
+    for plugin_dir in sorted(PLUGINS_DIR.iterdir()):
+        if not plugin_dir.is_dir():
+            continue
+        has_manifest = (plugin_dir / "manifest.yml").exists()
+        has_readme = (plugin_dir / "README.md").exists()
+        test_count = len(list((plugin_dir / "tests").glob("test_*.py"))) if (plugin_dir / "tests").exists() else 0
+        results[plugin_dir.name] = {
+            "manifest": has_manifest,
+            "readme": has_readme,
+            "tests": test_count,
+        }
+    return results
+
+
 def cmd_doctor(args):
     v = sys.version_info
     deps = [("requests","requests"), ("httpx","httpx"), ("rich","rich"),
@@ -192,10 +244,14 @@ def cmd_doctor(args):
         "DECISIONS.md": (REPO_ROOT / ".planning" / "DECISIONS.md").exists(),
         "skill_output.schema.json": (REPO_ROOT / "core" / "contracts" / "skill_output.schema.json").exists(),
         "linked_projects.yaml": LINKED_PROJECTS_FILE.exists(),
+        ".env": (REPO_ROOT / ".env").exists(),
     }
+    env_vars = _check_env()
+    plugin_results = _check_plugins()
     dirty = _git("status", "--porcelain")
     ahead = _git("rev-list", "--count", "HEAD@{u}..HEAD") or "0"
     all_up = all(up for up, _ in svc_results.values())
+    env_ok = all(env_vars.values()) if env_vars else False
 
     if args.format == "json":
         _jprint({
@@ -204,29 +260,55 @@ def cmd_doctor(args):
             "dependencies": dep_results,
             "services": {lbl: {"up": up, "detail": det} for lbl, (up, det) in svc_results.items()},
             "critical_files": critical_files,
+            "env_vars": env_vars,
+            "plugins": plugin_results,
             "git": {"ahead": ahead, "dirty_count": len(dirty.splitlines()) if dirty else 0},
-            "overall": "OK" if all_up else "WARN",
+            "overall": "OK" if (all_up and env_ok) else "WARN",
         })
         return
 
     print()
     print(_b("═══ TricorderKit Doctor ═══"))
     print()
+
     print(_b("Python :"))
     (_ok if v >= (3, 11) else _fail)(f"Python {v.major}.{v.minor}.{v.micro}", sys.executable)
     print()
+
     print(_b("Dépendances :"))
     for name, ok in dep_results.items():
         (_ok if ok else _warn)(name, "" if ok else f"pip install {name}")
     print()
+
+    print(_b("Variables d'environnement (.env) :"))
+    if not (REPO_ROOT / ".env").exists():
+        _fail(".env manquant", "cp .env.example .env  puis remplir les valeurs")
+    elif not env_vars:
+        _warn(".env présent", "impossible de parser")
+    else:
+        for var, ok in env_vars.items():
+            (_ok if ok else _warn)(var, "" if ok else "non définie ou valeur placeholder")
+    print()
+
     print(_b("Docker :"))
     for lbl, (up, det) in svc_results.items():
         (_ok if up else _fail)(lbl, det)
     print()
+
+    print(_b("Plugins :"))
+    for name, info in plugin_results.items():
+        status = "✅" if info["manifest"] else "❌"
+        readme = " README" if info["readme"] else ""
+        tests = f" {info['tests']} test(s)" if info["tests"] else " 0 tests"
+        print(f"  {_g(status) if info['manifest'] else _r(status)} {name:<30} manifest={'✅' if info['manifest'] else '—'}{readme}{tests}")
+    print()
+
     print(_b("Fichiers critiques :"))
     for name, ok in critical_files.items():
-        (_ok if ok else (_warn if "linked_projects.yaml" in name else _fail))(name)
+        is_optional = name in ("linked_projects.yaml", ".env")
+        (_ok if ok else (_warn if is_optional else _fail))(name)
     print()
+
     print(_b("Git :"))
     _ok(f"Branch {_git('branch', '--show-current')} @ {_git('rev-parse', '--short', 'HEAD')}")
     (_ok if ahead == "0" else _warn)(
@@ -234,7 +316,9 @@ def cmd_doctor(args):
     (_ok if not dirty else _warn)(
         "Working tree propre" if not dirty else f"{len(dirty.splitlines())} fichier(s) modifiés")
     print()
-    print(f"  {_g('✅ Doctor OK') if all_up else _y('⚠️  Certains services arrêtés')}")
+
+    overall_ok = all_up and env_ok
+    print(f"  {_g('✅ Doctor OK') if overall_ok else _y('⚠️  Vérifier les points ci-dessus')}")
     print()
 
 
@@ -560,6 +644,234 @@ def cmd_project_workflow_list(args):
     print()
 
 
+# ── rapport ──────────────────────────────────────────────────────────────────
+
+def _parse_boot_field(text: str, key: str) -> str:
+    """Extract value from a BOOT_SUMMARY.md table row like `| key | value |`."""
+    for line in text.splitlines():
+        if f"| {key}" in line or f"| **{key}**" in line:
+            parts = line.split("|")
+            if len(parts) >= 3:
+                return parts[2].strip()
+    return "—"
+
+
+def _parse_status_table(text: str) -> list[dict]:
+    """Parse the plugin table from STATUS.md."""
+    modules = []
+    in_table = False
+    for line in text.splitlines():
+        if "| Plugin |" in line:
+            in_table = True
+            continue
+        if in_table and line.startswith("|---|"):
+            continue
+        if in_table and line.startswith("|"):
+            parts = [p.strip() for p in line.split("|") if p.strip()]
+            if len(parts) >= 5:
+                modules.append({
+                    "plugin": parts[0],
+                    "status": parts[1],
+                    "cli": parts[2],
+                    "tests": parts[3],
+                    "docs": parts[4],
+                    "production_ready": parts[5] if len(parts) > 5 else "—",
+                })
+        elif in_table and not line.startswith("|"):
+            in_table = False
+    return modules
+
+
+def _parse_next_task(text: str) -> str:
+    """Return first pending (non-✅) numbered task from BOOT_SUMMARY.md Prochaines tâches."""
+    import re
+    in_tasks = False
+    for line in text.splitlines():
+        if "## Prochaines tâches" in line:
+            in_tasks = True
+            continue
+        if in_tasks and line.startswith("## "):
+            break
+        if in_tasks and re.match(r"^\d+\.", line.strip()):
+            # done if line contains ✅ or `✅`
+            if "✅" not in line:
+                return re.sub(r"^\d+\.\s*", "", line.strip())
+    return "Aucune tâche en attente"
+
+
+def _parse_tests(tests_info: str) -> tuple[int, int]:
+    """Extract PASS/FAIL counts from a string like '**413 PASS** (…), 15 skipped'."""
+    import re
+    clean = tests_info.replace("**", "").replace("(", " ").replace(")", " ")
+    tests_pass = tests_fail = 0
+    for m in re.finditer(r"(\d+)\s+PASS", clean):
+        tests_pass = int(m.group(1))
+    for m in re.finditer(r"(\d+)\s+FAIL", clean):
+        tests_fail = int(m.group(1))
+    return tests_pass, tests_fail
+
+
+def cmd_rapport(args):
+    boot_md   = REPO_ROOT / "BOOT_SUMMARY.md"
+    status_md = REPO_ROOT / "STATUS.md"
+    reports_dir = REPO_ROOT / "reports" / "status"
+
+    boot_text   = boot_md.read_text(encoding="utf-8")   if boot_md.exists()   else ""
+    status_text = status_md.read_text(encoding="utf-8") if status_md.exists() else ""
+
+    version    = _parse_boot_field(boot_text, "Version")
+    tests_info = _parse_boot_field(boot_text, "Tests")
+    blockers   = _parse_boot_field(boot_text, "Blockers actifs")
+    next_task  = _parse_next_task(boot_text)
+    modules    = _parse_status_table(status_text)
+    tests_pass, tests_fail = _parse_tests(tests_info)
+    today      = datetime.date.today().isoformat()
+
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build report content
+    table_rows = "\n".join(
+        f"| {m['plugin']} | {m['status']} | {m['cli']} | {m['tests']} | {m['docs']} | {m['production_ready']} |"
+        for m in modules
+    )
+    md_content = f"""\
+# Rapport TricorderKit — {today}
+
+> Généré automatiquement par `tk rapport` — {version}
+
+---
+
+## Modules actifs
+
+| Plugin | Status | CLI | Tests | Docs | Production-ready |
+|---|---|---|---|---|---|
+{table_rows}
+
+---
+
+## Tests
+
+| PASS | FAIL |
+|---|---|
+| {tests_pass} | {tests_fail} |
+
+---
+
+## Session
+
+- **Dernière session** : {today}
+- **Blockers actifs** : {blockers}
+
+---
+
+## Prochaine tâche
+
+{next_task}
+
+---
+
+*Auto-généré — TricorderKit — {today}*
+"""
+    latest_md = reports_dir / "latest_status.md"
+    latest_md.write_text(md_content, encoding="utf-8")
+
+    # Update BOOT_SUMMARY.md "Dernière session"
+    if boot_md.exists():
+        updated_lines = []
+        for line in boot_text.splitlines():
+            if "| Dernière session |" in line:
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    parts[2] = f" {today} "
+                    line = "|".join(parts)
+            updated_lines.append(line)
+        boot_md.write_text("\n".join(updated_lines), encoding="utf-8")
+
+    # JSON output
+    data = {
+        "generated": today,
+        "version": version,
+        "tests": {"pass": tests_pass, "fail": tests_fail},
+        "blockers": blockers,
+        "next_task": next_task,
+        "modules": modules,
+    }
+    if getattr(args, "json_output", False):
+        latest_json = reports_dir / "latest_status.json"
+        latest_json.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    if args.format == "json":
+        _jprint(data)
+        return
+
+    print()
+    print(_b(f"═══ Rapport TricorderKit — {today} ═══"))
+    print()
+    print(_b("Modules actifs :"))
+    for m in modules:
+        prod = m["production_ready"]
+        icon = _g("✅") if "✅" in prod else (_y("⚠️") if "⚠️" in prod else _r("❌"))
+        print(f"  {icon} {m['plugin']:<30}  {m['status']}")
+    print()
+    print(_b("Tests :"))
+    _ok(f"{tests_pass} PASS")
+    if tests_fail:
+        _fail(f"{tests_fail} FAIL")
+    print()
+    print(_b("Session :"))
+    print(f"  Dernière session : {today}")
+    print(f"  Blockers         : {blockers}")
+    print()
+    print(_b("Prochaine tâche :"))
+    print(f"  {next_task}")
+    print()
+    _ok(f"Rapport écrit → {latest_md}")
+    if getattr(args, "json_output", False):
+        _ok(f"JSON écrit     → {reports_dir / 'latest_status.json'}")
+    print()
+
+
+# ── report generate / show ───────────────────────────────────────────────────
+
+def cmd_report_generate(args):
+    """Délègue à scripts/generate_status.py pour produire STATUS.md + rapport daté."""
+    generate_script = REPO_ROOT / "scripts" / "generate_status.py"
+    if not generate_script.exists():
+        if args.format == "json":
+            _jprint({"error": "scripts/generate_status.py introuvable"})
+        else:
+            _fail("scripts/generate_status.py introuvable")
+        sys.exit(1)
+
+    cmd = [sys.executable, str(generate_script), "--report"]
+    if getattr(args, "no_status_md", False):
+        cmd.append("--no-status-md")
+    if args.format == "json":
+        cmd += ["--output", "json"]
+
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    sys.exit(result.returncode)
+
+
+def cmd_report_show(args):
+    """Affiche STATUS.md courant (ou le génère s'il n'existe pas)."""
+    status_md = REPO_ROOT / "STATUS.md"
+    if not status_md.exists():
+        _warn("STATUS.md absent — génération en cours...")
+        cmd_report_generate(args)
+        return
+
+    if args.format == "json":
+        _jprint({
+            "path": str(status_md),
+            "size": status_md.stat().st_size,
+            "content": status_md.read_text(encoding="utf-8"),
+        })
+        return
+
+    print(status_md.read_text(encoding="utf-8"))
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # PARSER
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -648,6 +960,27 @@ def main():
     p_pwll.add_argument("project_id", nargs="?", help="ID projet")
     _add_format(p_pwll)
 
+    # ── rapport ──
+    p_rapport = sub.add_parser("rapport",
+                                help="Rapport plugins depuis BOOT_SUMMARY.md + STATUS.md")
+    p_rapport.add_argument("--json", dest="json_output", action="store_true",
+                           help="Générer aussi reports/status/latest_status.json")
+    _add_format(p_rapport)
+
+    # ── report ──
+    p_report = sub.add_parser("report", help="Dashboard observabilité — STATUS.md + rapports")
+    _add_format(p_report)
+    rep_sub = p_report.add_subparsers(dest="report_cmd", metavar="<sous-commande>")
+
+    p_rg = rep_sub.add_parser("generate",
+                               help="Génère STATUS.md + rapport daté dans reports/")
+    p_rg.add_argument("--no-status-md", action="store_true",
+                      help="Ne pas écrire STATUS.md (rapport seul)")
+    _add_format(p_rg)
+
+    p_rs = rep_sub.add_parser("show", help="Affiche STATUS.md en terminal")
+    _add_format(p_rs)
+
     # ── parse ──
     args = parser.parse_args()
 
@@ -659,6 +992,7 @@ def main():
         "status":   cmd_status,
         "health":   cmd_doctor,
         "doctor":   cmd_doctor,
+        "rapport":  cmd_rapport,
     }
 
     if args.command in dispatch:
@@ -700,9 +1034,20 @@ def main():
                 p_pwl.print_help()
         else:
             p_project.print_help()
+    elif args.command == "report":
+        rc = getattr(args, "report_cmd", None)
+        if rc == "generate":
+            cmd_report_generate(args)
+        elif rc == "show":
+            cmd_report_show(args)
+        else:
+            p_report.print_help()
     else:
         parser.print_help()
 
 
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
     main()
