@@ -225,100 +225,142 @@ def _check_plugins() -> dict[str, dict]:
     return results
 
 
+def _check_docker_socket() -> bool:
+    """Return True if Docker daemon responds to `docker ps`."""
+    try:
+        r = subprocess.run(
+            ["docker", "ps"], capture_output=True, timeout=5,
+        )
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
+def _check_secrets() -> list[str]:
+    """Return secret key names found in tracked files (excluding .env and examples)."""
+    patterns = ["ANTHROPIC_API_KEY=", "OPENAI_API_KEY="]
+    found = []
+    for pattern in patterns:
+        try:
+            r = subprocess.run(
+                ["git", "grep", "-l", pattern,
+                 "--", ":!.env", ":!*.example", ":!*.example.*"],
+                capture_output=True, text=True, encoding="utf-8",
+                cwd=REPO_ROOT, timeout=10,
+            )
+            if r.stdout.strip():
+                found.append(pattern.rstrip("="))
+        except Exception:
+            pass
+    return found
+
+
 def cmd_doctor(args):
     v = sys.version_info
-    deps = [("requests","requests"), ("httpx","httpx"), ("rich","rich"),
-            ("pyyaml","yaml"), ("qdrant-client","qdrant_client"),
-            ("temporalio","temporalio"), ("feedparser","feedparser")]
-    dep_results = {}
-    for name, mod in deps:
-        try: importlib.import_module(mod); dep_results[name] = True
-        except ImportError: dep_results[name] = False
+    version_str = f"{v.major}.{v.minor}.{v.micro}"
+    checks: list[tuple[str, str, str]] = []  # (status, label, detail)
 
-    svc_list = [("tricorder-neo4j","Neo4j"), ("tricorder-qdrant","Qdrant"),
-                ("tricorder-langfuse","Langfuse"), ("temporal","Temporal")]
-    svc_results = {lbl: _docker(c) for c, lbl in svc_list}
+    # 1. Python >= 3.11
+    py_ok = v >= (3, 11)
+    checks.append((
+        "ok" if py_ok else "fail",
+        f"Python {version_str}",
+        "" if py_ok else "Python >= 3.11 requis",
+    ))
 
-    critical_files = {
-        "STATE.md": STATE_FILE.exists(),
-        "DECISIONS.md": (REPO_ROOT / ".planning" / "DECISIONS.md").exists(),
-        "skill_output.schema.json": (REPO_ROOT / "core" / "contracts" / "skill_output.schema.json").exists(),
-        "linked_projects.yaml": LINKED_PROJECTS_FILE.exists(),
-        ".env": (REPO_ROOT / ".env").exists(),
-    }
-    env_vars = _check_env()
-    plugin_results = _check_plugins()
-    dirty = _git("status", "--porcelain")
-    ahead = _git("rev-list", "--count", "HEAD@{u}..HEAD") or "0"
-    all_up = all(up for up, _ in svc_results.values())
-    env_ok = all(env_vars.values()) if env_vars else False
+    # 2. Docker daemon
+    docker_up = _check_docker_socket()
+    checks.append((
+        "ok" if docker_up else "fail",
+        "Docker running",
+        "" if docker_up else "Docker daemon non disponible",
+    ))
+
+    # 3. Services Docker
+    for svc_name, port, container in [
+        ("Neo4j",    7474, "tricorder-neo4j"),
+        ("Qdrant",   6333, "tricorder-qdrant"),
+        ("Langfuse", 3001, "tricorder-langfuse"),
+        ("Temporal", 7233, "temporal"),
+    ]:
+        up, _ = _docker(container)
+        checks.append((
+            "ok" if up else "fail",
+            f"{svc_name} :{port}",
+            "" if up else f"container {container!r} non actif",
+        ))
+
+    # 4. .env (existence only)
+    env_ok = (REPO_ROOT / ".env").exists()
+    checks.append((
+        "ok" if env_ok else "warn",
+        ".env présent" if env_ok else ".env manquant — copier .env.example",
+        "",
+    ))
+
+    # 5. Required directories
+    for dirname in ("plugins", "skills", "reports", "memory"):
+        ok = (REPO_ROOT / dirname).exists()
+        checks.append((
+            "ok" if ok else "warn",
+            f"Dossier {dirname}/",
+            "" if ok else f"{dirname}/ absent",
+        ))
+
+    # 6. TricorderKit modules (STATUS.md)
+    status_text = (
+        (REPO_ROOT / "STATUS.md").read_text(encoding="utf-8")
+        if (REPO_ROOT / "STATUS.md").exists() else ""
+    )
+    modules = _parse_status_table(status_text)
+    mod_count = len(modules)
+    checks.append((
+        "ok" if mod_count > 0 else "warn",
+        f"Modules détectés : {mod_count}",
+        "" if mod_count > 0 else "STATUS.md absent ou table vide",
+    ))
+
+    # 7. Linked projects
+    projects = _linked_projects()
+    proj_count = len(projects)
+    checks.append((
+        "ok" if proj_count > 0 else "warn",
+        f"Linked projects : {proj_count}" if proj_count > 0 else "Aucun linked project configuré",
+        "",
+    ))
+
+    # 8. No secrets in tracked files
+    secret_hits = _check_secrets()
+    checks.append((
+        "ok" if not secret_hits else "fail",
+        "Aucun secret dans le repo",
+        f"Trouvé dans : {', '.join(secret_hits)}" if secret_hits else "",
+    ))
 
     if args.format == "json":
         _jprint({
-            "python": f"{v.major}.{v.minor}.{v.micro}",
-            "python_ok": v >= (3, 11),
-            "dependencies": dep_results,
-            "services": {lbl: {"up": up, "detail": det} for lbl, (up, det) in svc_results.items()},
-            "critical_files": critical_files,
-            "env_vars": env_vars,
-            "plugins": plugin_results,
-            "git": {"ahead": ahead, "dirty_count": len(dirty.splitlines()) if dirty else 0},
-            "overall": "OK" if (all_up and env_ok) else "WARN",
+            "checks": [
+                {"status": s, "label": lbl, "detail": det}
+                for s, lbl, det in checks
+            ]
         })
         return
 
+    _TAG = {"ok": "[OK]  ", "warn": "[WARN]", "fail": "[FAIL]"}
     print()
     print(_b("═══ TricorderKit Doctor ═══"))
     print()
-
-    print(_b("Python :"))
-    (_ok if v >= (3, 11) else _fail)(f"Python {v.major}.{v.minor}.{v.micro}", sys.executable)
-    print()
-
-    print(_b("Dépendances :"))
-    for name, ok in dep_results.items():
-        (_ok if ok else _warn)(name, "" if ok else f"pip install {name}")
-    print()
-
-    print(_b("Variables d'environnement (.env) :"))
-    if not (REPO_ROOT / ".env").exists():
-        _fail(".env manquant", "cp .env.example .env  puis remplir les valeurs")
-    elif not env_vars:
-        _warn(".env présent", "impossible de parser")
-    else:
-        for var, ok in env_vars.items():
-            (_ok if ok else _warn)(var, "" if ok else "non définie ou valeur placeholder")
-    print()
-
-    print(_b("Docker :"))
-    for lbl, (up, det) in svc_results.items():
-        (_ok if up else _fail)(lbl, det)
-    print()
-
-    print(_b("Plugins :"))
-    for name, info in plugin_results.items():
-        status = "✅" if info["manifest"] else "❌"
-        readme = " README" if info["readme"] else ""
-        tests = f" {info['tests']} test(s)" if info["tests"] else " 0 tests"
-        print(f"  {_g(status) if info['manifest'] else _r(status)} {name:<30} manifest={'✅' if info['manifest'] else '—'}{readme}{tests}")
-    print()
-
-    print(_b("Fichiers critiques :"))
-    for name, ok in critical_files.items():
-        is_optional = name in ("linked_projects.yaml", ".env")
-        (_ok if ok else (_warn if is_optional else _fail))(name)
-    print()
-
-    print(_b("Git :"))
-    _ok(f"Branch {_git('branch', '--show-current')} @ {_git('rev-parse', '--short', 'HEAD')}")
-    (_ok if ahead == "0" else _warn)(
-        "Synchronisé" if ahead == "0" else f"{ahead} commit(s) non poussés")
-    (_ok if not dirty else _warn)(
-        "Working tree propre" if not dirty else f"{len(dirty.splitlines())} fichier(s) modifiés")
-    print()
-
-    overall_ok = all_up and env_ok
-    print(f"  {_g('✅ Doctor OK') if overall_ok else _y('⚠️  Vérifier les points ci-dessus')}")
+    for status, label, detail in checks:
+        tag  = _TAG[status]
+        line = f"  {tag}  {label}"
+        if detail:
+            line += f"  — {detail}"
+        if status == "ok":
+            print(line)
+        elif status == "warn":
+            print(_y(line))
+        else:
+            print(_r(line))
     print()
 
 
