@@ -92,10 +92,10 @@
 ### RISK-009 — Pattern db_connection_string trop restrictif
 - **Date** : 22/05/2026
 - **Niveau** : Basse
-- **Statut** : Ouvert
-- **Description** : Le pattern `db_connection_string` dans `secret_scanner.py` exige ≥ 10 chars avant `:` (username). Des usernames courts comme `admin`, `root`, `dev` ne sont pas détectés.
-- **Mitigation** : Fix `{10,}` → `{3,}` sur le segment username. Identifié dans commit ac6bd3d. À corriger avant prochaine session.
+- **Statut** : Mitigé (2026-05-22)
+- **Description** : Le pattern `db_connection_string` dans `secret_scanner.py` exigeait ≥ 10 chars sur le segment username. Des usernames courts comme `admin`, `root`, `dev` n'étaient pas détectés.
+- **Mitigation** : Fix appliqué — `{10,}` → `{3,}` sur le segment username. Commit `bb96d11`.
 
 ---
 
-*Dernière mise à jour : 22/05/2026 — v0.9 M4 — RISK-007 clos, RISK-005 mitigé, RISK-008 + RISK-009 ajoutés*
+*Dernière mise à jour : 22/05/2026 — v0.9 M4 — RISK-009 mitigé (fix db_connection_string)*
