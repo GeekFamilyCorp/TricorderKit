@@ -39,3 +39,14 @@
 **Règle préventive :** Toute sortie de sous-agent injectée dans le contexte principal doit être en caveman lite : JSON structuré ou Markdown tabulaire, jamais prose narrative.
 **Fichiers concernés :** `AGENTS.md`, `skills/tk-orchestrator/SKILL.md`
 **Statut :** ⬜ À implémenter dans AGENTS.md + tk-orchestrator v0.9.
+
+## LESSON-006 — 2026-05-22
+**Contexte :** Bump version dans STATE.md (0.8 → 0.9 M2) a cassé `tests/test_cli_local.py` : version "0.8" hardcodée, CLI `--version` stale.
+**Erreur :** Mise à jour STATE.md sans grep des strings de version dans `tests/`.
+**Règle préventive (R16) :** Tout bump de version dans STATE.md → grep obligatoire sur `tests/` avant commit :
+```bash
+grep -rn "\"0\.[0-9]" tests/
+```
+Corriger toute string hardcodée et bumper `cli/tk.py --version` en même temps.
+**Fichiers concernés :** `tests/test_cli_local.py`, `cli/tk.py`, `.planning/STATE.md`
+**Statut :** [RÉSOLU] — version "0.9 M2" alignée dans test + CLI. 359 PASS, 0 FAIL.
