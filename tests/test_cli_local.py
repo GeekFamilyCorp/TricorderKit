@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-test_cli_local.py — Tests CLI tk (TricorderKit v0.8)
+test_cli_local.py — Tests CLI tk (TricorderKit v0.9)
 
 Teste toutes les commandes de cli/tk.py en mode subprocess :
   - exit codes
@@ -62,7 +62,7 @@ class TestStatus:
         assert r.returncode == 0
         data = assert_valid_json(r.stdout)
         assert "version" in data
-        assert data["version"] == "0.8"
+        assert data["version"] == "0.9 M2"
 
     def test_status_json_has_services(self):
         r = run(["status", "--format", "json"])
@@ -258,7 +258,7 @@ class TestRobustness:
     def test_version_flag(self):
         r = run(["--version"])
         assert r.returncode == 0
-        assert "0.8" in r.stdout
+        assert "0.9" in r.stdout
 
     def test_format_md_alias(self):
         """--format md doit être accepté comme alias de markdown."""

@@ -128,6 +128,12 @@
 
 ---
 
+## ✅ Corrections v0.9 (2026-05-22)
+
+- [x] **[FIX-CONF]** Fix conftest conflit eval-lab / tk-orchestrator — root cause : version "0.8" hardcodée dans `tests/test_cli_local.py` alors que STATE.md retourne "0.9 M2". Fix : bump version dans test + `cli/tk.py --version`. **359 PASS, 0 FAIL** depuis la racine.
+
+---
+
 ## Backlog v0.9 — À prioriser
 
 - [ ] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub)
@@ -143,4 +149,4 @@
 
 ---
 
-*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET — 103 tests verts (36 CLI + 42 audit + 25 hooks)*
+*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ — 359 tests, 0 FAIL depuis racine*

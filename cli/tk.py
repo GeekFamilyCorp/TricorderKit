@@ -572,7 +572,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog="tk", description="TricorderKit CLI v0.2.0 — Agentic Knowledge OS",
     )
-    parser.add_argument("--version", action="version", version="tk 0.8.0")
+    parser.add_argument("--version", action="version", version="tk 0.9.0")
     _add_format(parser)
     sub = parser.add_subparsers(dest="command", metavar="<commande>")
 
