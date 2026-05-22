@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1→M5p COMPLETS — security-audit-cli scripts/ + tk security + 16 tests ✅) |
-| Commit HEAD | `53a6a95` |
+| Version | **v0.9** (M1→M5 COMPLETS — security-audit-cli + obsidian-agent-layer ✅) |
+| Commit HEAD | `e425e29` |
 | Dernière session | 2026-05-22 |
-| Tests | **451 PASS** (435+16 nouveaux : security_audit×16), 15 skipped (live) |
+| Tests | **485 PASS** (451+34 nouveaux : obsidian_agent_layer×34), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -31,7 +31,7 @@
 ## Prochaines tâches (v0.9 M5)
 
 1. `✅` security-audit-cli — scripts/security_runner.py + tk security + README + 16 tests PASS
-2. `⬜` obsidian-agent-layer — 0 tests + 0 scripts → couverture minimale requise
+2. `✅` obsidian-agent-layer — scripts/obsidian_runner.py + tk obsidian + README + 34 tests PASS
 2. `⬜` obsidian-agent-layer — 0 tests + 0 scripts → couverture minimale requise
 3. `⬜` VPS deployment — optionnel — DEC-011 : local-first maintenu, VPS extension future
 

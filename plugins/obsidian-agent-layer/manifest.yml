@@ -3,7 +3,7 @@ version: "0.1.0"
 description: "Couche d'intégration Obsidian — CRUD notes, templates structurés, routing vault, sync HOT_CACHE"
 service: tricorderkit-core
 language: python
-entrypoint: obsidian_client.py
+entrypoint: scripts/obsidian_runner.py
 token_budget: 600
 cache:
   backend: sqlite
