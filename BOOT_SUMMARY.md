@@ -9,10 +9,10 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1+M2+M3 COMPLETS — M4 ✅) |
-| Commit HEAD | `a293b2f` (GitHub sync ✅) |
+| Version | **v0.9** (M1+M2+M3+M4+M5 COMPLETS — M6 ✅ Supabase Phase 2) |
+| Commit HEAD | `255003c` (GitHub sync ✅) |
 | Dernière session | 2026-05-22 |
-| Tests | **377 PASS** (359+20 observabilité M4), 15 skipped (live) |
+| Tests | **413 PASS** (377+36 Supabase Phase 2), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
 ---
@@ -33,6 +33,8 @@
 1. `✅` B3 — Tests live deep-research **DONE 2026-05-22** — 24/24 PASS (MangaDex + Jikan + AniList + Pipeline)
 2. `✅` M4 — Observabilité bout-en-bout Langfuse **DONE 2026-05-22** — 20/20 tests, traces live dans localhost:3001
 3. `✅` Fix conftest conflit eval-lab / tk-orchestrator **DONE 2026-05-22** — 0 FAIL (version bump 0.8→0.9 M2 dans test + CLI)
+6. `✅` Temporal → connector_hub.dispatch **DONE 2026-05-22** — source_watch.activities.ts + wiring complet
+7. `✅` Japan-Alliance Supabase Phase 2 **DONE 2026-05-22** — 5 tables contenu (manga/anime/mangaka/studios/manga_mangaka) + 36 tests
 4. `✅` Pipeline rtk→docmancer test live **DONE 2026-05-22** — `Mangas/Chainsaw Man/Chainsaw-Man.md` créé (title+author+title_jp+status ✅)
 5. `✅` Push GitHub TricorderKit v0.9 M2 complet **DONE 2026-05-22** — HEAD `e7cc574`
 
@@ -131,4 +133,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M4 — 2026-05-22 (B3 ✅, FIX-CONF ✅, PUSH-M2 ✅, M3-LIVE ✅, M4-OBS ✅) — 377 tests, 0 FAIL*
+*Auto-généré — TricorderKit v0.9 M6 — 2026-05-22 (B3 ✅, FIX-CONF ✅, M3-LIVE ✅, M4-OBS ✅, M5-Temporal ✅, M6-Supabase ✅) — 413 tests, 0 FAIL*
