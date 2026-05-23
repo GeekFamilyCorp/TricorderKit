@@ -1,0 +1,88 @@
+# .check-anon-ignore — Fichiers exclus du scan d'anonymisation
+# Syntaxe : un pattern par ligne (fnmatch). # = commentaire.
+# Ces fichiers contiennent des références aux projets liés de façon LÉGITIME :
+#   - fichiers de configuration interne des agents (AGENTS.md, CLAUDE.md…)
+#   - historique et décisions architecturales (.planning/)
+#   - tests et fixtures de sécurité (le checker scanne ses propres termes cibles)
+#   - code source du checker lui-même
+#
+# RÈGLE : tout fichier listé ici ne doit PAS être public ou doit contenir
+# uniquement des références génériques visibles dans docs/anonymization.md.
+
+# ── Configuration agents (noms liés comme contexte opérationnel) ──────────────
+AGENTS.md
+CLAUDE.md
+SPACE_CORE.md
+BOOT_SUMMARY.md
+README_FIRST.md
+
+# ── Planning interne (décisions, roadmaps, historique) ────────────────────────
+.planning/DECISIONS.md
+.planning/STATE.md
+.planning/TASKS.md
+.planning/ROADMAP_v0.9.md
+.planning/ROADMAP_v0.7.md
+.planning/RISKS.md
+.planning/QUEUE.md
+
+# ── Changelog et historique (références historiques légitimes) ────────────────
+CHANGELOG.md
+
+# ── Code source du checker lui-même (contient les termes à détecter) ──────────
+plugins/security-audit-cli/anonymization_checker.py
+plugins/security-audit-cli/manifest.yml
+plugins/security-audit-cli/README.md
+
+# ── Tests (fixtures contenant délibérément des termes privés) ─────────────────
+tests/test_security_audit.py
+tests/supabase/test_japan_alliance_schema.py
+tests/supabase/test_content_tables.py
+
+# ── Rapports générés (gitignorés mais présents localement) ────────────────────
+reports/local_first_audit_2026-05-17.md
+TricorderKit_Audit_v0.8_2026-05-18.md
+
+# ── Sous-dossier archivé v0.7 ─────────────────────────────────────────────────
+TricorderKit_v0.7/*
+TricorderKit_Project/*
+
+# ── Skills contenant des exemples de domaine (contexte opérationnel) ──────────
+skills/docmancer/SKILL.md
+skills/docmancer/examples/*
+skills/claude-code-router/SKILL.md
+skills/cowork-boot/SKILL.md
+
+# ── Plugin READMEs (documentation interne) ────────────────────────────────────
+plugins/connector-hub/README.md
+plugins/connector-hub/SKILL.md
+plugins/obsidian-agent-layer/README.md
+plugins/eval-lab/eval_runner.py
+
+# ── Fichiers deep-research liés au domaine ────────────────────────────────────
+plugins/deep-research-core/tests/test_live_pipeline.py
+plugins/deep-research-core/scripts/collect_sources.py
+
+# ── Pipelines (références de domaine dans logique métier) ─────────────────────
+tools/pipelines/pipeline_rtk_docmancer.py
+tools/audit/linked_project_audit.py
+tools/audit/local_vs_github_audit.py
+
+# ── Docs internes TIER 3 (lazy-load, non publics, contiennent contexte domaine)
+docs/00_WHAT_IS_TRICORDERKIT.md
+docs/01_HOW_IT_WORKS.md
+docs/02_WHAT_IS_IN_PLACE.md
+docs/03_WHAT_TO_DO_NEXT.md
+docs/04_LLM_OPERATING_GUIDE.md
+docs/05_*.md
+docs/06_workflow_standard.md
+
+# ── Notre propre doc d'anonymisation (cite les termes comme exemples) ──────────
+docs/anonymization.md
+
+# ── Vault (session capsules — gitignorées mais présentes localement) ──────────
+vault/*.json
+vault/*.yaml
+vault/*.yml
+
+# ── Configs exemple (commentaires de domaine) ─────────────────────────────────
+configs/local/linked_projects.example.yaml
