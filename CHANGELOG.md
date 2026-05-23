@@ -4,6 +4,28 @@
 
 ---
 
+## [0.9.2] — 23/05/2026 — M5 : security hardening + Windows deployment
+
+### Ajouté
+- **plugins/workflow-engine/activities/sanitize_input.activity.ts** — Pre-Execution Hook anti-prompt-injection : Llama Guard 3 (Ollama) + regex fallback 12 patterns. `ApplicationFailure.nonRetryable` si payload unsafe → quarantaine Temporal. Ferme RISK-005.
+- **plugins/deep-research-core/index_qdrant.py** — génération d'IDs Qdrant : `hashlib.sha1` → `uuid.uuid5(NAMESPACE, name)`. Déterministe + sans collision. Test idempotence inclus. Ferme ERR-T-001.
+- **.semgrep/no-shell-true.yaml** — 3 règles custom : `no-shell-true` (CWE-78), `no-os-system` (CWE-78), `no-sha1-for-ids` (CWE-327).
+
+### Modifié
+- **plugins/security-audit-cli/security_runner.py** — architecture `_run_*` pure (découplée de Typer) · `encoding="utf-8", errors="replace"` sur tous les accès fichier · exclusions UUID par chemin relatif · suppression emoji → ASCII `PASS/FAIL` (compatibilité Windows tâche planifiée).
+- **plugins/security-audit-cli/tests/test_security_runner.py** — 18/18 tests PASS (était 17/18 : `test_scan_skip_if_semgrep_missing` corrigé).
+
+### Corrections Windows
+- `subprocess.run()` : `encoding="utf-8"` forcé partout (R18) — élimine les crashs cp1252
+- `Path.read_text()` : même correction dans `_run_docker` et `_run_uuid`
+- `pytest --basetemp` : défini hors `AppData\Temp` dans `pyproject.toml` (R-WIN-003)
+- Rich Console : `isatty()` conditionnel pour tâches planifiées (R19)
+
+### Full Audit résultat
+`scan PASS · secrets PASS · deps PASS · docker PASS · uuid PASS`
+
+---
+
 ## [0.9.1] — 23/05/2026 — Public-ready : docs, install, anonymisation
 
 ### Ajouté
