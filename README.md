@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/badge/version-v0.9-blue)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
-[![Tests](https://img.shields.io/badge/tests-485%20PASS-brightgreen)](.planning/STATE.md)
+[![Tests](https://img.shields.io/badge/tests-503%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
 ---
