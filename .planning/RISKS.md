@@ -56,9 +56,9 @@
 ### RISK-005 — Prompt injection via skills externes
 - **Date** : 10/05/2026
 - **Niveau** : Haute
-- **Statut** : Mitigé
+- **Statut** : ✅ FERMÉ — 23/05/2026
 - **Description** : Tout skill externe intégré peut contenir des instructions malveillantes cachées.
-- **Mitigation** : security-audit-cli opérationnel (Phase 5) — scan secrets, anonymisation, anti-patterns. 16 tests pytest couvrant secret_scanner, anonymization_checker, pattern_checker, security_runner (22/05/2026). Audit obligatoire avant tout import externe.
+- **Mitigation** : `sanitize_input.activity.ts` livré (23/05/2026) — Pre-Execution Hook Temporal : Llama Guard 3 via Ollama (localhost:11434) + regex fallback 12 patterns. `ApplicationFailure.nonRetryable` si unsafe → quarantaine. security-audit-cli 18 tests PASS.
 
 ---
 

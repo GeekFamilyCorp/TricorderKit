@@ -31,7 +31,7 @@
 | **v0.9 M2** | Orchestration — connector_hub + budget_guard + Supabase | ✅ Complet | 2026-05-22 |
 | **v0.9 M3** | Pipeline rtk→docmancer live + observabilité Langfuse | ✅ Complet | 2026-05-22 |
 | **v0.9 M4** | CLI tk doctor + rapport + INSTALL.md + security | ✅ Complet | 2026-05-22 |
-| **v0.9 M5** | obsidian-agent-layer (34 tests) + security-audit-cli (16 tests) | ✅ Complet | 2026-05-22 |
+| **v0.9 M5** | security-audit-cli 18/18 tests · sanitize_input.activity.ts (RISK-005) · index_qdrant uuid.uuid5 (ERR-T-001) · Full Audit 5/5 PASS · Windows deployment | ✅ Complet | 2026-05-23 |
 | **v0.9 M6** | Public-ready docs — README · ROADMAP · STATUS · Makefile · install-menu · anonymization | ✅ Complet | 2026-05-23 |
 
 ---
@@ -39,8 +39,8 @@
 ## Tests
 
 ```
-Total     : 485 PASS — 0 FAIL — 15 skipped (live)
-Commit HEAD : e425e29 (avant session 2026-05-23)
+Total     : 503 PASS — 0 FAIL — 15 skipped (live)
+Commit HEAD : 8e60aa8 (23/05/2026 M5 complet)
 ```
 
 ---
