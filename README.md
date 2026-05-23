@@ -2,8 +2,9 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-0.9-blue)](CHANGELOG.md)
-[![Status](https://img.shields.io/badge/phase-9%20public--ready-green)](/.planning/STATE.md)
+[![Version](https://img.shields.io/badge/version-v0.9-blue)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
+[![Tests](https://img.shields.io/badge/tests-485%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
 ---
@@ -179,7 +180,7 @@ TricorderKit/
 └── .planning/
     ├── STATE.md            ← current project state
     ├── TASKS.md            ← active backlog
-    ├── DECISIONS.md        ← architectural decisions log (DEC-001 → DEC-011)
+    ├── DECISIONS.md        ← architectural decisions log (DEC-001 → DEC-013)
     ├── RISKS.md            ← risk register
     └── ROADMAP_v0.7.md     ← 6-phase roadmap
 ```
@@ -259,7 +260,7 @@ See [ROADMAP.md](ROADMAP.md) for full details.
 | 5 | Quality loop (eval-lab, security) | ✅ Complete | 16/05/2026 |
 | 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
 | 7 | v0.9 — Orchestration + observability | ✅ Complete | 22/05/2026 |
-| 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 22/05/2026 |
+| 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 23/05/2026 |
 | 9 | VPS deployment (optional) | 🔲 Planned | — |
 | 10 | Multi-linked-project support | 🔲 Planned | — |
 | 11 | Plugin marketplace / registry | 🔲 Planned | — |
