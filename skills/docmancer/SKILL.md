@@ -166,7 +166,7 @@ python plugins/obsidian-agent-layer/obsidian_client.py \
   },
   "metadata": {
     "tokens_estimated": 350,
-    "vault_path": "C:/Users/sebas/Documents/obsidian/Japan-Alliance/Mangas/Dungeon_Meshi.md"
+    "vault_path": "${OBSIDIAN_LINKED_VAULT_PATH}/Mangas/Dungeon_Meshi.md"
   }
 }
 ```

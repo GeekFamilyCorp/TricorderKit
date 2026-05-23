@@ -147,6 +147,23 @@
 
 ---
 
+## ✅ v0.9 M6 — Public-ready (2026-05-23)
+
+- [x] **ROADMAP.md** — créé à la racine (phases 1–12, 1–8 Complete, 9–12 Planned)
+- [x] **scripts/install-menu.py** — wizard guidé 4 étapes (prérequis, .env, Docker, tk doctor)
+- [x] **Makefile** — 11 targets : install, boot, doctor, health, test, test-all, lint, docker-up/down, validate, security, clean
+- [x] **docs/anonymization.md** — guide complet + checklist pré-push + règle R17
+- [x] **README.md** — v0.9 : badge, What's New v0.9, roadmap 12 phases
+- [x] **STATUS.md** — table modules stable/evolving/experimental (16 modules)
+- [x] **docs/linked_projects.md** — v0.9, exemples JA → my-domain-project
+- [x] **.gitignore** — vault/*.json protégés, reports/ gitignored, version v0.9
+- [x] **Anonymisation périmètre public** — 11 fichiers nettoyés (chemins hardcodés + refs JA)
+- [x] **STATE.md** — mis à jour v0.9 public-ready
+- [ ] **CHANGELOG.md** — entrée [0.9.0] à ajouter
+- [ ] **Commit + push** — `git commit -m "feat: v0.9 public-ready"` après `make test` + `tk security check-anon`
+
+---
+
 ## Backlog v0.9 — À prioriser
 
 - [x] Wiring Temporal → connector_hub.dispatch (source_watch.workflow.ts déclenché par hub) ✅ M5 — source_watch.activities.ts, 8 activities, commit 87320ca
@@ -183,4 +200,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-05-22 — FIX-CONF ✅ + M3-LIVE ✅ + M4-OBS ✅ — 377 tests, 0 FAIL depuis racine*
+*Dernière mise à jour : 2026-05-23 — v0.9 Public-ready ✅ — 485 tests, 0 FAIL*

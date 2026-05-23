@@ -1,14 +1,15 @@
 # STATE.md — TricorderKit v0.9
 
 > État courant du projet. Mettre à jour à chaque session.
+> Dernière mise à jour : 2026-05-23
 
 ---
 
 ## Version courante
 
-- **Version** : 0.9 M2
-- **Date** : 2026-05-22
-- **Phase active** : v0.9 M3 — Observabilité + tests live
+- **Version** : 0.9 — Public-ready
+- **Date** : 2026-05-23
+- **Phase active** : v0.9 terminé — prochaine étape : commit + push public
 
 ---
 
@@ -21,63 +22,44 @@
 | 2 | CLI-Forge | ✅ Verified | 2026-05-13 |
 | 2.5 | QualityGuard | ✅ Verified | 2026-05-15 |
 | 3 | Workflows persistants (Temporal) | ✅ Verified | 2026-05-15 |
-| 3.5 | Hook Layer | ✅ Complet | 2026-05-16 |
-| 4 | Deep Research | ✅ Complet — **B3 tests live PASS 24/24** | 2026-05-22 |
+| 3.5 | Hook Layer v0.2 | ✅ Complet | 2026-05-16 |
+| 4 | Deep Research — B3 tests live 24/24 PASS | ✅ Complet | 2026-05-22 |
 | 5 | Quality Loop | ✅ Complet | 2026-05-16 |
-| 6 | Séparation linked_project | ✅ Migration Japan-Alliance effectuée | 2026-05-17 |
-| 6.5 | Restructuration Japan-Alliance → vault pur | ✅ MangaTracker = agent CLI | 2026-05-17 |
+| 6 | Séparation linked_project | ✅ Complet | 2026-05-17 |
+| 6.5 | Restructuration → vault pur | ✅ Complet | 2026-05-17 |
+| **v0.9 M1** | Foundation v0.9 — memory-boot + token-optimizer + skills rtk + docmancer | ✅ Complet | 2026-05-18 |
+| **v0.9 M2** | Orchestration — connector_hub + budget_guard + Supabase | ✅ Complet | 2026-05-22 |
+| **v0.9 M3** | Pipeline rtk→docmancer live + observabilité Langfuse | ✅ Complet | 2026-05-22 |
+| **v0.9 M4** | CLI tk doctor + rapport + INSTALL.md + security | ✅ Complet | 2026-05-22 |
+| **v0.9 M5** | obsidian-agent-layer (34 tests) + security-audit-cli (16 tests) | ✅ Complet | 2026-05-22 |
+| **v0.9 M6** | Public-ready docs — README · ROADMAP · STATUS · Makefile · install-menu · anonymization | ✅ Complet | 2026-05-23 |
 
 ---
 
-## Hook Layer — v0.2.0 COMPLET (2026-05-16)
-
-**Tous les composants déployés sur GitHub :**
-
-| Fichier | Commit | Description |
-|---|---|---|
-| `core/hooks/__init__.py` | `4e1a18a` | Exports propres |
-| `core/hooks/hook_types.py` | `d1647da` | TypedDict partagés |
-| `core/hooks/pre_intent_hook.py` | `5fffd74` | 9 domaines, scoring multi-match, hook_id UUID, timestamp ISO-8601 |
-| `core/hooks/pre_execution_hook.py` | `9b8782d` | risk_hint calculé, estimated_tokens (1.3 token/char) |
-| `core/hooks/post_execution_hook.py` | `275b8a6` | quality_score 4 critères, schema validation optionnelle |
-| `core/hooks/tests/test_hooks.py` | `300ee04` | 25 tests pytest |
-| `usage_observer.workflow.ts` | `5f9c57b` | Signal TERMINATE, max_runs, return structuré |
-| `skill_eval.workflow.ts` | `0f4d883` | eval-lab Phase 5, EvalSummary, budget par phase |
-| `activities/usage_observer.activities.ts` | `eee49eb` | readHookLogs (checkpoint), aggregateStats, writeUsageStats |
-| `activities/skill_eval.activities.ts` | `9fd035c` | runCliContracts, runEvalLabScenarios, writeEvalResults |
-| `activities/index.ts` | `be0b762` | Barrel exports (sans types fantômes) |
-| `scripts/start_worker.ts` | `6152ac8` | Temporal worker — enregistre tous workflows et activities |
-| `scripts/hook_stats.py` | `9749338` | CLI /tk:hook-stats — tableau Markdown agrégé |
-| `tsconfig.json` | `41a36e9` | CommonJS — résout ESM/ts-node conflict |
-| `workflows/index.ts` | `8b0616d` | Barrel obligatoire pour workflowsPath |
-| **docker-compose.yml** | `8b0616d` | postgres12 + temporal-db + tags fixés |
-| **MainBrain v1.5** | `c1017e4` | Étapes 0 (Pre-Intent), 2.5 (Pre-Execution), 7bis (Post-Execution) câblées |
-
-**KI-004 RÉSOLU (2026-05-16)** : Worker Temporal confirmé RUNNING en local.
+## Tests
 
 ```
-state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
+Total     : 485 PASS — 0 FAIL — 15 skipped (live)
+Commit HEAD : e425e29 (avant session 2026-05-23)
 ```
 
 ---
 
 ## Statut des plugins
 
-| Plugin | Statut | Priorité |
+| Plugin | Statut | Version |
 |---|---|---|
-| cli-forge | ✅ Scaffold + github-goat + source-watch-goat (dry_run_validated) | S |
-| workflow-engine | ✅ Scaffold + source_watch + usage_observer v0.2.0 + skill_eval v0.2.0 + activities + worker RUNNING | S |
-| deep-research-core | ✅ Pipeline complet validé : collect+dedup+score+export+index_qdrant — tests live prêts | S |
-| hook-layer | ✅ v0.2.0 COMPLET — core/hooks/ (7 fichiers, 25 tests) + activities (2 fichiers) + worker + hook_stats | S |
-| memory-boot | 🔲 À migrer v0.8 | S |
-| token-hygiene | 🔲 À migrer v0.8 | S |
-| agents-standard | 🔲 À créer | A |
-| skill-registry | 🔲 À créer | A |
-| repo-pack | 🔲 À migrer v0.8 | A |
-| usage-observer | ✅ v0.2.0 — activities implémentées, worker RUNNING | A |
-| eval-lab | ✅ Phase 5 — eval_runner Typer complet + baseline_store + regression_checker + tests | A |
-| obsidian-agent-layer | ✅ Phase 5 — vault_router + note_builder + obsidian_client | B |
-| security-audit-cli | ✅ Phase 5 — security_runner Typer complet (audit, check-anon, scan-secrets) | B |
+| cli-forge | ✅ Actif | — |
+| workflow-engine | ✅ Actif — worker RUNNING | — |
+| deep-research-core | ✅ Actif — tests live PASS | — |
+| hook-layer | ✅ Actif v0.2.0 | v0.2.0 |
+| memory-boot | ✅ Migré v0.8 | v0.8 |
+| token-optimizer | ✅ Migré v0.8 | v0.8 |
+| connector-hub | ✅ Actif | v0.1.0 |
+| eval-lab | ✅ Actif | — |
+| obsidian-agent-layer | ✅ Actif (34 tests) | — |
+| security-audit-cli | ✅ Actif (16 tests) | — |
+| graphify | 🧪 WIP | — |
 
 ---
 
@@ -85,126 +67,56 @@ state: RUNNING | taskQueue: tricorderkit-hooks | activities: 6
 
 | Service | Statut |
 |---|---|
-| Neo4j | ✅ Actif via Docker Compose |
-| Qdrant | ✅ Actif via Docker Compose |
-| Langfuse | ✅ Actif sur :3001 (3000 réservé Docker Desktop — résolu commit 0fae3ed) |
-| Temporal | ✅ RUNNING — worker actif sur tricorderkit-hooks |
-| graph-server MCP | ✅ ping / store / relate / retrieve opérationnels |
-| QualityGuard | ✅ Semgrep 1.162.0 + Trivy 0.70.0 + Gitleaks 8.30.1 |
-| error_memory SQLite | ✅ SHA-256 + block-check actif |
-| Hook logs | ✅ .cache/hooks/pre_execution.log + post_execution.log (JSON-lines) |
+| Neo4j | ✅ Actif :7474/7687 |
+| Qdrant | ✅ Actif :6333 |
+| Langfuse | ✅ Actif :3001 |
+| Temporal | ✅ RUNNING — worker `tricorderkit-hooks` |
+
+---
+
+## Architecture linked_projects
+
+```text
+TricorderKit    = moteur générique anonymisé (public)
+MangaTracker    = linked_project — CLIs, pipelines, skills, agents (privé)
+Japan-Alliance  = vault Obsidian pur — données uniquement (privé)
+```
+
+Règle d'or : **TricorderKit exécute. Le projet lié spécialise. Le vault stocke.**
 
 ---
 
 ## Blockers actifs
 
-*Aucun blocker actif — KI-003 résolu le 17/05/2026 (voir section Bugs résolus)*
+Aucun.
 
 ---
 
-## Bugs résolus récents
+## Pre-push checklist (avant git push public)
 
-| ID | Description | Commit | Date |
-|---|---|---|---|
-| ERR-T-001 | UUID Qdrant invalide (chars non-hex) → SHA-1 hex pur | — | 2026-05-13 |
-| ERR-T-002 | `${CLAUDE_PLUGIN_ROOT}` → chemin absolu + `datetime.utcnow()` → `datetime.now(timezone.utc)` | `40d3166` | 2026-05-15 |
-| KI-004 | Temporal worker : tsconfig CommonJS + DB postgres12 + workflows/index.ts barrel + docker rm containers orphelins | `8b0616d` | 2026-05-16 |
-| KI-003 | GitHub MCP déprécié → migration `ghcr.io/github/github-mcp-server` (Docker officiel) — `get_me` ✅ | — | 2026-05-17 |
-
----
-
-## Architecture linked_projects (Phase 6 + 6.5 — 2026-05-17)
-
-```text
-TricorderKit    = moteur générique anonymisé
-MangaTracker    = linked_project assistant IA (GeekFamilyCorp/MangaTracker — privé)
-                  → CLIs Python, pipelines, skills, agents, workflows
-Japan-Alliance  = vault Obsidian pur (GeekFamilyCorp/Japan-Alliance — privé)
-                  → Données uniquement, pas de code exécutable
-                  → Accessible en lecture aux LLMs via token GitHub
-                  → Vocation future : site web
 ```
-
-**Migration Phase 6.5 (2026-05-17) :**
-```text
-Code migré depuis Japan-Alliance → MangaTracker :
-  tools/mangatracker-cli/    → MangaTracker/tools/mangatracker-cli/
-  tools/jp-scraper/          → MangaTracker/tools/jp-scraper/
-  plugins/deep-research-core/ → MangaTracker (skills + pipelines)
-  skills/                     → MangaTracker/skills/
-
-Japan-Alliance nettoyé — ne conserve que :
-  vault/           → notes Obsidian (mangas, animés, LN, jeux, seiyû...)
-  templates/       → templates de fiches
-  README.md        → déclaration vault-only
-  CONTEXT.md       → guide navigation LLM (Claude/ChatGPT/Perplexity/Qwen)
-```
-
-Lien local déclaré dans :
-  configs/local/linked_projects.yaml (non versionné — chemins réels)
-  configs/local/linked_projects.example.yaml (versionné — template)
-
-Règle d'or :
-  **TricorderKit exécute. MangaTracker spécialise. Japan-Alliance stocke.**
-
----
-
-## Rang S — Complétés (2026-05-17)
-
-| Item | Statut | Commit |
-|---|---|---|
-| Migration japan-alliance (Phase 6) | ✅ | commits précédents |
-| Restructuration JA → vault pur + MangaTracker agent (Phase 6.5) | ✅ | 2026-05-17 |
-| Langfuse port 3001 | ✅ | 0fae3ed |
-| configs/local/linked_projects.yaml | ✅ | local only |
-| Tests live deep-research | ✅ MangaDex + AniList — Jikan 504 non bloquant | — |
-| CLI tk v0.1.0 : status / doctor / project list | ✅ | 716268b |
-| docs/linked_projects.md | ✅ | 5acec97 |
-| templates/linked_project_template/ | ✅ | 5acec97 |
-| project_config/ Japan-Alliance | ✅ | d8f8696 |
-| tools/audit/ (2 scripts) | ✅ | 5acec97 |
-| CLI tk v0.2.0 : 8 nouvelles commandes + --format | ✅ | 5acec97 |
-| Push TricorderKit + Japan-Alliance GitHub | ✅ | TK: 5acec97 / JA: d8f8696 |
-
-## Rang A — Complétés (2026-05-17)
-
-| Item | Statut | Commit |
-|---|---|---|
-| configs/shared/defaults.yaml + local/settings.yaml + vps/settings.yaml | ✅ | 1f4b802 |
-| .planning/DECISIONS.md — DEC-010 + DEC-011 | ✅ | 1f4b802 |
-| reports/local_first_audit_2026-05-17.md | ✅ | 1f4b802 |
-| KI-003 — migration GitHub MCP → `ghcr.io/github/github-mcp-server` | ✅ | — (config locale) |
-| README.md v0.8 + badges + What's New | ✅ | 1f4b802 |
-| CHANGELOG.md — entrée [0.8.0] complète | ✅ | 1f4b802 |
-
-## Rang B — Complétés (2026-05-17)
-
-| Item | Statut | Commit | Couverture |
-|---|---|---|---|
-| tests/test_cli_local.py | ✅ 36/36 PASS | 3c154d2 | CLI tk : toutes commandes, encoding, JSON contract |
-| tests/test_linked_project.py | ✅ 42/42 PASS | 3c154d2 | linked_project_audit + local_vs_github_audit |
-| plugins/connector-hub/ v0.1.0 | ✅ | 3c154d2 | list / status / dispatch — 19 sources, routing CLI |
-
-## Statut global v0.8 — COMPLET
-
-```text
-Toutes les phases (0→6.5) + Rang S + Rang A + Rang B : DONE
-Tests : 36 (CLI tk) + 42 (audit) + 25 (hooks) = 103 tests pytest verts
-Commit TricorderKit HEAD : (post 3c154d2 — update STATE + linked_projects.example.yaml)
-```
-
-## Prochaine session recommandée
-
-```text
-v0.9 — À définir :
-  ⬜ Wiring Temporal → connector_hub.dispatch (déclenchement workflow source_watch)
-  ⬜ Obsidian goat CLI (cli-forge)
-  ⬜ /tk:boot wiring commande .claude/commands/
-  ⬜ MangaTracker Phase 1 — wiring CLIs + skills avec TricorderKit
-  ⬜ Japan-Alliance Phase 1 — déploiement vault Obsidian (structure + premières fiches)
-  ⬜ Migrer memory-boot + token-hygiene → v0.8
+[ ] tk security check-anon → [OK]
+[ ] git grep "Users\<username>" → 0 résultats (hors configs/local/)
+[ ] git grep "<nom-projet-lié>" → 0 résultats hors docs/ et .planning/
+[ ] .env absent du diff
+[ ] vault/*.json absent du diff (gitignored)
+[ ] configs/local/ absent du diff (gitignored)
+[ ] CHANGELOG.md entrée [0.9.0] ajoutée
+[ ] make test → 0 FAIL
 ```
 
 ---
 
-*Dernière mise à jour : 17/05/2026 — v0.8 COMPLET (Phase 6.5) — 103 tests verts — Japan-Alliance = vault pur, MangaTracker = agent CLI*
+## Prochaines actions recommandées
+
+```text
+1. [COMMIT]   git add -A && git commit -m "feat: v0.9 public-ready — docs + anonymization + install"
+2. [TEST]     make test → vérifier 0 FAIL
+3. [SECURITY] tk security check-anon → [OK]
+4. [PUSH]     git push origin main
+5. [NEXT]     v0.9 M7 optionnel : VPS deployment (DEC-011 — local-first maintenu)
+```
+
+---
+
+*Dernière mise à jour : 2026-05-23 — v0.9 Public-ready COMPLET — 485 tests, 0 FAIL*

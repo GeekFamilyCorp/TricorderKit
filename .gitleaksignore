@@ -1,0 +1,5 @@
+# TricorderKit -- Gitleaks ignore list
+# Fichiers locaux confirmes non commites (jamais dans git history)
+
+# LANGFUSE_SECRET_KEY dans .env -- fichier local, jamais commite, gitignore actif
+C:/Users/sebas/Documents/Claude/Projects/TricorderKit Autonome/.env:generic-api-key:11

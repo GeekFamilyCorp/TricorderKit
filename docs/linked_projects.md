@@ -1,4 +1,4 @@
-# Convention linked_project — TricorderKit v0.8
+# Convention linked_project — TricorderKit v0.9
 
 > Règle fondamentale : **TricorderKit exécute. Le projet lié spécialise.**
 
@@ -101,16 +101,16 @@ Ce fichier contient les chemins réels de la machine. Il est dans `.gitignore`.
 tricorderkit_root: C:/Users/<user>/Documents/Projects/TricorderKit
 
 linked_projects:
-  - id: japan-alliance
-    name: Japan Alliance
+  - id: my-domain-project
+    name: My Domain Project
     type: private_project
     visibility: private
-    domain: manga_anime_japan_popculture
-    github_repo: GeekFamilyCorp/Japan-Alliance
-    root: C:/Users/<user>/Documents/Projects/Japan-Alliance
+    domain: your_domain_here
+    github_repo: your-org/your-private-repo
+    root: C:/Users/<user>/Documents/Projects/MyDomainProject
     enabled: true
     paths:
-      vault: japan-alliance_vault/
+      vault: my-project_vault/
       tools: tools/
       pipelines: pipelines/
       sources: pipelines/sources/
@@ -157,7 +157,7 @@ La communication passe exclusivement par :
 - **workflows déclarés** : fichiers `.yml` dans `linked_project/workflows/`
 - **connecteurs explicites** : déclarés dans `project_config/`
 
-Japan-Alliance ne modifie jamais le cœur TricorderKit directement.
+Le linked_project ne modifie jamais le cœur TricorderKit directement.
 
 ---
 
@@ -168,19 +168,19 @@ Japan-Alliance ne modifie jamais le cœur TricorderKit directement.
 tk project list
 
 # État d'un projet lié
-tk project status japan-alliance
+tk project status my-domain-project
 
 # Audit complet d'un projet lié
-tk project audit japan-alliance
+tk project audit my-domain-project
 
 # Scan du vault d'un projet lié
-tk project vault scan japan-alliance
+tk project vault scan my-domain-project
 
 # Lister les workflows d'un projet lié
-tk project workflow list japan-alliance
+tk project workflow list my-domain-project
 
 # Rapport complet
-tk project report japan-alliance
+tk project report my-domain-project
 ```
 
 Toutes les commandes supportent `--format json` ou `--format md`.
@@ -192,7 +192,7 @@ Toutes les commandes supportent `--format json` ou `--format md`.
 Utiliser le template inclus dans TricorderKit :
 
 ```bash
-cp -r templates/linked_project_template/ ../mon-nouveau-projet
+cp -r examples/linked-project-template/ ../mon-nouveau-projet
 ```
 
 Puis :
@@ -208,13 +208,13 @@ Puis :
 
 ```bash
 # Audit local complet du projet lié
-tk project audit japan-alliance
+tk project audit my-domain-project
 
 # Audit diff local vs GitHub
-python tools/audit/local_vs_github_audit.py --project japan-alliance
+python tools/audit/local_vs_github_audit.py --project my-domain-project
 
 # Audit structure et cohérence
-python tools/audit/linked_project_audit.py --project japan-alliance
+python tools/audit/linked_project_audit.py --project my-domain-project
 ```
 
 ---
@@ -229,4 +229,28 @@ Si c'est long, distant ou persistant      → VPS (optionnel)
 
 ---
 
-*TricorderKit v0.8 — 2026-05-17*
+---
+
+## 10. Template anonyme (public-safe)
+
+Pour créer un linked_project publiable ou partager sa structure sans données privées :
+
+```bash
+cp -r templates/linked_project_anon /path/to/new-project
+```
+
+Le template `linked_project_anon/` :
+- Contient uniquement des placeholders `[PROJECT_NAME]`, `[DOMAIN]`, etc.
+- Passe le scan `security-audit-cli` (aucun terme privé)
+- Inclut `CLAUDE.md`, `BOOT_SUMMARY.md`, `project_config/` et toute la structure
+- Est conçu pour être commité dans un repo public
+
+Valider après substitution des placeholders :
+
+```bash
+python plugins/security-audit-cli/security_runner.py --target /path/to/new-project
+```
+
+---
+
+*TricorderKit v0.9 — 2026-05-22*

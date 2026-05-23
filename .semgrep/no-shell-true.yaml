@@ -1,0 +1,80 @@
+rules:
+  # ─────────────────────────────────────────────────────────
+  # R001 — Interdit shell=True dans subprocess
+  # ─────────────────────────────────────────────────────────
+  - id: no-shell-true
+    patterns:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)
+    message: |
+      🔴 RISK-OS-001 : `shell=True` détecté dans un appel subprocess.
+      Cela permet une injection de commandes si les arguments proviennent
+      d'une source externe (webhook, scraper, payload Temporal).
+      FIX : Utilisez une liste d'arguments stricts :
+        subprocess.run(["python", "script.py", "--url", url])
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+      owasp: "A03:2021 - Injection"
+      tricorderkit_risk: RISK-OS-001
+
+  # ─────────────────────────────────────────────────────────
+  # R002 — Interdit os.system (toujours unsafe)
+  # ─────────────────────────────────────────────────────────
+  - id: no-os-system
+    pattern: os.system(...)
+    message: |
+      🔴 RISK-OS-002 : `os.system()` est interdit dans TricorderKit.
+      Il exécute une commande via le shell sans échappement.
+      FIX : Remplacez par subprocess.run(["cmd", "arg1", "arg2"])
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+      tricorderkit_risk: RISK-OS-002
+
+  # ─────────────────────────────────────────────────────────
+  # R003 — subprocess.run avec une string formatée (pas une liste)
+  # ─────────────────────────────────────────────────────────
+  - id: subprocess-string-arg
+    patterns:
+      - pattern: subprocess.run($CMD, ...)
+      - metavariable-pattern:
+          metavariable: $CMD
+          patterns:
+            - pattern: f"..."
+            - pattern: "..." + ...
+            - pattern: "...".format(...)
+            - pattern: "..." % ...
+    message: |
+      🟠 RISK-OS-003 : subprocess.run() reçoit une chaîne formatée au lieu d'une liste.
+      Si $CMD contient des données utilisateur, cela permet une injection.
+      FIX : subprocess.run(["python", "script.py", "--arg", variable])
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+      tricorderkit_risk: RISK-OS-003
+
+  # ─────────────────────────────────────────────────────────
+  # R004 — Détection SHA-1 utilisé pour des IDs (ex: Qdrant)
+  # ─────────────────────────────────────────────────────────
+  - id: no-sha1-for-ids
+    patterns:
+      - pattern: hashlib.sha1(...)
+      - pattern: hashlib.new("sha1", ...)
+    message: |
+      🟠 RISK-UUID-001 : hashlib.sha1() détecté pour générer un identifiant.
+      SHA-1 est vulnérable aux collisions sur grands volumes (ex: index Qdrant).
+      FIX : Utilisez uuid.uuid4() (aléatoire) ou uuid.uuid5(NAMESPACE, name) (déterministe + SHA-256).
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: correctness
+      cwe: "CWE-327: Use of Broken Cryptographic Algorithm"
+      tricorderkit_risk: RISK-UUID-001

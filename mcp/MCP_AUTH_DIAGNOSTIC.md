@@ -38,7 +38,7 @@ Localiser le fichier `utils.js` ou `index.js` du MCP dans le cache npx :
 C:\Users\<user>\AppData\Local\npm-cache\_npx\<hash>\node_modules\@modelcontextprotocol\server-<nom>\dist\
 
 # Exemple pour server-github :
-%USERPROFILE%\AppData\Local\npm-cache\_npx\3dfbf5a9eea4a1b3\node_modules\@modelcontextprotocol\server-github\dist\common\utils.js
+C:\Users\<username>\AppData\Local\npm-cache\_npx\3dfbf5a9eea4a1b3\node_modules\@modelcontextprotocol\server-github\dist\common\utils.js
 ```
 
 Chercher `process.env.` dans ce fichier pour trouver le **nom exact** attendu :
@@ -60,10 +60,10 @@ Sur **Claude Desktop Windows (MSIX)**, le vrai chemin du fichier config est :
 
 ```
 # ✅ Chemin réel (MSIX sandbox)
-%USERPROFILE%\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json
+C:\Users\<username>\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json
 
 # ❌ Chemin apparent (redirigé, ne reflète pas toujours l'état réel)
-%USERPROFILE%\AppData\Roaming\Claude\claude_desktop_config.json
+C:\Users\<username>\AppData\Roaming\Claude\claude_desktop_config.json
 ```
 
 Vérifier que la clé `env` contient **exactement** le nom trouvé à l'étape 1 :
@@ -180,8 +180,8 @@ Claude Desktop est packagé en MSIX sur Windows. Cela crée une **asymétrie de 
 
 | Vue | Chemin |
 |-----|--------|
-| Apparent (`%APPDATA%`) | `%USERPROFILE%\AppData\Roaming\Claude\` |
-| Réel (MSIX sandbox) | `%USERPROFILE%\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\` |
+| Apparent (`%APPDATA%`) | `C:\Users\<username>\AppData\Roaming\Claude\` |
+| Réel (MSIX sandbox) | `C:\Users\<username>\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\` |
 
 Les outils externes (scripts, PowerShell, outils tiers) **doivent utiliser le chemin réel** pour lire ou écrire la config.
 

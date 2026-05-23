@@ -2,8 +2,8 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-0.8-blue)](CHANGELOG.md)
-[![Status](https://img.shields.io/badge/phase-6%20linked__project-green)](/.planning/STATE.md)
+[![Version](https://img.shields.io/badge/version-0.9-blue)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/phase-9%20public--ready-green)](/.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
 
 ---
@@ -16,6 +16,7 @@ TricorderKit is an **Agentic Knowledge OS** — a local-first system that transf
 v0.6 definition : memory + skills + token hygiene + observability
 v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
 v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
+v0.9 definition : Supabase layer + Langfuse observability + obsidian-agent-layer + tk doctor + public-ready documentation
 ```
 
 It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
@@ -206,11 +207,26 @@ python tests/cli_contracts/test_github_goat.py
 
 ---
 
+## v0.9 — What's New vs v0.8
+
+See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
+
+- **Supabase layer** — PostgreSQL schema for structured domain data (7 tables, RLS, seed data); replaces raw Obsidian-only storage for relational entities
+- **Langfuse observability** — end-to-end token tracing via hooks (pre_intent → trace, pre/post_execution → span); no SDK dependency, REST-direct, Python 3.14 compatible
+- **obsidian-agent-layer** — `obsidian_runner.py` + `tk obsidian` commands; vault router + note builder with 34 tests
+- **security-audit-cli** — `security_runner.py` + `tk security`; secrets scan, anonymization check, dependency audit (16 tests)
+- **tk doctor** — unified health check: 14 checks (Python, Docker, 4 services, `.env`, 4 dirs, modules, linked_projects, secrets); `[OK]` / `[WARN]` / `[FAIL]` output
+- **tk rapport** — CLI status report from `BOOT_SUMMARY.md` + `STATUS.md` → `reports/status/latest_status.md` (JSON flag supported)
+- **Public-ready docs** — `INSTALL.md`, `examples/linked-project-template/`, `docs/linked_projects.md`, `docs/anonymization.md`, `ROADMAP.md`
+- **485 tests passing** — 0 FAIL (up from 174 at v0.9 M1)
+
+---
+
 ## v0.8 — What's New vs v0.7
 
 See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 
-- **linked_project architecture** — TricorderKit is now a generic engine; domain-specific content lives in separate private linked_projects (first: Japan-Alliance)
+- **linked_project architecture** — TricorderKit is now a generic engine; domain-specific content lives in separate private linked_projects (see `examples/linked-project-template/`)
 - **Hook layer v0.2** — Pre-Intent, Pre-Execution, Post-Execution hooks wired into MainBrain; 25 tests
 - **Quality loop** — eval-lab (eval_runner + baseline_store + regression_checker), security-audit-cli, obsidian-agent-layer
 - **CLI `tk`** — unified entrypoint: `tk status`, `tk health`, `tk skill list`, `tk workflow list`, `tk vault scan`, `tk research run --dry-run`, `tk project *`, `--format json|markdown` everywhere
@@ -230,7 +246,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 
 ---
 
-## Phase Roadmap (v0.8)
+## Phase Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for full details.
 
 | Phase | Name | Status | Completed |
 |---|---|---|---|
@@ -240,6 +258,12 @@ See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 | 4 | Deep Research | ✅ Complete | 16/05/2026 |
 | 5 | Quality loop (eval-lab, security) | ✅ Complete | 16/05/2026 |
 | 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
+| 7 | v0.9 — Orchestration + observability | ✅ Complete | 22/05/2026 |
+| 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 22/05/2026 |
+| 9 | VPS deployment (optional) | 🔲 Planned | — |
+| 10 | Multi-linked-project support | 🔲 Planned | — |
+| 11 | Plugin marketplace / registry | 🔲 Planned | — |
+| 12 | Community release | 🔲 Planned | — |
 
 ---
 
@@ -251,5 +275,5 @@ This is a personal/research project. If you fork it, please respect the atomic k
 
 ---
 
-*TricorderKit v0.8 — GeekFamilyCorp — 2026*  
+*TricorderKit v0.9 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*

@@ -22,9 +22,9 @@ Script interactif : configure l'environnement, copie `.env`, démarre Docker et 
 
 ```bash
 python scripts/install-menu.py
+# ou via make :
+make install
 ```
-
-> `scripts/install-menu.py` — à venir. En attendant, utiliser Option 2 ou Option 3.
 
 ---
 

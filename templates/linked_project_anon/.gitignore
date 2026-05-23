@@ -1,0 +1,25 @@
+# Sensitive local config — never commit
+project_config/local_overrides.yaml
+.env
+.env.local
+*.env
+
+# Private data
+sources/private/
+exports/private/
+project_logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

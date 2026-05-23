@@ -32,12 +32,10 @@ VERSION   = "0.1.0"
 CACHE_DB  = Path(os.environ.get("OBSIDIAN_GOAT_CACHE", ".cache/obsidian-goat.db"))
 CACHE_TTL = 300  # secondes
 
-# Chemins vaults depuis ENV ou defaults TricorderKit
+# Chemins vaults depuis ENV — configurer dans .env (aucun chemin hardcodé)
 VAULT_PATHS = {
-    "claude-vault":    os.environ.get("OBSIDIAN_VAULT_PATH",
-                                      r"%USERPROFILE%\Documents\Claude\claude-vault"),
-    "japan-alliance":  os.environ.get("OBSIDIAN_JAPAN_VAULT_PATH",
-                                      r"%USERPROFILE%\Documents\obsidian\Japan-Alliance"),
+    "claude-vault":    os.environ.get("OBSIDIAN_VAULT_PATH", ""),
+    "linked-project":  os.environ.get("OBSIDIAN_LINKED_VAULT_PATH", ""),
 }
 
 # Chemins standards dans le vault TricorderKit

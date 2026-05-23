@@ -45,9 +45,9 @@ Usage :
   python cli/tk.py report show
   python cli/tk.py research run "One Piece" --dry-run
   python cli/tk.py project list
-  python cli/tk.py project audit japan-alliance
-  python cli/tk.py project vault scan japan-alliance
-  python cli/tk.py project workflow list japan-alliance
+  python cli/tk.py project audit my-project
+  python cli/tk.py project vault scan my-project
+  python cli/tk.py project workflow list my-project
   python cli/tk.py security scan
   python cli/tk.py security audit --report
   python cli/tk.py security check-anon --path plugins/
@@ -1095,7 +1095,7 @@ def main():
     _add_format(p_pl)
 
     p_ps = pr_sub.add_parser("status", help="État d'un projet")
-    p_ps.add_argument("project_id", nargs="?", help="ID projet (ex: japan-alliance)")
+    p_ps.add_argument("project_id", nargs="?", help="ID projet (ex: my-project)")
     _add_format(p_ps)
 
     p_pa = pr_sub.add_parser("audit", help="Audit complet d'un projet")

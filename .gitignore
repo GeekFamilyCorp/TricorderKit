@@ -1,4 +1,4 @@
-# TricorderKit v0.7 — .gitignore
+# TricorderKit v0.9 — .gitignore
 
 # Environment
 .env
@@ -38,9 +38,17 @@ docker/volumes/
 Thumbs.db
 *.swp
 
-# Reports (générés localement)
-vault/reports/*.html
-vault/reports/*.json
+# Vault — session capsules et données privées
+vault/*.json
+vault/*.yaml
+vault/*.yml
+
+# Reports — générés localement, non versionnés
+reports/
+vault/reports/
+
+# Audit reports (fichiers générés ponctuellement)
+TricorderKit_Audit_*.md
 
 # Logs
 *.log

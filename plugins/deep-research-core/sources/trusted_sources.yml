@@ -1,5 +1,5 @@
-# trusted_sources.yml — TricorderKit deep-research-core / MangaTracker
-# Version: 0.3.0 — Sources officielles JP completes (2026-05-18)
+# trusted_sources.yml — TricorderKit deep-research-core
+# Version: 0.3.0 — Sources officielles actives (2026-05-18)
 # manga: MangaDex+Jikan (fetchers actifs) | anime: AniList+Jikan (fetchers actifs)
 # github: GitHub REST (fetcher actif) | autres domaines: stubs a implementer
 

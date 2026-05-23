@@ -1,0 +1,39 @@
+# sources.yaml — [PROJECT_NAME] domain-specific sources
+# Declare all sources specific to this project.
+# TricorderKit reads this via connector-hub.
+
+project_id: [PROJECT_ID]
+
+sources:
+  - id: source_primary
+    name: "[PRIMARY_SOURCE_NAME]"
+    url: "[PRIMARY_SOURCE_URL]"
+    type: rest_api          # rest_api | rss | graphql | web | file
+    reliability: high       # high | medium | low
+    language: en            # en | fr | ja | ...
+    update_frequency: daily # daily | weekly | monthly | realtime
+    requires_auth: false
+    notes: "Main data source for [DOMAIN]"
+
+  - id: source_secondary
+    name: "[SECONDARY_SOURCE_NAME]"
+    url: "[SECONDARY_SOURCE_URL]"
+    type: rss
+    reliability: medium
+    language: en
+    update_frequency: weekly
+    requires_auth: false
+    notes: ""
+
+  # Add more sources following the same structure:
+  # - id: source_N
+  #   name: "..."
+  #   url: "..."
+  #   type: rest_api | rss | graphql | web | file
+  #   reliability: high | medium | low
+
+access_policy:
+  allow_scraping: true
+  respect_robots_txt: true
+  rate_limit_rps: 1
+  user_agent: "TricorderKit-Research/0.9"

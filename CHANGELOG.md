@@ -4,7 +4,30 @@
 
 ---
 
-## [0.9.0] — 18/05/2026 — Orchestration M1+M2 + Japan-Alliance Phase 1
+## [0.9.1] — 23/05/2026 — Public-ready : docs, install, anonymisation
+
+### Ajouté
+- **ROADMAP.md** — fichier public à la racine, phases 1–12 (1–8 Complete, 9–12 Planned)
+- **scripts/install-menu.py** — wizard d'installation guidée (4 étapes : prérequis, .env, Docker, tk doctor)
+- **Makefile** — 11 targets : `install`, `doctor`, `health`, `test`, `test-all`, `lint`, `docker-up/down`, `validate`, `security`, `clean`
+- **docs/anonymization.md** — guide complet anonymisation avant push public + checklist + règle R17
+
+### Modifié
+- **README.md** — version 0.9, badge phase, section "v0.9 What's New", roadmap 12 phases
+- **STATUS.md** — ajout table modules (16 modules : stable / evolving / experimental)
+- **INSTALL.md** — `scripts/install-menu.py` désormais opérationnel (retrait "à venir")
+- **docs/linked_projects.md** — v0.9, exemples anonymisés (japan-alliance → my-domain-project)
+- **.gitignore** — `vault/*.json` et `reports/` gitignorés, version v0.9
+
+### Sécurité / Anonymisation
+- Suppression de tous les chemins `C:\Users\<username>` hardcodés dans les fichiers versionnés
+- Suppression des références au nom du linked_project dans le périmètre public (`cli/tk.py`, `connector_hub.py`, `pipeline_rtk_docmancer.py`, `obsidian_goat.py`, `dispatch_temporal.py`, `docmancer/SKILL.md`, `trusted_sources.yml`)
+- `mcp/MCP_AUTH_DIAGNOSTIC.md` — username anonymisé (`<username>`)
+- `templates/linked_project_template/` — exemples de config anonymisés
+
+---
+
+## [0.9.0] — 18/05/2026 — Orchestration M1+M2 + linked_project Phase 1
 
 ### Ajouté
 - **tk-orchestrator v0.3.0** — budget_guard phase 2 (DEC-006)
