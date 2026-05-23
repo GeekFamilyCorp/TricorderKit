@@ -81,10 +81,14 @@ def cache_set(conn: sqlite3.Connection, key: str, value: dict, ttl: int = CACHE_
 
 # ── Utilitaires vault ─────────────────────────────────────────────────────────
 def resolve_vault(vault_name: str) -> Path:
-    """Résout le chemin absolu d'un vault par nom."""
-    path_str = VAULT_PATHS.get(vault_name)
+    """Résout le chemin absolu d'un vault par nom.
+    Raises KeyError si vault_name inconnu, ValueError si chemin non configuré (ENV vide).
+    """
+    if vault_name not in VAULT_PATHS:
+        raise KeyError(f"Vault inconnu: '{vault_name}'. Disponibles: {list(VAULT_PATHS.keys())}")
+    path_str = VAULT_PATHS[vault_name]
     if not path_str:
-        raise ValueError(f"Vault inconnu: '{vault_name}'. Disponibles: {list(VAULT_PATHS.keys())}")
+        raise ValueError(f"Vault '{vault_name}' non configuré. Définir OBSIDIAN_VAULT_PATH dans .env")
     return Path(path_str)
 
 
@@ -153,14 +157,13 @@ def cmd_read_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
 
 def cmd_write_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     """Écrit ou remplace une note dans le vault."""
+    if dry_run:
+        return dry_run_report("write-note", [
+            f"WRITE {args.path}"
+        ], 100)
     vault_root = resolve_vault(args.vault)
     note_path  = resolve_note_path(vault_root, args.path)
     exists     = note_path.exists()
-
-    if dry_run:
-        return dry_run_report("write-note", [
-            f"{'OVERWRITE' if exists else 'CREATE'} {note_path}"
-        ], 100)
 
     if exists and not args.force:
         return build_output("error", "write-note", {
@@ -186,13 +189,12 @@ def cmd_write_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
 
 def cmd_update_hot_cache(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     """Met à jour le HOT_CACHE dans le vault TricorderKit (claude-vault)."""
-    vault_root = resolve_vault("claude-vault")
-    hot_cache  = resolve_note_path(vault_root, HOT_CACHE_PATH)
-
     if dry_run:
         return dry_run_report("update-hot-cache", [
-            f"WRITE {hot_cache}"
+            f"WRITE {HOT_CACHE_PATH}"
         ], 500)
+    vault_root = resolve_vault("claude-vault")
+    hot_cache  = resolve_note_path(vault_root, HOT_CACHE_PATH)
 
     hot_cache.parent.mkdir(parents=True, exist_ok=True)
 
@@ -219,26 +221,26 @@ def cmd_update_hot_cache(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
 
 def cmd_append_log(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     """Ajoute une entrée dans le Daily Log Obsidian."""
-    vault_root = resolve_vault("claude-vault")
-
-    # Déterminer la date
+    # 1. Déterminer et valider la date EN PREMIER (avant tout appel vault)
     if args.date:
         date_str = args.date
     else:
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-    # Valider le format date
     if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
         return build_output("error", "append-log", {
             "message": f"Format date invalide: '{date_str}'. Attendu: YYYY-MM-DD"
         })
 
-    log_path = resolve_note_path(vault_root, f"{DAILY_LOG_FOLDER}/{date_str}.md")
-
+    # 2. Dry-run APRÈS validation de date → on peut inclure la date dans le rapport
     if dry_run:
         return dry_run_report("append-log", [
-            f"APPEND to {log_path}"
+            f"APPEND to {DAILY_LOG_FOLDER}/{date_str}.md"
         ], 100)
+
+    # 3. Résolution vault uniquement si écriture réelle nécessaire
+    vault_root = resolve_vault("claude-vault")
+    log_path = resolve_note_path(vault_root, f"{DAILY_LOG_FOLDER}/{date_str}.md")
 
     # Créer le fichier si absent avec frontmatter minimal
     if not log_path.exists():
@@ -268,7 +270,15 @@ def cmd_append_log(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
 
 def cmd_check_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     """Vérifie l'existence d'une note dans le vault (anti-doublon R7)."""
-    vault_root = resolve_vault(args.vault)
+    try:
+        vault_root = resolve_vault(args.vault)
+    except KeyError as e:
+        return build_output("error", "check-note", {"message": str(e)})
+    except ValueError:
+        # Vault valide mais chemin non configuré (ENV vide) → on traite comme "n'existe pas"
+        return build_output("success", "check-note", {
+            "path": args.path, "vault": args.vault, "exists": False
+        })
     note_path  = resolve_note_path(vault_root, args.path)
     exists     = note_path.exists()
 

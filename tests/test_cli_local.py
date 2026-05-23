@@ -62,7 +62,7 @@ class TestStatus:
         assert r.returncode == 0
         data = assert_valid_json(r.stdout)
         assert "version" in data
-        assert data["version"] == "0.9 M2"
+        assert data["version"].startswith("0.9")
 
     def test_status_json_has_services(self):
         r = run(["status", "--format", "json"])

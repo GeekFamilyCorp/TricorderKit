@@ -39,6 +39,7 @@ _BINARY_EXTENSIONS = {
 _SKIP_DIRS = {
     ".git", "__pycache__", ".venv", "venv", "node_modules",
     ".mypy_cache", ".pytest_cache", ".ruff_cache", "dist", "build",
+    ".pytest_tmp", "reports",
 }
 
 
@@ -93,16 +94,45 @@ class AnonCheckResult:
         }
 
 
+# Fichier d'exclusion (pattern glob, un par ligne, # = commentaire)
+_IGNORE_FILE = ".check-anon-ignore"
+
+
+def _load_ignore_patterns(root: Path) -> list[str]:
+    """Charge les patterns d'exclusion depuis .check-anon-ignore à la racine."""
+    ignore_path = root / _IGNORE_FILE
+    if not ignore_path.exists():
+        return []
+    lines = ignore_path.read_text(encoding="utf-8").splitlines()
+    return [l.strip() for l in lines if l.strip() and not l.startswith("#")]
+
+
+def _is_ignored(file_path: Path, root: Path, patterns: list[str]) -> bool:
+    """Vérifie si un fichier correspond à un pattern d'exclusion."""
+    import fnmatch
+    relative = file_path.relative_to(root)
+    rel_str  = str(relative).replace("\\", "/")
+    for pattern in patterns:
+        if fnmatch.fnmatch(rel_str, pattern):
+            return True
+        if fnmatch.fnmatch(file_path.name, pattern):
+            return True
+    return False
+
+
 # -- Itérateurs de fichiers ---------------------------------------------------
 
 def _iter_files(root: Path) -> Iterator[Path]:
     """Itère récursivement sur les fichiers texte d'un répertoire."""
+    ignore_patterns = _load_ignore_patterns(root)
     for path in root.rglob("*"):
         if not path.is_file():
             continue
         if any(part in _SKIP_DIRS for part in path.parts):
             continue
         if path.suffix.lower() in _BINARY_EXTENSIONS:
+            continue
+        if ignore_patterns and _is_ignored(path, root, ignore_patterns):
             continue
         yield path
 
