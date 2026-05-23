@@ -1,6 +1,29 @@
-# STATUS.md — TricorderKit Plugins
-> Généré automatiquement — v0.9 — 2026-05-22
-> Source : BOOT_SUMMARY.md (section "Plugins actifs") + scan `plugins/`
+# STATUS.md — TricorderKit v0.9
+> Mis à jour : 2026-05-23
+> Source : BOOT_SUMMARY.md + scan `plugins/` + audit session
+
+---
+
+## Modules core
+
+| Module | Stabilité | Description |
+|---|---|---|
+| `core/mainbrain` | ✅ Stable | Algorithme de décision MainBrain v1.5 |
+| `core/contracts` | ✅ Stable | Schémas JSON contractuels (skill output) |
+| `core/hooks` | ✅ Stable | Hook layer v0.2 (Pre-Intent / Pre-Execution / Post-Execution) |
+| `cli/tk.py` | ✅ Stable | CLI unifiée — tk status / health / doctor / skill / workflow / vault / research / project / security / obsidian / rapport |
+| `plugins/workflow-engine` | 🔄 Evolving | Temporal workflows + activities + worker (wiring connector-hub en cours) |
+| `plugins/deep-research-core` | ✅ Stable | Pipeline recherche autonome (RSS, web, APIs) |
+| `plugins/cli-forge` | 🔄 Evolving | Générateur CLI déterministe — tests partiels |
+| `plugins/eval-lab` | 🔄 Evolving | Quality loop — eval_runner + regression_checker |
+| `plugins/connector-hub` | 🔄 Evolving | Hub de connexion services (Temporal wiring en cours) |
+| `plugins/hook-layer` | ✅ Stable | Hooks câblés dans MainBrain + 25 tests |
+| `plugins/obsidian-agent-layer` | 🔄 Evolving | Vault router + note builder — 34 tests |
+| `plugins/security-audit-cli` | ✅ Stable | Secrets scan + anonymization check + dep audit |
+| `plugins/memory-boot` | 🔄 Evolving | Boot de session — migration v0.8 complète |
+| `plugins/token-optimizer` | ✅ Stable | Budget guard + router + caveman mode |
+| `plugins/graphify` | 🧪 Experimental | Hybrid Neo4j + Qdrant — WIP |
+| `supabase/` | 🔄 Evolving | Schéma PostgreSQL domain data (7 tables, RLS) |
 
 ---
 
@@ -30,6 +53,14 @@
 | ⚠️ | Partiel — manque tests ou docs |
 | 🔧 | WIP — pas encore dans Plugins actifs |
 
+### Stabilité modules
+
+| Symbole | Signification |
+|---|---|
+| ✅ Stable | Interface figée, tests complets, docs à jour |
+| 🔄 Evolving | Fonctionnel mais en évolution active (tests ou docs partiels) |
+| 🧪 Experimental | Prototype — interface susceptible de changer |
+
 **Production-ready** = Statut actif + au moins CLI ou Tests + Docs.
 
 ---
@@ -43,4 +74,4 @@
 
 ---
 
-*Auto-généré — TricorderKit v0.9 M4 — 2026-05-22*
+*TricorderKit v0.9 — 2026-05-23 — 485 tests PASS, 0 FAIL*

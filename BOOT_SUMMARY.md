@@ -9,9 +9,9 @@
 
 | Champ | Valeur |
 |---|---|
-| Version | **v0.9** (M1→M5 COMPLETS — security-audit-cli + obsidian-agent-layer ✅) |
+| Version | **v0.9** (M1→M5 COMPLETS + public-ready docs ✅) |
 | Commit HEAD | `e425e29` |
-| Dernière session | 2026-05-22 |
+| Dernière session | 2026-05-23 |
 | Tests | **485 PASS** (451+34 nouveaux : obsidian_agent_layer×34), 15 skipped (live) |
 | Blockers actifs | Aucun |
 
@@ -36,6 +36,17 @@
 3. `⬜` VPS deployment — optionnel — DEC-011 : local-first maintenu, VPS extension future
 
 
+### Complété session v0.9 Public-ready ✅ (2026-05-23)
+- **ROADMAP.md** — créé à la racine (phases 1–12, 1–8 Complete)
+- **Makefile** — créé (11 targets : install, doctor, test, lint, docker-up/down, security…)
+- **scripts/install-menu.py** — créé (wizard guidé 4 étapes)
+- **docs/anonymization.md** — créé (guide complet + checklist pré-push + R17)
+- **README.md** — badge v0.9, section v0.9 What's New, roadmap 12 phases
+- **STATUS.md** — table modules stable/evolving/experimental (16 lignes)
+- **docs/linked_projects.md** — v0.9, exemples JA → my-domain-project
+- **.gitignore** — vault/*.json protégés, reports/ gitignored, version v0.9
+- **Anonymisation** — 11 fichiers nettoyés (chemins sebas + refs JA retirés du périmètre public)
+
 ### Complété session v0.9 M4 ✅ (2026-05-22)
 - **STATUS.md** — Dashboard plugins 10 lignes × 5 colonnes (CLI/Tests/Docs/Production-ready)
 - **tk rapport** — commande CLI : lit BOOT_SUMMARY.md + STATUS.md → `reports/status/latest_status.md` (+ `--json`) · 8 tests PASS
@@ -50,7 +61,7 @@
 
 ### Complété session v0.9 M2 ✅ (session 1/2)
 - **S1** — connector_hub `--temporal` opérationnel (dry_run ✅, workflow_id déterministe)
-- **A2** — Supabase schema Japan-Alliance (29 tests ✅) — 7 tables, RLS complet, seed 10 publishers
+- **A2** — Supabase schema linked_project (29 tests ✅) — 7 tables, RLS complet, seed 10 publishers
 - **B1** — Skills token-savior + claude-code-router (19 tests ✅)
 
 ### Complété session v0.9 M3+M4 ✅ (2026-05-22)
@@ -101,7 +112,7 @@
 | Code | Résumé |
 |---|---|
 | DEC-011 | VPS extension optionnelle future — local-first maintenu |
-| DEC-010 | linked_project : TricorderKit exécute, Japan-Alliance spécialise |
+| DEC-010 | linked_project : TricorderKit exécute, le projet lié spécialise |
 | DEC-009 | Graphify hybride Neo4j + Qdrant |
 | DEC-008 | LangGraph < 30s / Temporal > 30s |
 

@@ -1,10 +1,10 @@
 # project.yaml — Configuration métier du linked_project
 # Remplacer toutes les valeurs [PLACEHOLDER] avant utilisation
 
-project_id: [PROJECT_ID]          # ex: japan-alliance
-project_name: [PROJECT_NAME]      # ex: Japan Alliance
+project_id: [PROJECT_ID]          # ex: my-domain-project
+project_name: [PROJECT_NAME]      # ex: My Domain Project
 visibility: private
-domain: [DOMAIN]                  # ex: manga_anime_japan_popculture
+domain: [DOMAIN]                  # ex: my_domain_category
 tricorderkit_profile: local_first
 default_language: fr
 

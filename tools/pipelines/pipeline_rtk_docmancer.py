@@ -18,7 +18,7 @@ Options:
   --query      Terme de recherche
   --domain     manga | anime (défaut: manga)
   --note-type  Forcer le type de note (manga | anime | mangaka | studio | note)
-  --vault      "tricorderkit" | "japan-alliance" (défaut: japan-alliance)
+  --vault      "tricorderkit" | "linked-project" (défaut: linked-project)
   --dry-run    Simule sans écrire dans le vault
   --json       Sortie JSON résumé
   --skip-collect  Utiliser un fichier de résultats existant (--input)
@@ -392,7 +392,7 @@ def run_pipeline(
     query: str,
     domain: str = "manga",
     note_type: Optional[str] = None,
-    vault: str = "japan-alliance",
+    vault: str = "linked-project",
     dry_run: bool = True,
     skip_collect: bool = False,
     input_file: Optional[Path] = None,
@@ -450,7 +450,7 @@ def main():
     parser.add_argument("--query", required=True)
     parser.add_argument("--domain", default="manga", choices=["manga", "anime", "publishers", "github"])
     parser.add_argument("--note-type", default=None)
-    parser.add_argument("--vault", default="japan-alliance", choices=["japan-alliance", "tricorderkit"])
+    parser.add_argument("--vault", default="linked-project", choices=["linked-project", "tricorderkit"])
     parser.add_argument("--dry-run", action="store_true", default=True)
     parser.add_argument("--no-dry-run", dest="dry_run", action="store_false")
     parser.add_argument("--json", action="store_true")

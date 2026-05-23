@@ -610,7 +610,7 @@ def main() -> None:
     p_dispatch = sub.add_parser("dispatch", parents=[fmt_parent],
                                  help="Déclencher l'ingestion d'une ou plusieurs sources")
     p_dispatch.add_argument("--source", "-s", default=None,
-                            help="ID ou type de source (ex: mangadex, japan-alliance_source_1)")
+                            help="ID ou type de source (ex: mangadex, my-project_source_1)")
     p_dispatch.add_argument("--all", "-a", action="store_true",
                             help="Dispatcher toutes les sources actives")
     p_dispatch.add_argument("--dry-run", action="store_true",

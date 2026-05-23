@@ -30,7 +30,7 @@ REPO_ROOT           = Path(__file__).resolve().parent.parent.parent.parent
 TEMPORAL_ADDRESS    = os.environ.get("TEMPORAL_ADDRESS",    "localhost:7233")
 TEMPORAL_NAMESPACE  = os.environ.get("TEMPORAL_NAMESPACE",  "default")
 TEMPORAL_TASK_QUEUE = os.environ.get("TEMPORAL_TASK_QUEUE", "tricorderkit-hooks")
-OBSIDIAN_VAULT      = os.environ.get("OBSIDIAN_VAULT_PATH", r"C:\Users\sebas\Documents\Claude\claude-vault")
+OBSIDIAN_VAULT      = os.environ.get("OBSIDIAN_VAULT_PATH", "")
 
 # Workflow IDs déterministes (idempotence Temporal)
 WORKFLOW_IDS = {

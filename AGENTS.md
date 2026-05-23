@@ -186,3 +186,79 @@ configs/       → shared/defaults.yaml | local/settings.yaml | local/linked_pro
 ---
 
 *Version 0.8 — 2026-05-18 — Workflow Standard v1.0 + MainBrain v1.5 + Caveman Protocol*
+
+
+---
+
+## Token Hygiene Rules
+
+> Ajoutées 2026-05-23 — depuis capsule session 21-05-26.
+
+### Règle H1 — Rotation de session obligatoire
+Ouvrir un nouveau fil de conversation toutes les 15 à 20 messages.
+Avant de fermer : générer un `session_capsule.json` compact via `/tk:pack-context`.
+Coller la capsule en premier message du nouveau fil.
+
+### Règle H2 — Éditer, ne jamais répondre en dessous
+Si une réponse est incorrecte ou incomplète, utiliser le bouton "Éditer" sur le message original.
+Ne jamais ajouter une correction dans un message suivant : cela empile le contexte inutilement.
+
+### Règle H3 — Batch des instructions
+Regrouper toutes les demandes liées dans un seul message.
+Trois instructions distinctes = un seul message groupé, pas trois échanges séparés.
+
+### Règle H4 — Réponses courtes par défaut
+Sauf demande explicite de détail, produire des réponses en 3 points maximum.
+Pas d'introduction, pas de reformulation de la question, directement la réponse.
+
+### Règle H5 — Extended Thinking désactivé par défaut
+Ne jamais activer Extended Thinking pour :
+- Remplissage de fiches (manga, anime, LN, seiyū, studio, etc.)
+- Recherche web simple
+- Comparaisons de données factuelles
+- Génération de fichiers à partir d'un template
+
+Activer Extended Thinking uniquement pour : raisonnement architectural complexe, débogage multi-fichiers, analyse de régression.
+
+---
+
+## Template Routing — Chargement conditionnel
+
+**NE PAS charger un template complet si la requête ne contient pas de mot-clé déclencheur.**
+Charger uniquement le template demandé, pas tous les templates du Space.
+
+| Template | Mots-clés déclencheurs |
+|---|---|
+| `Template_Fiche_Manga_Expert_v1.0.md` | manga, tankōbon, sérialisation, chapitre, volume manga |
+| `Template_Fiche_LightNovel_Expert_v1.0.md` | light novel, LN, roman léger, ラノベ, syosetu |
+| `Template_Fiche_Volume_Manga_Expert_v1.0.md` | volume manga, tome manga, fiche volume |
+| `Template_Fiche_Volume_LN_Expert_v1.0.md` | volume LN, tome LN, fiche volume light novel |
+| `Template_Fiche_Anime_Expert_v1.0.md` | anime, adaptation animée, saison anime, cour |
+| `Template_Fiche_Saison_Cour_Anime_Expert_v1.0.md` | saison, cour, simulcast, épisodes, diffusion |
+| `Template_Fiche_Seiyu_Expert_v1.0.md` | seiyū, doubleur, VA, voice actor, 声優 |
+| `Template_Fiche_Singer_Expert_v1.0.md` | chanteur, singer, artiste musical, OP, ED, opening, ending |
+| `Template_Fiche_Studio_Animation_Expert_v1.0.md` | studio, studio d'animation, production |
+| `Template_Fiche_Staff_Anime_Expert_v1.0.md` | staff, réalisateur, character design, série composition |
+| `Template_Fiche_Source_Expert_v1.0.md` | source, œuvre source, adaptation originale |
+| `Template_Fiche_Magazine_Platform_Expert_v1.0.md` | magazine, platform, Weekly Shonen, revue, sérialisation |
+| `Template_Fiche_Label_LN_Expert_v1.0.md` | label LN, label light novel, collection LN |
+| `Template_Fiche_Label_Musical_Expert_v1.0.md` | label musical, label musique, maison de disques |
+| `Template_Fiche_Lieu_Expert_v1.0.md` | lieu, localisation, quartier, ville japonaise, lieu de tournage |
+| `Template_Fiche_Quartier_Otaku_Expert_v1.0.md` | Akihabara, Nakano, Ikebukuro, quartier otaku, district |
+| `Template_Fiche_Musee_Exposition_Expert_v1.0.md` | musée, exposition, galerie, exhibition |
+| `Template_Fiche_Prix_Classement_Expert_v1.0.md` | prix, award, classement, palmarès, ranking |
+| `Template_Fiche_Produit_Goodie_Expert_v1.0.md` | goodie, produit dérivé, figurine, merchandise, merch |
+| `Template_Fiche_Personnage_Expert_v1.0.md` | personnage, character, protagoniste, antagoniste |
+| `Template_Fiche_Console_Platform_Expert_v1.0.md` | console, plateforme, Switch, PS5, handheld, arcade |
+| `Template_Fiche_Manga_v0.9.md` | **DÉPRÉCIÉ** — utiliser `Template_Fiche_Manga_Expert_v1.0.md` |
+
+### Règle de chargement
+1. Scanner la requête pour identifier le mot-clé déclencheur.
+2. Charger uniquement le(s) template(s) correspondant(s).
+3. Si aucun mot-clé → ne charger aucun template, travailler en mode libre.
+4. Si le template nécessaire n'est pas identifiable → demander clarification.
+5. Jamais charger plus d'un template à la fois sauf si la tâche porte explicitement sur plusieurs entités de types différents.
+
+---
+
+*Token Hygiene H1–H5 + Template Routing — 2026-05-23*

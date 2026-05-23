@@ -1,0 +1,49 @@
+# project.yaml — [PROJECT_NAME] linked_project config
+# Replace ALL [PLACEHOLDER] values before use.
+# This file stays in your PRIVATE repo — do not commit real paths to a public repo.
+
+project_id: [PROJECT_ID]          # e.g. my-project (lowercase, hyphens)
+project_name: [PROJECT_NAME]      # e.g. My Project
+visibility: private
+domain: [DOMAIN]                  # e.g. finance, manga, real-estate
+
+# Engine version requirement
+tricorderkit_version: ">=0.9"
+default_language: en              # en | fr | ja | ...
+
+# Private terms — security-audit-cli blocks public export if found
+private_terms:
+  - "[PROJECT_NAME]"
+  - "[PROJECT_ID]"
+  - "[ANY_PRIVATE_CLI_NAME]"
+
+data_policy:
+  allow_public_export: false
+  allow_anonymized_reports: true
+  allow_private_sources: true
+
+paths:
+  vault: vault/
+  sources: sources/
+  workflows: workflows/
+  skills: skills/
+  reports: reports/
+  exports: exports/
+  logs: project_logs/
+  decisions: project_decisions/
+
+execution:
+  allow_tricorderkit_write: true
+  require_human_validation: true
+  default_output_format:
+    - markdown
+    - json
+
+# Domain-specific source priorities (top 2-3 only)
+source_priorities:
+  - name: "[PRIMARY_SOURCE]"
+    url: "[PRIMARY_SOURCE_URL]"
+    reliability: high
+  - name: "[SECONDARY_SOURCE]"
+    url: "[SECONDARY_SOURCE_URL]"
+    reliability: medium
