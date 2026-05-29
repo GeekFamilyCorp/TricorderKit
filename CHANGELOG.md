@@ -4,6 +4,15 @@
 
 ---
 
+## [0.9.3] — 29/05/2026 — obsidian-goat v0.2.0 : garde-fou R29 (anti-collision d'ID)
+
+### Ajouté
+- **tools/obsidian-goat/obsidian_goat.py** (v0.1.0 → v0.2.0) — nouvelle commande `replace-id <old_id> <new_id>` : remplacement d'identifiant **borné au token complet** (lookbehind/lookahead `\w`). Empêche le piège ED040 (un préfixe nu ne corrompt plus un token plus long) ; tokens partageant le préfixe détectés et listés `protected_prefix_tokens`. **Dry-run par défaut**, `--apply` pour écrire, `--root` pour cibler un vault hors ENV, `--exclude` répétable (exclut par défaut `99_Migration_Backups`/`03_Manifestes_Migration`). Implémente la règle R29 (DEC-017/DEC-018).
+- **tests/cli_contracts/test_obsidian_goat.py** — classe `TestReplaceIdR29` (4 tests : dry-run token complet, préfixe nu protégé, apply sans corruption, refus old==new). Suite complète **23/23 PASS**.
+
+### Référence
+- DEC-018 (.planning/DECISIONS.md) — améliorations post-assainissement + rollout studios.
+
 ## [0.9.2] — 23/05/2026 — M5 : security hardening + Windows deployment
 
 ### Ajouté

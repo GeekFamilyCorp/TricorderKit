@@ -156,3 +156,42 @@
 - **Statut** : Appliquée.
 
 *Dernière mise à jour : 2026-05-29 — DEC-016 doctrine routage dépôts*
+
+---
+
+## DEC-017 — Assainissement vault Japan-Alliance : 4 chantiers (correction + back-fill + déduplication par archivage) — 2026-05-29
+
+- **Contexte** : les cartes de filière (MOC franchises + IX000) ont révélé 4 anomalies systémiques dans le vault de contenu `%USERPROFILE%\Documents\obsidian\Japan-Alliance` (non versionné git → toute opération destructrice = HIGH risk → archivage réversible imposé).
+- **Chantier 1 — Lien éditeur cassé** : `ED040_shueisha` → `[[ED039_shueisha]]` sur **41 fiches vivantes** (Shueisha). PowerShell déterministe, UTF-8 sans BOM, exclusion `99_Migration_Backups` + `03_Manifestes_Migration`. Vérif : 0 occurrence résiduelle.
+  - ⚠️ **PIÈGE ÉVITÉ (leçon majeure)** : un remplacement global naïf `ED040`→`ED039` aurait corrompu `ED040_shufu_to_seikatsu_sha` (主婦と生活社, éditeur légitime distinct). Remplacement ciblé sur le **token complet** `ED040_shueisha` uniquement. → Règle gravée : **avant tout remplacement global d'ID, grep des collisions de préfixe et cibler le token entier**.
+- **Chantier 2 — Back-fill relations frontmatter** : ajout `related_anime` sur MA001/MA008/MA017/MA011 + `adaptation_de` bidirectionnel sur AN004/AN005/AN006/AN007/AN010. Schéma **natif des fiches** respecté (≠ schéma idéalisé du MOC) pour éviter une duplication de schéma.
+- **Chantier 3 — Déduplication studios (triplement `ST###`/`STU###`/`Par_Studio`)** : canonique = **`ST###`** (fiches riches, schéma propre, bloc validation, numérotation contiguë). 10 stubs `STU001→STU010` (« ## À compléter ») + doublon `ST037_Ufotable` archivés dans `99_Migration_Backups/_dedup_studios_2026-05-29/`. ufotable : `ST024` retenu canonique, **enrichi** du contenu factuel plus riche de `ST037` (fondateur Hikaru Kondō, productions détaillées, projets 2026+, affaire judiciaire) avant archivage. 9 fichiers vivants re-pointés `STU###`→`ST###`.
+  - ⚠️ **CORRECTION d'une décision de session antérieure** : les MOC avaient choisi `STU###` comme canonique. La comparaison de **contenu** a montré l'inverse (STU### = stubs). → Règle gravée : **ne jamais déclarer un canonique sur la seule base de l'ID/récence ; comparer le contenu, le nombre de références entrantes et la contiguïté de numérotation**.
+- **Chantier 4 — Déduplication LN `LN001`/`LN026` (Apothecary Diaries)** : contenu quasi identique. `LN001` retenu master (ID contigu inférieur + déjà référencé par AN010 et le MOC). Champs QA de `LN026` (qa_template_used, qa_checked_at…) portés dans LN001. `LN026` archivé dans `99_Migration_Backups/_dedup_ln_2026-05-29/`. MOC franchise + IX000 mis à jour.
+- **Traçabilité** : claude-vault (Daily Log 2026-05-29 + HOT_CACHE + PATTERN-DEDUP-001) + auto-memory + cette décision. Cartes IX000 et MOC JJK/Apothecary marquées « anomalies résolues ».
+- **Réversibilité** : aucune suppression dure. Tous les doublons sont récupérables depuis `99_Migration_Backups/`.
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-05-29 — DEC-017 assainissement vault Japan-Alliance (4 chantiers)*
+
+---
+
+## DEC-018 — Améliorations post-assainissement (garde-fou CLI R29, réconciliation studios, ufotable, fiches Apothecary) + rollout studios planifié — 2026-05-29
+
+- **Contexte** : suite à DEC-017, exécution des 4 améliorations proposées + mise en place d'un rollout quotidien de fiches studios depuis la liste Wikipedia « List of Japanese animation studios ».
+
+- **Amélioration 1 — Garde-fou CLI R29 (anti-collision de préfixe d'ID)** : nouvelle commande déterministe `replace-id` dans `tools/obsidian-goat/obsidian_goat.py` (v0.1.0 → **v0.2.0**). Remplacement **borné au token complet** via lookbehind/lookahead `(?<![\w])…(?![\w])` : un préfixe nu (ex. `ED040`) ne peut plus corrompre un token plus long (`ED040_shueisha`, `ED040_shufu_to_seikatsu_sha`), qui sont détectés, listés `protected_prefix_tokens` et laissés intacts. **Dry-run par défaut**, écriture réelle sur `--apply` uniquement ; exclusion par défaut de `99_Migration_Backups`/`03_Manifestes_Migration`. 4 tests de contrat ajoutés (`tests/cli_contracts/test_obsidian_goat.py`) → **23/23 PASS**. Implémente durablement la règle R29 de DEC-017.
+
+- **Amélioration 2 — Réconciliation de la 3ᵉ forme studio (`Par_Studio`)** : constat (challenge du cadrage initial) — il ne s'agit PAS de doublons mais de **3 formes complémentaires** : identité canonique `ST###` (`03_Production/01_Fiches/`), vue relationnelle `Par_Studio` (« non canonique », agrège les anime), fiche-source scraping (`05_Industrie_Sources/.../01_Studios_Animation/`). Réconciliation par **liaison** (colonne « Identité canonique » ajoutée à `01_Par_Studio/00_INDEX.md` + statut dans les vues OLM/TOHO) et gouvernance, **sans fusion destructive**. OLM, TOHO animation STUDIO, Telecom Animation Film signalés 🔴 (identité ST### à créer via le rollout) ; Studio Durian hors liste fournie.
+
+- **Amélioration 3 — Conflit de siège ufotable (`ST024`)** : tranché par **source primaire** (page « About Us » de https://www.ufotable.com/en/, consultée 2026-05-29). Siège = **Shinjuku-ku** (Shinjuku Front Tower 31F, Kita-Shinjuku) ; le « Nakano-ku » antérieur était l'adresse du *café* ufotable. Effectif **256 (mars 2024)**, président Hikaru Kondo, fondation octobre 2000 — tous confirmés. Frontmatter + tableaux + bloc fiabilité mis à jour.
+
+- **Amélioration 4 — Fiches Apothecary manquantes** (sources : Square Enix officiel + Anime News Network ; Wikipedia = file de noms uniquement) : création de **MG085 Natsu Hyuuga** (autrice LN ; naissance non divulguée → champs vides + ⚠️), **MA1100** (adaptation manga Square Enix / Big Gangan / Nekokurage / Itsuki Nanao, 16 vol.) et **MA1101** (adaptation Shogakukan / Sunday Gene-X / Minoji Kurata, sous-titre *Maomao no Koukyuu Nazotoki Techou*, 21 vol.). IDs `MG085`/`MA1100`/`MA1101` vérifiés libres dans tout le vault avant attribution (application de R29). MOC franchise mis à jour (maillons 1 et 4 ✅).
+
+- **Rollout studios planifié** : file d'attente `02_Anime & Production/03_Production/01_Fiches/00_ROLLOUT_QUEUE_studios.md` générée par script déterministe (dédup par nom normalisé vs ST001–ST026) → **189 studios** (26 déjà fichés, **163 à créer** ST027→ST189). Tâche planifiée `rollout-studios-japan-alliance` (cron `0 7 * * *`, **10 fiches/jour**) : lit la file, anti-doublon, Wikipedia comme ébauche **recoupée sur sources officielles**, écrit les fiches `ST###` (gabarit `ST024`), met la file à jour, journalise. Politique source validée par Sébastien : Wikipedia sert à constituer/référencer la liste puis contrôle de l'exactitude sur source officielle.
+
+- **Réversibilité / non-destructif** : aucune suppression ; réconciliations additives ; fiches nouvelles uniquement.
+- **Routage (DEC-016)** : code CLI + tests + DECISIONS + CHANGELOG → repo **TricorderKit**. Contenu vault → Japan-Alliance (non versionné).
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-05-29 — DEC-018 améliorations + rollout studios*
