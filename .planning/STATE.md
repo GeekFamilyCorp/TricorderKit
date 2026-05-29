@@ -1,7 +1,14 @@
 # STATE.md — TricorderKit v0.9
 
 > État courant du projet. Mettre à jour à chaque session.
-> Dernière mise à jour : 2026-05-23
+> Dernière mise à jour : 2026-05-29
+
+> **Session 2026-05-29 (E4)** : contrôle vault Japan-Alliance + liens modules.
+> Connexion vivante OK (5421 notes, rapports TK du jour écrits). DEC-014 : fix routing
+> `vault_router.py` (obsidian-notes-vault → obsidian-japan-alliance) — appliqué local, push
+> différé (commit groupé). `linked_projects.yaml` corrigé : `vault` → `obsidian/Japan-Alliance/`,
+> `allow_tricorderkit_write` → false. Nom de vault = **Japan-Alliance** (sans suffixe `_vault` ;
+> `japan-alliance_vault/` était une erreur de nommage ChatGPT, dossier vide à supprimer).
 
 ---
 

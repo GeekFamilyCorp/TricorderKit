@@ -140,3 +140,17 @@ OBSIDIAN_VAULT_PATH
 ---
 
 *Version 0.9 — 2026-05-22 — Aligné AGENTS.md v0.8 · Extended Thinking policy · Session rotation*
+
+---
+
+## Routage des dépôts (gouvernance — DEC-016, 2026-05-29)
+
+Règle vérifiée en **fin de chaque action / tâche / mise à jour** (checkpoint de routage, conçu *token-light*) :
+
+| Domaine | Dépôt cible |
+|---|---|
+| Framework installable + cerveau d'orchestration (`.planning/`, `CLAUDE.md`, `AGENTS.md`, `docs/`, `core/`, plugins génériques, `.gitignore`) | **TricorderKit** (`GeekFamilyCorp/TricorderKit`) |
+| `linked_project` Japon : liaison vault (`obsidian-agent-layer/`, `vault_router.py`, `vault_optimizer/`, `linked_projects.yaml`, `hermes/`, CLI/skills/pipelines vault) | **MangaTracker** (`GeekFamilyCorp/MangaTracker`) |
+| Contenu du vault Obsidian Japan-Alliance (fiches, sources, notes) | **Japan-Alliance** (github — *EN ATTENTE*) |
+
+Procédure *token-light* : suivre les fichiers touchés pendant la session (pas de scan complet) → `git status --porcelain` du/des repo(s) concerné(s) → `git add` **ciblé** (jamais `-A`) → 1 commit conventionnel par repo → push. Sauter tout repo non touché.

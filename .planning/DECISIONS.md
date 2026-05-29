@@ -104,4 +104,55 @@
   - CI recommandé : `find Japan-Alliance/ -name "*.py" | grep . && exit 1` dans pre-commit
 - Impact : conftest.py supprimé de Japan-Alliance, déplacé dans `MangaTracker/plugins/deep-research-core/tests/` — commit 2026-05-22
 
-*Dernière mise à jour : 2026-05-22*
+### DEC-014 — Correctif routing vault JP : obsidian-notes-vault → obsidian-japan-alliance
+- Date : 2026-05-29 | Statut : Acceptée
+- Décision : Dans `plugins/obsidian-agent-layer/vault_router.py`, le `mcp_server` de `VaultId.NOTES` est corrigé de `"obsidian-notes-vault"` (serveur MCP inexistant) vers `"obsidian-japan-alliance"` (serveur réellement connecté).
+- Raison :
+  (1) `obsidian_client.py:155/183` construit la cible MCP à partir de `vault_config.mcp_server` ; tout le contenu JP (manga, anime, seiyuu, studio, mangaka, editeur, magazine, goodie, lieu, evenement) était donc routé vers un serveur fantôme → écriture agent vouée à l'échec / mauvais ciblage.
+  (2) `manifest.yml:31` déclarait déjà la bonne valeur (`obsidian-japan-alliance`) — le routeur Python était désynchronisé du manifeste et de la topologie MCP vivante.
+  (3) Validation : les tests `test_obsidian_agent_layer.py` assertent sur l'enum `VaultId.NOTES`, pas sur la string MCP → non impactés.
+- Découvertes annexes (à arbitrer par Sébastien, non corrigées) :
+  - `configs/local/linked_projects.yaml` pointe le vault lié vers `Projects/Japan-Alliance/japan-alliance_vault/` qui est un **dossier vide en lecture seule** (size 0, perms 444) ; le vault de contenu vivant (5421 notes) est en réalité `C:\Users\sebas\Documents\obsidian\Japan-Alliance`.
+  - `linked_projects.yaml` active `allow_tricorderkit_write: true` alors que DEC-012/DEC-013 définissent Japan-Alliance comme vault **read-only** ; divergence de politique à trancher.
+- Impact : fix local appliqué ; push GitHub en attente de validation (cf. E5).
+- Résolution (2026-05-29, arbitrage Sébastien) :
+  - Push : différé — le fix sera inclus dans un prochain commit groupé (non poussé seul).
+  - `linked_projects.yaml` corrigé sur les deux points : `vault` repointé vers `C:/Users/sebas/Documents/obsidian/Japan-Alliance/` ; `allow_tricorderkit_write` repassé à `false` (conformité DEC-012/DEC-013, vault read-only ; écriture via MangaTracker uniquement).
+
+*Dernière mise à jour : 2026-05-29 — DEC-014 routing fix vault JP + résolution config*
+
+---
+
+## DEC-015 — Enrichissement registre Sources_Officielles (audit Excel v1.6) — 2026-05-29
+
+- **Contexte** : audit du classeur `japan-alliance_tables_sources_complet_v1.6_enriched.xlsx` (41 feuilles, registre normalisé 834 sources) contre les 32 fichiers `Sources_*_Master_v1.md` du vault Japan-Alliance.
+- **Constat** : 780/834 sources déjà présentes (URL exacte ou domaine). Priorités #2 (amazon.co.jp) et #3 (LINE jp / LINE Manga / LINE Novel) **déjà couvertes**. Écart réel = 8 sources officielles manquantes (le reste = bruit : URLs `0`, `207`, `variable`).
+- **Décision** : ajout des 8 sources officielles/institutionnelles manquantes, en respectant la priorité demandée (éditeurs/studios > amazon.co.jp > LINE). Ajouts datés `## Ajout 2026-05-29` en bas de chaque fichier cible, schémas de tableau respectés par fichier.
+- **Sources ajoutées** :
+  - Manga : K MANGA (Kodansha, https://kmanga.kodansha.com) · Manga UP! Global (Square Enix, https://global.manga-up.com)
+  - Light Novel : Corona EX Global EN (TO Books, https://en.to-corona-ex.com)
+  - Doujin/Indie : MANGA Plus Creators (Shueisha/MediBang, https://mangaplus-creators.jp)
+  - API/RSS : なろうデベロッパー Syosetu Developer API (Hinaproject, https://dev.syosetu.com)
+  - Goodies : 魂ウェブ Tamashii Web (Bandai Spirits, https://tamashiiweb.com)
+  - Contrôle/ABJ : Japan ISBN Agency (https://isbn.jpo.or.jp) · MADB Lab (Bunka/MEXT, https://mediag.bunka.go.jp/madb_lab/)
+- **Fiabilité** : toutes `confirmé` (opérateur officiel identifié, plateforme primaire). Exclusions strictes respectées (aucun scantrad/wiki/blog).
+- **Validation** : 8/8 URLs re-vérifiées présentes dans les fichiers cibles après écriture (`Select-String`).
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-05-29 — DEC-015 enrichissement sources v1.6*
+
+---
+
+## DEC-016 — Doctrine de routage des 3 dépôts + relocalisation du fix DEC-014 — 2026-05-29
+
+- **Contexte** : Sébastien précise la répartition des dépôts GitHub (2026-05-29).
+- **Règle de routage** :
+  - **TricorderKit** (`github.com/GeekFamilyCorp/TricorderKit`) = framework installable « depuis zéro » + sauvegarde générique + cerveau d'orchestration (`.planning/`, `CLAUDE.md`, `AGENTS.md`, `docs/`, `core/`, plugins génériques, `.gitignore`).
+  - **MangaTracker** (`github.com/GeekFamilyCorp/MangaTracker`) = repo du `linked_project` dédié Japon : code de liaison vault (`obsidian-agent-layer/`, `vault_router.py`, `vault_optimizer/`, `linked_projects.yaml`, `hermes/`, CLI/skills/pipelines vault).
+  - **Japan-Alliance** (github à créer — **EN ATTENTE**) = sauvegarde du contenu du vault Obsidian Japan-Alliance.
+- **Checkpoint de routage (token-light)** : déclenché en **fin d'action/tâche/mise à jour**. Suivre les fichiers touchés pendant la session (pas de scan complet du repo) → `git status --porcelain` du/des repo(s) concerné(s) uniquement → `git add` **ciblé** (jamais `-A`) → 1 commit conventionnel par repo → push. Sauter tout repo non touché.
+- **Relocalisation du fix DEC-014** : la valeur `mcp_server="obsidian-japan-alliance"` est de la **spécialisation Japon**, déjà présente dans MangaTracker (`hermes/plugins/obsidian-agent-layer/vault_router.py`, L47). Le fix appliqué dans TricorderKit est donc **superseded** : `vault_router.py` y a été restauré à sa valeur générique (`obsidian-notes-vault`). DEC-014 reste valide pour MangaTracker ; sa portion TricorderKit est superseded par DEC-016.
+- **Suivi ouvert** : le dossier `hermes/` de MangaTracker est **non suivi par git** (canonique mais non sauvegardé) → tâche de backup dédiée à arbitrer (volume important, traiter avec revue).
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-05-29 — DEC-016 doctrine routage dépôts*
