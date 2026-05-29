@@ -1,0 +1,46 @@
+# TricorderKit — Normalisation des fins de ligne
+# Évite le churn CRLF/LF entre Windows (local) et le dépôt public GitHub.
+# Le dépôt stocke toujours en LF ; le checkout local Windows peut rester en CRLF.
+
+# Par défaut : tout fichier texte détecté est normalisé en LF dans le dépôt
+* text=auto eol=lf
+
+# Sources et configs explicitement texte (LF)
+*.md       text eol=lf
+*.txt      text eol=lf
+*.py       text eol=lf
+*.ts       text eol=lf
+*.tsx      text eol=lf
+*.js       text eol=lf
+*.json     text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+*.sql      text eol=lf
+*.toml     text eol=lf
+*.cfg      text eol=lf
+*.ini      text eol=lf
+*.sh       text eol=lf
+*.env      text eol=lf
+*.example  text eol=lf
+.gitignore   text eol=lf
+.gitattributes text eol=lf
+Makefile   text eol=lf
+
+# Scripts Windows : conserver CRLF (PowerShell/batch s'attendent à CRLF)
+*.ps1      text eol=crlf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+
+# Binaires : jamais de conversion de fin de ligne
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
+*.zip      binary
+*.gz       binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.eot      binary
