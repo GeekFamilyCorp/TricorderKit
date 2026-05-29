@@ -70,3 +70,6 @@ pytest-cache-files-*/
 
 # Fichiers de sauvegarde
 *.bak
+
+# Quarantaine d'audit locale (volumineuse — ne jamais committer)
+.quarantine_audit_*/
