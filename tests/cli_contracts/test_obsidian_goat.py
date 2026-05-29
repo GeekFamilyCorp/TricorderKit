@@ -232,3 +232,57 @@ class TestErrorHandling:
             json.loads(result.stdout.strip())
         except json.JSONDecodeError:
             pytest.fail(f"Output non-JSON: {result.stdout!r}")
+
+
+class TestReplaceIdR29:
+    """Garde-fou R29 : remplacement d'ID borné au token complet (piège ED040)."""
+
+    def _make_vault(self, tmp_path):
+        (tmp_path / "fiches").mkdir()
+        (tmp_path / "99_Migration_Backups").mkdir()
+        (tmp_path / "fiches" / "MA017.md").write_text(
+            "editeur: [[ED040_shueisha]]\nVoir ED040_shueisha.\n", encoding="utf-8")
+        (tmp_path / "fiches" / "trap.md").write_text(
+            "editeur: [[ED040_shufu_to_seikatsu_sha]]\n", encoding="utf-8")
+        (tmp_path / "99_Migration_Backups" / "old.md").write_text(
+            "ED040_shueisha\n", encoding="utf-8")
+        return tmp_path
+
+    def test_dry_run_token_complet(self, tmp_path, temp_cache):
+        v = self._make_vault(tmp_path)
+        data = run_goat("replace-id", "ED040_shueisha", "ED039_shueisha",
+                        "--root", str(v), cache_path=temp_cache)
+        o = data["output"]
+        assert data["status"] == "dry_run"
+        assert o["applied"] is False
+        assert o["replacements_total"] == 2
+        assert o["files_count"] == 1          # trap.md non concernée
+        assert o["files_scanned"] == 2        # backup exclu
+
+    def test_prefixe_nu_protege_les_tokens(self, tmp_path, temp_cache):
+        v = self._make_vault(tmp_path)
+        data = run_goat("replace-id", "ED040", "ED039",
+                        "--root", str(v), cache_path=temp_cache)
+        o = data["output"]
+        assert o["replacements_total"] == 0   # aucun remplacement : préfixe nu
+        assert o["naked_prefix_input"] is True
+        assert "ED040_shueisha" in o["protected_prefix_tokens"]
+        assert "ED040_shufu_to_seikatsu_sha" in o["protected_prefix_tokens"]
+        assert "warning_naked_prefix" in o
+
+    def test_apply_corrige_sans_corrompre(self, tmp_path, temp_cache):
+        v = self._make_vault(tmp_path)
+        data = run_goat("replace-id", "ED040_shueisha", "ED039_shueisha",
+                        "--root", str(v), "--apply", cache_path=temp_cache)
+        assert data["status"] == "success"
+        assert data["output"]["applied"] is True
+        assert "ED039_shueisha" in (v / "fiches" / "MA017.md").read_text(encoding="utf-8")
+        # La fiche piège ne doit JAMAIS être modifiée
+        assert (v / "fiches" / "trap.md").read_text(encoding="utf-8") == \
+            "editeur: [[ED040_shufu_to_seikatsu_sha]]\n"
+
+    def test_old_egal_new_refuse(self, tmp_path, temp_cache):
+        v = self._make_vault(tmp_path)
+        data = run_goat("replace-id", "ST013_MAPPA", "ST013_MAPPA",
+                        "--root", str(v), cache_path=temp_cache)
+        assert data["status"] == "error"

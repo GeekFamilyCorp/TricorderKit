@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 obsidian-goat — CLI déterministe Obsidian Vault pour TricorderKit
-Version : 0.1.0 — 2026-05-18
+Version : 0.2.0 — 2026-05-29
 Output  : JSON par défaut
 Cache   : SQLite local (métadonnées + timestamps)
 
@@ -12,6 +12,7 @@ Commandes disponibles :
   append-log      --date <YYYY-MM-DD> --entry <text> [--dry-run]
   check-note      <path> [--vault <vault>]
   list-notes      <folder> [--vault <vault>]
+  replace-id      <old_id> <new_id> [--vault <vault>] [--root <abs>] [--apply] [--exclude <dir>]
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ from pathlib import Path
 from typing import Optional
 
 # ── Config ───────────────────────────────────────────────────────────────────
-VERSION   = "0.1.0"
+VERSION   = "0.2.0"
 CACHE_DB  = Path(os.environ.get("OBSIDIAN_GOAT_CACHE", ".cache/obsidian-goat.db"))
 CACHE_TTL = 300  # secondes
 
@@ -44,7 +45,13 @@ DAILY_LOG_FOLDER  = "10_INBOX/Daily_Logs"
 
 SAFE_COMMANDS = [
     "read-note", "write-note", "update-hot-cache",
-    "append-log", "check-note", "list-notes"
+    "append-log", "check-note", "list-notes", "replace-id"
+]
+
+# Dossiers exclus par défaut d'un remplacement d'ID global (backups, manifestes, méta)
+DEFAULT_REPLACE_EXCLUDES = [
+    "99_Migration_Backups", "03_Manifestes_Migration",
+    ".git", ".obsidian", ".trash",
 ]
 
 
@@ -335,7 +342,109 @@ def cmd_list_notes(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     return build_output("success", "list-notes", data)
 
 
-# ── Formatage output ──────────────────────────────────────────────────────────
+def _resolve_replace_root(args) -> Path:
+    """Racine du vault pour replace-id : --root absolu prioritaire, sinon resolve_vault."""
+    if getattr(args, "root", None):
+        return Path(args.root)
+    return resolve_vault(args.vault)
+
+
+def cmd_replace_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+    """Remplace un identifiant COMPLET dans tout le vault (garde-fou R29).
+
+    Sécurité anti-collision (piège ED040) : le remplacement est BORNÉ au token
+    via lookbehind/lookahead sur les caractères de mot. Un préfixe nu comme
+    'ED040' ne peut donc jamais corrompre un token plus long tel que
+    'ED040_shueisha' ou 'ED040_shufu_to_seikatsu_sha' : ceux-ci sont détectés,
+    listés comme PROTÉGÉS et laissés intacts.
+
+    Risque HIGH (écriture externe) → dry-run par défaut ; écriture réelle
+    uniquement avec --apply.
+    """
+    old_id = args.old_id
+    new_id = args.new_id
+
+    if not old_id or not new_id:
+        return build_output("error", "replace-id", {"message": "old_id et new_id sont requis"})
+    if old_id == new_id:
+        return build_output("error", "replace-id", {"message": "old_id identique à new_id : rien à faire"})
+
+    apply         = getattr(args, "apply", False)
+    effective_dry = dry_run or not apply
+
+    try:
+        root = _resolve_replace_root(args)
+    except (KeyError, ValueError) as e:
+        return build_output("error", "replace-id", {"message": str(e)})
+    if not root.exists():
+        return build_output("error", "replace-id", {"message": f"Racine vault introuvable: {root}"})
+
+    excludes = list(DEFAULT_REPLACE_EXCLUDES)
+    if getattr(args, "exclude", None):
+        excludes.extend(args.exclude)
+
+    # Remplacement borné : ni caractère de mot avant, ni après → token complet uniquement
+    token_re     = re.compile(r"(?<![\w])" + re.escape(old_id) + r"(?![\w])")
+    # Collision : old_id suivi d'au moins un caractère de mot (token plus long, même préfixe)
+    collision_re = re.compile(r"(?<![\w])" + re.escape(old_id) + r"[\w][\w\-]*")
+
+    files_changed: list[dict] = []
+    collisions: dict[str, int] = {}
+    total_repl = 0
+    scanned    = 0
+
+    for p in root.rglob("*.md"):
+        rel = p.relative_to(root).as_posix()
+        if any(seg in rel.split("/") for seg in excludes):
+            continue
+        scanned += 1
+        try:
+            text = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for m in collision_re.findall(text):
+            collisions[m] = collisions.get(m, 0) + 1
+        n = len(token_re.findall(text))
+        if n == 0:
+            continue
+        total_repl += n
+        files_changed.append({"path": rel, "replacements": n})
+        if not effective_dry:
+            # UTF-8 sans BOM ; les fins de ligne d'origine sont conservées par re.sub
+            p.write_text(token_re.sub(new_id, text), encoding="utf-8")
+
+    protected   = sorted(collisions.keys())
+    naked_input = re.fullmatch(r"[A-Za-z]+\d+", old_id) is not None
+
+    data = {
+        "old_id":                  old_id,
+        "new_id":                  new_id,
+        "vault_root":              str(root),
+        "files_scanned":           scanned,
+        "files":                   files_changed,
+        "files_count":             len(files_changed),
+        "replacements_total":      total_repl,
+        "protected_prefix_tokens": protected,
+        "naked_prefix_input":      naked_input,
+        "risk":                    "HIGH",
+        "applied":                 (not effective_dry),
+    }
+    if protected:
+        data["warning"] = (
+            f"{len(protected)} token(s) partagent le préfixe '{old_id}' et sont "
+            f"PROTÉGÉS (non modifiés) grâce au remplacement borné : {protected}"
+        )
+    if naked_input and protected:
+        data["warning_naked_prefix"] = (
+            f"'{old_id}' est un préfixe nu : un remplacement substring naïf aurait "
+            f"corrompu {protected}. Le garde-fou R29 l'a empêché."
+        )
+
+    status = "dry_run" if effective_dry else "success"
+    return build_output(status, "replace-id", data, dry_run=effective_dry)
+
+
+# ── Formatage output ────────────────────────────────────────────────────────────
 def format_output(result: dict, fmt: str) -> str:
     if fmt == "table":
         command = result.get("output", {}).get("command", "?")
@@ -348,7 +457,7 @@ def format_output(result: dict, fmt: str) -> str:
     return json.dumps(result, ensure_ascii=False, indent=2)
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# == Main ==
 def main():
     class JsonArgumentParser(argparse.ArgumentParser):
         def error(self, message):
@@ -357,9 +466,9 @@ def main():
             sys.exit(2)
 
     parser = JsonArgumentParser(
-        description=f"obsidian-goat v{VERSION} — CLI déterministe Obsidian pour TricorderKit"
+        description=f"obsidian-goat v{VERSION} - CLI deterministe Obsidian pour TricorderKit"
     )
-    parser.add_argument("--dry-run",  action="store_true", help="Simuler sans écrire")
+    parser.add_argument("--dry-run",  action="store_true", help="Simuler sans ecrire")
     parser.add_argument("--output",   choices=["json", "table"], default="json")
     parser.add_argument("--version",  action="version", version=f"obsidian-goat {VERSION}")
 
@@ -371,23 +480,23 @@ def main():
     p.add_argument("--vault", default="claude-vault")
 
     # write-note
-    p = subparsers.add_parser("write-note", help="Écrire/créer une note")
+    p = subparsers.add_parser("write-note", help="Ecrire/creer une note")
     p.add_argument("path",    help="Chemin relatif au vault")
     p.add_argument("--content", required=True, help="Contenu Markdown de la note")
     p.add_argument("--vault",   default="claude-vault")
-    p.add_argument("--force",   action="store_true", help="Écraser si la note existe")
+    p.add_argument("--force",   action="store_true", help="Ecraser si la note existe")
 
     # update-hot-cache
-    p = subparsers.add_parser("update-hot-cache", help="Mettre à jour le HOT_CACHE Obsidian")
+    p = subparsers.add_parser("update-hot-cache", help="Mettre a jour le HOT_CACHE Obsidian")
     p.add_argument("--content", required=True, help="Nouveau contenu Markdown du HOT_CACHE")
 
     # append-log
-    p = subparsers.add_parser("append-log", help="Ajouter une entrée dans le Daily Log")
-    p.add_argument("--entry", required=True, help="Texte de l'entrée à ajouter")
-    p.add_argument("--date",  default=None,  help="Date YYYY-MM-DD (défaut: aujourd'hui)")
+    p = subparsers.add_parser("append-log", help="Ajouter une entree dans le Daily Log")
+    p.add_argument("--entry", required=True, help="Texte de l'entree a ajouter")
+    p.add_argument("--date",  default=None,  help="Date YYYY-MM-DD (defaut: aujourd'hui)")
 
     # check-note
-    p = subparsers.add_parser("check-note", help="Vérifier l'existence d'une note (anti-doublon)")
+    p = subparsers.add_parser("check-note", help="Verifier l'existence d'une note (anti-doublon)")
     p.add_argument("path",  help="Chemin relatif au vault")
     p.add_argument("--vault", default="claude-vault")
 
@@ -395,6 +504,15 @@ def main():
     p = subparsers.add_parser("list-notes", help="Lister les notes d'un dossier")
     p.add_argument("folder", help="Dossier relatif au vault (ex: Mangas/)")
     p.add_argument("--vault", default="claude-vault")
+
+    # replace-id (garde-fou R29 - remplacement borne au token complet)
+    p = subparsers.add_parser("replace-id", help="Remplacer un ID COMPLET dans tout le vault (R29, anti-collision de prefixe)")
+    p.add_argument("old_id", help="ID source COMPLET (ex: ED040_shueisha)")
+    p.add_argument("new_id", help="ID cible COMPLET (ex: ED039_shueisha)")
+    p.add_argument("--vault",   default="claude-vault")
+    p.add_argument("--root",    default=None, help="Racine vault absolue (override resolve_vault, ex: vault Japan-Alliance)")
+    p.add_argument("--apply",   action="store_true", help="Ecrire reellement (defaut: dry-run)")
+    p.add_argument("--exclude", action="append", default=None, help="Dossier supplementaire a exclure (repetable)")
 
     args = parser.parse_args()
 
@@ -415,6 +533,7 @@ def main():
         "append-log":       cmd_append_log,
         "check-note":       cmd_check_note,
         "list-notes":       cmd_list_notes,
+        "replace-id":       cmd_replace_id,
     }
 
     fn = dispatch.get(args.command)
