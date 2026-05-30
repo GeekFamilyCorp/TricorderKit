@@ -195,3 +195,28 @@
 - **Statut** : Appliquée.
 
 *Dernière mise à jour : 2026-05-29 — DEC-018 améliorations + rollout studios*
+
+---
+
+## DEC-019 — Rétrospective 28/29 mai + auto-améliorations (règles R32-R36, CLI next-id, patterns) — 2026-05-29
+
+- **Contexte** : à la demande de Sébastien, analyse des 2 jours de travail (assainissement vault DEC-017, améliorations DEC-018, rollout studios, gouvernance accès) pour enregistrer erreurs/réussites et s'auto-améliorer.
+
+- **Enregistrement (claude-vault)** : note `00_SYSTEM/04_Self_Learning/RETRO_2026-05-28_29.md` (réussites + erreurs + causes racines) ; entrée `SUCCESSES_INDEX` ; nouveau pattern `PATTERN-EDIT-DUALFS-001` (édition fichiers & git sur environnement composé mount≠FS réel) + `PATTERN-DEDUP-001` référencé dans `PATTERNS_INDEX`.
+
+- **Anti-recréation respectée** : un skill de bilan (`rapport`) et la mémoire (`memory-boot`, `consolidate-memory`) existent déjà → non dupliqués. Le manque réel outillé était l'**allocation d'ID sûre**.
+
+- **Auto-amélioration outillée** : `obsidian-goat` v0.2.1 — commande **`next-id`** (R34) : prochain ID libre + `--check` collision, scan noms+contenu sans exclure réservés. **28/28 tests PASS** (validés sur FS réel via `C:\Python314\python.exe`, le sandbox servant une copie tronquée — illustration vivante de PATTERN-EDIT-DUALFS-001).
+
+- **Nouvelles règles de protection (tasks/lessons.md, LESSON-008→012)** :
+  - **R32** : jamais d'édition au niveau octet d'un source ; après édition, valider par `ast.parse` + smoke-run avant de déclarer terminé.
+  - **R33** : git sur ce poste = chemin complet `C:\Program Files\Git\cmd\git.exe` via Desktop Commander ; vérifier l'état via le sandbox (lecture fiable) ; rediriger la sortie vers fichier (capture DC non fiable) ; supprimer `index.lock` périmé avant add/commit.
+  - **R34** : avant d'attribuer un nouvel ID, `obsidian-goat next-id <prefix>` (ou grep global) ; étend R29.
+  - **R35** : vérifier la **nature** d'une entité (source officielle) avant de créer sa fiche ; si elle ne correspond pas au type cible, reclasser dans le bon dossier (aiguillage), ne pas forcer ni dupliquer.
+  - **R36** : définir un cache CLI writable (`OBSIDIAN_GOAT_CACHE`) ; pour pytest sur mount, `-c /dev/null --basetemp=/tmp` ou copier hors repo.
+
+- **Process** : aiguillage automatique des non-studios déjà inscrit dans la tâche planifiée rollout (étape 1bis).
+- **Routage (DEC-016)** : code + tests + lessons + CHANGELOG + DECISIONS → repo **TricorderKit**. Notes d'analyse → claude-vault (non versionné).
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-05-29 — DEC-019 rétrospective + auto-améliorations (R32-R36, next-id)*

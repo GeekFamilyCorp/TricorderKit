@@ -13,6 +13,7 @@ Commandes disponibles :
   check-note      <path> [--vault <vault>]
   list-notes      <folder> [--vault <vault>]
   replace-id      <old_id> <new_id> [--vault <vault>] [--root <abs>] [--apply] [--exclude <dir>]
+  next-id         <prefix> [--vault <vault>] [--root <abs>] [--check <id>]
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ from pathlib import Path
 from typing import Optional
 
 # ── Config ───────────────────────────────────────────────────────────────────
-VERSION   = "0.2.0"
+VERSION   = "0.2.1"
 CACHE_DB  = Path(os.environ.get("OBSIDIAN_GOAT_CACHE", ".cache/obsidian-goat.db"))
 CACHE_TTL = 300  # secondes
 
@@ -45,7 +46,7 @@ DAILY_LOG_FOLDER  = "10_INBOX/Daily_Logs"
 
 SAFE_COMMANDS = [
     "read-note", "write-note", "update-hot-cache",
-    "append-log", "check-note", "list-notes", "replace-id"
+    "append-log", "check-note", "list-notes", "replace-id", "next-id"
 ]
 
 # Dossiers exclus par défaut d'un remplacement d'ID global (backups, manifestes, méta)
@@ -444,6 +445,75 @@ def cmd_replace_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     return build_output(status, "replace-id", data, dry_run=effective_dry)
 
 
+def cmd_next_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+    """Trouve le prochain ID libre pour un préfixe (R34) + liste les trous.
+
+    Scanne les noms de fichiers ET le contenu, SANS exclure backups/manifestes :
+    on ne veut jamais réutiliser un ID archivé ou déjà réservé (ex. file rollout).
+    Option --check <ID/token> : vérifie qu'un identifiant précis est libre.
+    """
+    prefix = args.prefix
+    if not prefix or not re.fullmatch(r"[A-Za-z]+", prefix):
+        return build_output("error", "next-id", {"message": "prefix doit être alphabétique (ex: ST, MA, MG)"})
+    try:
+        root = _resolve_replace_root(args)
+    except (KeyError, ValueError) as e:
+        return build_output("error", "next-id", {"message": str(e)})
+    if not root.exists():
+        return build_output("error", "next-id", {"message": f"Racine vault introuvable: {root}"})
+
+    # PREFIX suivi de chiffres, non précédé d'alphanumérique, non suivi d'un chiffre
+    num_re = re.compile(r"(?<![A-Za-z0-9])" + re.escape(prefix) + r"(\d+)(?!\d)")
+    used: set[int] = set()
+    for p in root.rglob("*.md"):
+        for m in num_re.finditer(p.name):
+            used.add(int(m.group(1)))
+        try:
+            text = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for m in num_re.finditer(text):
+            used.add(int(m.group(1)))
+
+    data = {"prefix": prefix, "vault_root": str(root), "count_used": len(used)}
+    if used:
+        mx    = max(used)
+        width = max(len(str(mx)), 3)
+        nxt   = mx + 1
+        gaps  = sorted(set(range(1, mx)) - used)
+        data.update({
+            "max_used":    mx,
+            "next_number": nxt,
+            "next_id":     f"{prefix}{nxt:0{width}d}",
+            "gaps":        [f"{prefix}{g:0{width}d}" for g in gaps[:50]],
+            "gaps_count":  len(gaps),
+        })
+    else:
+        data.update({"max_used": 0, "next_number": 1, "next_id": f"{prefix}001", "gaps": [], "gaps_count": 0})
+
+    if getattr(args, "check", None):
+        chk = args.check
+        m = re.fullmatch(re.escape(prefix) + r"(\d+)", chk)
+        if m:
+            data["check"] = {"id": chk, "free": int(m.group(1)) not in used}
+        else:
+            tok_re = re.compile(r"(?<![\w])" + re.escape(chk) + r"(?![\w])")
+            found = False
+            for p in root.rglob("*.md"):
+                if chk in p.name:
+                    found = True
+                    break
+                try:
+                    if tok_re.search(p.read_text(encoding="utf-8")):
+                        found = True
+                        break
+                except (UnicodeDecodeError, OSError):
+                    continue
+            data["check"] = {"id": chk, "free": not found}
+
+    return build_output("success", "next-id", data)
+
+
 # ── Formatage output ────────────────────────────────────────────────────────────
 def format_output(result: dict, fmt: str) -> str:
     if fmt == "table":
@@ -514,6 +584,13 @@ def main():
     p.add_argument("--apply",   action="store_true", help="Ecrire reellement (defaut: dry-run)")
     p.add_argument("--exclude", action="append", default=None, help="Dossier supplementaire a exclure (repetable)")
 
+    # next-id (R34 - prochain ID libre pour un prefixe)
+    p = subparsers.add_parser("next-id", help="Prochain ID libre pour un prefixe (R34) + trous")
+    p.add_argument("prefix", help="Prefixe alphabetique (ex: ST, MA, MG, ED, AR, LN)")
+    p.add_argument("--vault", default="claude-vault")
+    p.add_argument("--root",  default=None, help="Racine vault absolue (override resolve_vault)")
+    p.add_argument("--check", default=None, help="Verifier qu'un ID/token precis est libre")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -534,6 +611,7 @@ def main():
         "check-note":       cmd_check_note,
         "list-notes":       cmd_list_notes,
         "replace-id":       cmd_replace_id,
+        "next-id":          cmd_next_id,
     }
 
     fn = dispatch.get(args.command)

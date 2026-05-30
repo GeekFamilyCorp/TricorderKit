@@ -4,6 +4,16 @@
 
 ---
 
+## [0.9.4] — 29/05/2026 — obsidian-goat v0.2.1 : `next-id` (allocation d'ID, R34) + rétrospective
+
+### Ajouté
+- **tools/obsidian-goat/obsidian_goat.py** (v0.2.0 → v0.2.1) — commande `next-id <prefix> [--check <id>]` : scanne noms de fichiers + contenu (sans exclure backups/réservés) → prochain ID libre, trous, et vérification de collision d'un ID précis. Implémente R34 (allocation d'ID sûre, complète R29).
+- **tests/cli_contracts/test_obsidian_goat.py** — classe `TestNextIdR34` (5 tests). Suite complète **28/28 PASS**.
+- **tasks/lessons.md** — LESSON-008→012 (règles **R32-R36** : pas d'édition octet + validation parse/smoke ; git FS réel + vérif sandbox ; allocation ID ; vérif nature avant fiche ; cache CLI writable).
+
+### Référence
+- DEC-019 — rétrospective 28/29 mai + auto-améliorations. Vault : `RETRO_2026-05-28_29`, `PATTERN-EDIT-DUALFS-001`, `SUCCESSES_INDEX`.
+
 ## [0.9.3] — 29/05/2026 — obsidian-goat v0.2.0 : garde-fou R29 (anti-collision d'ID)
 
 ### Ajouté
