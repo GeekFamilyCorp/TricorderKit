@@ -286,3 +286,41 @@ class TestReplaceIdR29:
         data = run_goat("replace-id", "ST013_MAPPA", "ST013_MAPPA",
                         "--root", str(v), cache_path=temp_cache)
         assert data["status"] == "error"
+
+
+class TestNextIdR34:
+    """next-id : prochain ID libre pour un préfixe + collision (R34)."""
+
+    def _vault(self, tmp_path):
+        (tmp_path / "f").mkdir()
+        (tmp_path / "f" / "ST013_MAPPA.md").write_text("x\n", encoding="utf-8")
+        (tmp_path / "f" / "ST024_ufotable.md").write_text("x\n", encoding="utf-8")
+        (tmp_path / "f" / "queue.md").write_text("voir ST027 et ST040 reserves\n", encoding="utf-8")
+        return tmp_path
+
+    def test_next_id_apres_max(self, tmp_path, temp_cache):
+        v = self._vault(tmp_path)
+        data = run_goat("next-id", "ST", "--root", str(v), cache_path=temp_cache)
+        o = data["output"]
+        assert data["status"] == "success"
+        assert o["max_used"] == 40            # ST040 réservé dans queue.md
+        assert o["next_id"] == "ST041"
+
+    def test_check_id_occupe(self, tmp_path, temp_cache):
+        v = self._vault(tmp_path)
+        data = run_goat("next-id", "ST", "--root", str(v), "--check", "ST013", cache_path=temp_cache)
+        assert data["output"]["check"]["free"] is False
+
+    def test_check_id_libre(self, tmp_path, temp_cache):
+        v = self._vault(tmp_path)
+        data = run_goat("next-id", "ST", "--root", str(v), "--check", "ST500", cache_path=temp_cache)
+        assert data["output"]["check"]["free"] is True
+
+    def test_prefix_vide_001(self, tmp_path, temp_cache):
+        (tmp_path / "empty").mkdir()
+        data = run_goat("next-id", "MG", "--root", str(tmp_path / "empty"), cache_path=temp_cache)
+        assert data["output"]["next_id"] == "MG001"
+
+    def test_prefix_invalide_refuse(self, tmp_path, temp_cache):
+        data = run_goat("next-id", "ST1", "--root", str(tmp_path), cache_path=temp_cache)
+        assert data["status"] == "error"

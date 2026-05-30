@@ -63,3 +63,38 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 ```
 **Fichiers concernés :** `cli/tk.py` (`_check_secrets`, `_SECRETS_EXCLUDE`)
 **Statut :** [RÉSOLU] — whitelist étendue, `tk doctor` affiche `[OK] Aucun secret dans le repo`.
+
+## LESSON-008 — 2026-05-29
+**Contexte :** « Réparation » au niveau octet de `tools/obsidian-goat/obsidian_goat.py` (decode/encode surrogateescape) → fichier tronqué (perte de `main()`) puis octet `\xe2` sauté → UTF-8 invalide.
+**Erreur :** Édition binaire d'un fichier source à encodage mixte (CRLF/UTF-8), sans validation post-édition.
+**Règle préventive (R32) :** Ne jamais éditer un fichier source au niveau octet. Utiliser l'outil Edit, puis **valider avant de déclarer terminé** : `python -c "import ast; ast.parse(open(F,encoding='utf-8').read())"` + un smoke-run (`--version`/test).
+**Fichiers concernés :** tout fichier source (`*.py`, `*.ts`).
+**Statut :** [RÉSOLU] — fichier restauré, 23/23 tests PASS. Voir vault `PATTERN-EDIT-DUALFS-001`.
+
+## LESSON-009 — 2026-05-29
+**Contexte :** Commits via Desktop Commander avec sortie muette ; `git status` sandbox ≠ FS réel ; `git n'est pas reconnu` ; `index.lock` périmé.
+**Erreur :** Supposer un environnement de fichiers unique et faire confiance à la capture stdout de DC.
+**Règle préventive (R33) :** Sur ce poste Windows : git par **chemin complet** `C:\Program Files\Git\cmd\git.exe` via Desktop Commander (shell déjà PowerShell, ne pas préfixer `powershell`). **Vérifier l'état via le sandbox** (lecture git fiable) ; rediriger la sortie git vers un fichier si la capture DC est vide ; supprimer tout `index.lock` périmé (FS réel) avant add/commit.
+**Fichiers concernés :** workflow git, `.git/`.
+**Statut :** [RÉSOLU] — commit `c0c88b2` poussé ; PATH user complété (effectif au redémarrage app).
+
+## LESSON-010 — 2026-05-29
+**Contexte :** Attribution d'IDs de fiches (MG085, MA1100, MA1101) faite par grep manuel du vault.
+**Erreur :** Pas d'outil déterministe pour le prochain ID libre → risque de collision.
+**Règle préventive (R34) :** Avant d'attribuer un nouvel ID (`MA/MG/AR/ED/LN/ST…`), exécuter `obsidian-goat next-id <prefix>` (ou, à défaut, grep global du token) pour garantir l'unicité. Étend R29.
+**Fichiers concernés :** `tools/obsidian-goat/obsidian_goat.py`.
+**Statut :** [RÉSOLU] — commande `next-id` ajoutée.
+
+## LESSON-011 — 2026-05-29
+**Contexte :** « Fine Films » et « Aniplex » créés comme studios alors qu'ils sont distributeur / producteur.
+**Erreur :** Créer une fiche d'un type donné sans vérifier la **nature réelle** de l'entité.
+**Règle préventive (R35) :** Avant de créer une fiche d'entité, vérifier sa nature sur source officielle. Si elle ne correspond pas au type cible, **reclasser dans le bon dossier** (aiguillage producteur/éditeur/jeux/seiyū/goodies/non-classé), ne jamais forcer. Croiser une fiche existante d'une autre facette plutôt que dupliquer.
+**Fichiers concernés :** vault Japan-Alliance ; tâche planifiée `rollout-studios-japan-alliance` (étape 1bis).
+**Statut :** [RÉSOLU] — règle inscrite dans la tâche planifiée + reclassements effectués.
+
+## LESSON-012 — 2026-05-29
+**Contexte :** `obsidian-goat` → `sqlite disk I/O error` (cache au cwd non inscriptible) ; pytest bloqué par perms sur `.pytest_tmp`.
+**Erreur :** Dépendre du cwd pour le cache et du dossier tmp du repo pour pytest.
+**Règle préventive (R36) :** Définir un cache writable explicite (`OBSIDIAN_GOAT_CACHE=/tmp/...`) avant d'exécuter une CLI goat. Pour pytest sur mount : `-c /dev/null --basetemp=/tmp` ou copier le test hors repo.
+**Fichiers concernés :** `tools/obsidian-goat/`, `tests/`.
+**Statut :** [RÉSOLU].
