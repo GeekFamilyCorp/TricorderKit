@@ -98,3 +98,11 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 **Règle préventive (R36) :** Définir un cache writable explicite (`OBSIDIAN_GOAT_CACHE=/tmp/...`) avant d'exécuter une CLI goat. Pour pytest sur mount : `-c /dev/null --basetemp=/tmp` ou copier le test hors repo.
 **Fichiers concernés :** `tools/obsidian-goat/`, `tests/`.
 **Statut :** [RÉSOLU].
+
+
+## LESSON-013 — 2026-06-01
+**Contexte :** Audit vitrine v0.9.5 — README/STATUS/CHANGELOG divergeaient (version, compte de tests, nombre de plugins) sans détection. DEC-026 (boundary) ne couvre pas la cohérence documentaire.
+**Erreur :** Aucun contrôle mécanique « docs ↔ réalité du dépôt » avant push → la vitrine dérive silencieusement (ex. titre H1 STATUS.md resté en `v0.9`).
+**Règle préventive (R39) :** Avant tout push public, exécuter `make gates` — boundary **et** docs-sync — qui doivent tous deux être verts. Le docs-sync (`scripts/check_docs_sync.py`) vérifie version (CHANGELOG canonique), compte de tests cross-doc, et structure plugins (STATUS/README vs `plugins/` réel). Complète R37 (boundary vert) et R38 (sync page centrale + modules).
+**Fichiers concernés :** `scripts/check_docs_sync.py`, `.github/workflows/docs-sync.yml`, `.githooks/pre-push`, `Makefile`, `README.md`, `STATUS.md`.
+**Statut :** [RÉSOLU] — gate appliqué (CI + pre-push), 7 tests PASS, dérive STATUS corrigée.

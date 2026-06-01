@@ -324,3 +324,13 @@
 *Dernière mise à jour : 2026-06-01 — DEC-027 sync page centrale + modules à chaque push (R38) ; DEC-026 gate frontière publique appliqué*
 
 *Dernière mise à jour : 2026-06-01 — DEC-023 prod (index sérialisé nocturne, search_vault) + DEC-025 collaboration Antigravity*
+
+
+## DEC-028 — Gate docs-sync : vitrine <-> structure / version / tests — 2026-06-01
+
+- **Contexte** : suite directe du « reste à faire » de DEC-027. Le gate frontière (DEC-026) bloque les fuites mais ne détecte pas la **désynchronisation documentaire** : README / STATUS / CHANGELOG ont déjà divergé (version, compte de tests, nombre de plugins) sans aucun contrôle mécanique avant push.
+- **Décision** : nouveau gate `scripts/check_docs_sync.py` vérifiant trois familles — (1) **version** affichée (badge + pieds README/STATUS) contre la version canonique du CHANGELOG (premier `## [X.Y.Z]`) ; (2) **cohérence cross-document du compte de tests** (badge + mentions), avec option `--check-tests` confrontant à la collecte pytest réelle ; (3) **structure plugins** (tableau de bord STATUS + compte annoncé dans README) contre les sous-dossiers réels de `plugins/` — ni manquant ni fantôme — plus la cohérence arithmétique du bloc Résumé. Sortie 100 % ASCII, `exit 1` si désync. **Appliqué** en CI (`.github/workflows/docs-sync.yml`), en pre-push (chaîné après le boundary gate) et en Makefile (`make docs-sync`, `make gates`).
+- **Validation** : 7 tests (`tests/test_check_docs_sync.py`) PASS. Dès la première exécution, a détecté une dérive réelle (titre H1 `STATUS.md` `v0.9` → corrigé `v0.9.5`). Boundary + docs-sync = verts.
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-06-01 — DEC-028 gate docs-sync (clôt le reste-à-faire de DEC-027) ; R39 ajoutée*

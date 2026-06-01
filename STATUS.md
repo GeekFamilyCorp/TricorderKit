@@ -1,4 +1,4 @@
-# STATUS.md — TricorderKit v0.9
+# STATUS.md — TricorderKit v0.9.5
 > Mis à jour : 2026-06-01
 > Source : BOOT_SUMMARY.md + scan `plugins/` + audit session
 
