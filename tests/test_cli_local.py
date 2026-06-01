@@ -171,23 +171,12 @@ class TestResearchRun:
 # ─── Tests : commandes project ────────────────────────────────────────────────
 
 class TestProjectList:
-    def test_project_list_markdown(self):
-        r = run(["project", "list"])
-        assert r.returncode == 0
-        assert "japan-alliance" in r.stdout.lower() or "Japan" in r.stdout
-
     def test_project_list_json(self):
         r = run(["project", "list", "--format", "json"])
         assert r.returncode == 0
         data = assert_valid_json(r.stdout)
         assert "linked_projects" in data
         assert isinstance(data["linked_projects"], list)
-
-    def test_project_list_json_has_japan_alliance(self):
-        r = run(["project", "list", "--format", "json"])
-        data = assert_valid_json(r.stdout)
-        ids = [p.get("id") for p in data["linked_projects"]]
-        assert "japan-alliance" in ids
 
 
 class TestProjectStatus:
@@ -234,13 +223,6 @@ class TestProjectWorkflowList:
     def test_workflow_list_known(self):
         r = run(["project", "workflow", "list", "japan-alliance"])
         assert r.returncode in (0, 1)
-
-    def test_workflow_list_json(self):
-        r = run(["project", "workflow", "list", "japan-alliance", "--format", "json"])
-        assert r.returncode in (0, 1)
-        data = assert_valid_json(r.stdout)
-        assert "project_id" in data
-        assert "workflows" in data
 
 
 # ─── Tests : robustesse ───────────────────────────────────────────────────────

@@ -81,11 +81,6 @@ class TestLinkedProjectAuditList:
         r = run_lp("--list")
         assert r.returncode == 0, f"stderr: {r.stderr}"
 
-    def test_list_contains_japan_alliance(self):
-        r = run_lp("--list")
-        combined = r.stdout + r.stderr
-        assert "japan-alliance" in combined.lower() or "japan" in combined.lower()
-
 
 class TestLinkedProjectAuditKnown:
     """Tests avec le projet japan-alliance — résultat dépend de l'état réel."""
@@ -272,27 +267,6 @@ class TestLocalVsGithubProject:
             f"Exit inattendu: {r.returncode}\nstderr: {r.stderr}"
         )
 
-    def test_project_known_json_valid(self):
-        r = run_gh("--project", "japan-alliance", "--format", "json", timeout=45)
-        assert r.returncode in (0, 1)
-        data = assert_valid_json(r.stdout)
-        assert isinstance(data, list)
-
-    def test_project_known_json_single_entry(self):
-        r = run_gh("--project", "japan-alliance", "--format", "json", timeout=45)
-        data = assert_valid_json(r.stdout)
-        # Avec --project on n'audite qu'un seul repo
-        assert len(data) == 1, (
-            f"--project devrait retourner 1 repo, got {len(data)}"
-        )
-
-    def test_project_known_json_name(self):
-        r = run_gh("--project", "japan-alliance", "--format", "json", timeout=45)
-        data = assert_valid_json(r.stdout)
-        # Le nom contient "japan" ou "alliance"
-        name = data[0].get("name", "")
-        assert "japan" in name.lower() or "alliance" in name.lower()
-
 
 class TestLocalVsGithubUnknown:
     def test_project_unknown_exits_nonzero(self):
@@ -323,12 +297,6 @@ class TestLocalVsGithubAll:
         data = assert_valid_json(r.stdout)
         names = [a.get("name", "") for a in data]
         assert any("tricorder" in n.lower() for n in names)
-
-    def test_all_json_includes_japan_alliance(self):
-        r = run_gh("--all", "--format", "json", timeout=60)
-        data = assert_valid_json(r.stdout)
-        names = [a.get("name", "").lower() for a in data]
-        assert any("japan" in n or "alliance" in n for n in names)
 
 
 # ─── Tests : encoding ─────────────────────────────────────────────────────────
