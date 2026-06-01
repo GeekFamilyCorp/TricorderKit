@@ -28,6 +28,7 @@
 | 7 | Orchestration + observabilité — Supabase, Langfuse hooks bout-en-bout, obsidian-agent-layer, tk doctor | ✅ Complete | 22/05/2026 |
 | 8 | Public-ready — INSTALL.md, exemples linked_project anonymisés, ROADMAP.md, docs anonymization, 503 tests PASS | ✅ Complete | 23/05/2026 |
 | 8.5 | v0.9.5 — graphify RAG vault local-first (DEC-023), dédup G1 ingestion veille, obsidian-goat ID safety (R29/R34), security hardening | ✅ Complete | 01/06/2026 |
+| 8.6 | Sécurité & gouvernance frontière — gate public-boundary **appliqué** (CI + pre-push, DEC-026), nettoyage frontière privé/public (legacy + capsules + chemins personnels), licence MIT, règle de sync R38 (DEC-027) | ✅ Complete | 01/06/2026 |
 
 **Phase 7 livrables :**
 - Schéma Supabase (7 tables, RLS, seed 10 publishers) — `supabase/`
@@ -59,6 +60,20 @@
 
 ---
 
+## Prochaines étapes (court terme — prochains jours)
+
+| # | Action | Statut |
+|---|---|---|
+| A | Publier la **GitHub Release v0.9.5** (tag `v0.9.5` déjà poussé) | 🔜 À faire |
+| B | Arbitrer la **PR #2** (ouverte le 13/05) — rebase / merge / fermeture justifiée | 🔜 À faire |
+| C | Intégrer les **6 tests graphify** à la suite committée (503 → 509) | 🔜 À faire |
+| D | **Indexer le vault dans Qdrant** (collection dim 768) + exposer `search_vault` en tool MCP (DEC-023) | 🟡 En cours |
+| E | **Phase 10** — support multi-linked-project simultané, testé de bout en bout | 🟡 En cours |
+| F | Étendre le gate vers un **docs-sync** (vérifier mécaniquement la cohérence README ↔ structure) (DEC-027) | 🔜 À faire |
+| G | Évaluer la **sortie du schéma de domaine** (Supabase) hors moteur public | 🔲 À étudier |
+
+---
+
 ## Principes d'évolution
 
 TricorderKit respecte trois contraintes non négociables à chaque phase :
@@ -73,8 +88,9 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 
 ```
 Tests       : 503 PASS — 0 FAIL — 15 skipped (live)  (+6 graphify locaux à intégrer)
-Plugins     : 10 actifs (3 production-ready, 6 evolving, 1 experimental)
-CLIs        : github-goat ✅ · obsidian-goat ✅ (dry_run_validated)
+Plugins     : 10 actifs (3 production-ready, 7 evolving, 0 experimental)
+CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
+Sécurité    : gate frontière publique appliqué (CI + pre-push, DEC-026) · licence MIT
 Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · claude-code-router
 Infrastructure : Neo4j ✅ · Qdrant ✅ · Temporal ✅ · Langfuse ✅
 ```
