@@ -16,7 +16,7 @@ Usage :
   python ingest_veille.py --index            # apres validation
 """
 from __future__ import annotations
-import argparse, glob, json, os, uuid, datetime
+import argparse, glob, json, os, re, unicodedata, uuid, datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -84,6 +84,44 @@ RELIAB_BADGE = {"confirme": "✅ Confirmé", "probable": "🟡 Probable",
                 "a_verifier": "🟠 À vérifier", "incomplet": "🔴 Incomplet"}
 
 
+# --- Dedup G1 : confronte les fiches au Master Index (source de verite opposable) ---
+def _norm_title(s):
+    """Normalise un titre pour comparaison : sans accents, minuscule, alphanum + espaces."""
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKD", str(s))
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+
+
+def load_master_index_titles(path):
+    """Parse le tableau Markdown du Master Index -> set de titres normalises.
+    Colonnes : | ID | Type | Titre | Status | Completude | Chemin |."""
+    titles = set()
+    if not path or not os.path.isfile(path):
+        return titles
+    for line in open(path, "r", encoding="utf-8", errors="replace"):
+        if not line.startswith("|"):
+            continue
+        cols = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cols) >= 3 and cols[0] not in ("ID", "---", ""):
+            t = _norm_title(cols[2])
+            if t:
+                titles.add(t)
+    return titles
+
+
+def dedup_status(n, index_titles):
+    """nouveau / existant selon presence du titre (int. ou JP) dans le Master Index.
+    NB : matching exact-normalise ; le fuzzy romaji<->JP reste un chantier (DEC-021)."""
+    if not index_titles:
+        return "inconnu"  # pas de Master Index fourni
+    for key in (n.get("titre_international"), n.get("titre_japonais")):
+        if key and _norm_title(key) in index_titles:
+            return "existant"
+    return "nouveau"
+
+
 def normalize(f):
     """Fiche veille brute -> dict normalise exploitable (vault/RAG)."""
     tr = f.get("tracabilite") or {}
@@ -119,18 +157,23 @@ def doc_text(n):
 
 
 def build_report(src_path, normalized):
-    by_reliab, by_type = {}, {}
+    by_reliab, by_type, by_dedup = {}, {}, {}
     for n in normalized:
         by_reliab[n["fiabilite"]] = by_reliab.get(n["fiabilite"], 0) + 1
         by_type[n["type"]] = by_type.get(n["type"], 0) + 1
+        by_dedup[n.get("dedup", "inconnu")] = by_dedup.get(n.get("dedup", "inconnu"), 0) + 1
     return {
         "source_file": src_path,
         "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
         "n_fiches": len(normalized),
         "par_fiabilite": by_reliab,
         "par_type": by_type,
+        "par_dedup": by_dedup,
         # candidats indexables = tout sauf incomplet (🔴 exclu du RAG par defaut)
         "n_indexables": sum(1 for n in normalized if n["fiabilite"] != "incomplet"),
+        # candidats a CREER dans le vault = nouveau ET non-incomplet (dedup G1)
+        "n_a_creer": sum(1 for n in normalized
+                         if n["fiabilite"] != "incomplet" and n.get("dedup") == "nouveau"),
         "fiches": normalized,
     }
 
@@ -144,10 +187,13 @@ def write_report_md(path, rep):
         if k in rep["par_fiabilite"]:
             L.append("- %s : %d" % (RELIAB_BADGE[k], rep["par_fiabilite"][k]))
     L += ["", "Par type : " + ", ".join("%s=%d" % (t, c) for t, c in rep["par_type"].items()),
-          "Indexables RAG (hors 🔴) : %d" % rep["n_indexables"], "",
+          "Dedup G1 (vs Master Index) : " + ", ".join("%s=%d" % (d, c) for d, c in rep.get("par_dedup", {}).items()),
+          "Indexables RAG (hors 🔴) : %d" % rep["n_indexables"],
+          "À créer dans le vault (nouveau ET hors 🔴) : %d" % rep.get("n_a_creer", 0), "",
           "## Fiches", ""]
     for n in rep["fiches"]:
-        L.append("### %s — %s" % (n["fiabilite_badge"], n["titre_international"] or "(sans titre)"))
+        L.append("### %s [%s] — %s" % (n["fiabilite_badge"], n.get("dedup", "inconnu"),
+                                       n["titre_international"] or "(sans titre)"))
         L.append("- type=%s | auteur=%s | éditeur=%s | ISBN=%s" %
                  (n["type"], n["auteur"] or "—", n["editeur"] or "—", n["isbn_13"] or "—"))
         L.append("- sources=%s" % (", ".join(n["sources"]) or "—"))
@@ -183,7 +229,7 @@ def index_into_rag(normalized, qdrant, collection, ollama, model):
 def main():
     ap = argparse.ArgumentParser(description="Pont d'ingestion veille -> fiches + RAG.")
     ap.add_argument("--runs-root", action="append", default=None,
-                    help="Racine(s) runs. Defaut : zone unique puis fallback v0.7.")
+                    help="Racine(s) des sorties veille. Defaut : variable d'env TK_VEILLE_RUNS.")
     ap.add_argument("--dry-run", action="store_true", default=True)
     ap.add_argument("--index", dest="dry_run", action="store_false",
                     help="Desactive le dry-run et indexe reellement dans le RAG.")
@@ -192,6 +238,8 @@ def main():
     ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--model", default="nomic-embed-text")
     ap.add_argument("--report", default=os.path.join(HERE, "veille_ingest_report.json"))
+    ap.add_argument("--master-index", default=os.environ.get("TK_MASTER_INDEX", ""),
+                    help="Master Index pour dedup G1 (defaut : env TK_MASTER_INDEX).")
     args = ap.parse_args()
 
     roots = args.runs_root or DEFAULT_ROOTS
@@ -202,7 +250,11 @@ def main():
     with open(src, "r", encoding="utf-8") as fh:
         data = json.load(fh)
     normalized = [normalize(f) for f in (data.get("fiches") or [])]
+    index_titles = load_master_index_titles(args.master_index)
+    for n in normalized:
+        n["dedup"] = dedup_status(n, index_titles)
     rep = build_report(src, normalized)
+    rep["master_index"] = args.master_index or None
 
     with open(args.report, "w", encoding="utf-8") as fh:
         json.dump(rep, fh, ensure_ascii=False, indent=2)
