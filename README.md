@@ -2,7 +2,7 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-v0.9-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.5-blue)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
 [![Tests](https://img.shields.io/badge/tests-503%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
@@ -18,7 +18,10 @@ v0.6 definition : memory + skills + token hygiene + observability
 v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
 v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
 v0.9 definition : Supabase layer + Langfuse observability + obsidian-agent-layer + tk doctor + public-ready documentation
+v0.9.5 definition : graphify hybrid RAG (vault local-first, dense search, incremental indexer) + veille ingestion dedup (G1) + obsidian-goat ID safety (replace-id R29 / next-id R34) + security hardening
 ```
+
+> **What's New (v0.9.5)** : the graphify plugin gains a local-first hybrid RAG layer — incremental vault indexer, dense semantic search, a veille-ingestion bridge with G1 deduplication (new vs existing entries gated against the Master Index), and a health heartbeat (DEC-023). The `obsidian-goat` tool now guarantees safe ID operations (`replace-id`, `next-id`).
 
 It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
 
@@ -208,6 +211,18 @@ python tests/cli_contracts/test_github_goat.py
 
 ---
 
+## v0.9.5 — What's New vs v0.9
+
+See [CHANGELOG.md](CHANGELOG.md) for the full entries (0.9.2 → 0.9.5). Key additions:
+
+- **graphify hybrid RAG** — `plugins/graphify/scripts/hybrid_rag.py`: local-first vault RAG with an incremental indexer, dense semantic search, a veille-ingestion bridge, and a health heartbeat (DEC-023)
+- **Veille ingestion dedup (G1)** — new fiches are confronted against the Master Index, marked new/existing, with an `n_a_creer` gate to prevent duplicates
+- **obsidian-goat ID safety** — `replace-id` (R29, full-token replacement, anti-collision) and `next-id` (R34, safe ID allocation), dry-run by default
+- **Security & Windows hardening** — anti-prompt-injection `sanitize_input` activity, deterministic Qdrant IDs (`uuid.uuid5`), custom Semgrep rules, UTF-8 enforcement (0.9.2)
+- **503 tests passing** — 0 FAIL
+
+---
+
 ## v0.9 — What's New vs v0.8
 
 See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
@@ -219,7 +234,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
 - **tk doctor** — unified health check: 14 checks (Python, Docker, 4 services, `.env`, 4 dirs, modules, linked_projects, secrets); `[OK]` / `[WARN]` / `[FAIL]` output
 - **tk rapport** — CLI status report from `BOOT_SUMMARY.md` + `STATUS.md` → `reports/status/latest_status.md` (JSON flag supported)
 - **Public-ready docs** — `INSTALL.md`, `examples/linked-project-template/`, `docs/linked_projects.md`, `docs/anonymization.md`, `ROADMAP.md`
-- **485 tests passing** — 0 FAIL (up from 174 at v0.9 M1)
+- **503 tests passing** — 0 FAIL (up from 174 at v0.9 M1)
 
 ---
 
@@ -276,5 +291,5 @@ This is a personal/research project. If you fork it, please respect the atomic k
 
 ---
 
-*TricorderKit v0.9 — GeekFamilyCorp — 2026*  
+*TricorderKit v0.9.5 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*

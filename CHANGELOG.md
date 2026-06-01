@@ -4,6 +4,17 @@
 
 ---
 
+## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
+
+### Ajouté
+- **plugins/graphify/scripts/hybrid_rag.py** — RAG vault **local-first** : indexeur incrémental, recherche dense, pont d'ingestion de veille, heartbeat de santé. Implémente DEC-023 (RAG hybride local-first).
+- **Dédup G1 dans l'ingestion de veille** — chaque fiche est confrontée au **Master Index** → marquée `nouveau`/`existant`, avec gate `n_a_creer` qui empêche la création de doublons.
+
+### Référence
+- DEC-023 (.planning/DECISIONS.md) — RAG hybride local-first. Commits `cbd9f53` (RAG), `124baba` (dédup G1).
+
+> Note : 6 tests graphify (`test_hybrid_rag.py`, `test_hybrid_rag_integration.py`) validés en local, à intégrer à la suite committée (non comptés dans le total 503).
+
 ## [0.9.4] — 29/05/2026 — obsidian-goat v0.2.1 : `next-id` (allocation d'ID, R34) + rétrospective
 
 ### Ajouté

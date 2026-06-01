@@ -1,5 +1,5 @@
 # STATUS.md — TricorderKit v0.9
-> Mis à jour : 2026-05-23
+> Mis à jour : 2026-06-01
 > Source : BOOT_SUMMARY.md + scan `plugins/` + audit session
 
 ---
@@ -74,4 +74,4 @@
 
 ---
 
-*TricorderKit v0.9 — 2026-05-23 — 485 tests PASS, 0 FAIL*
+*TricorderKit v0.9.5 — 2026-06-01 — 503 tests PASS, 0 FAIL*
