@@ -66,7 +66,7 @@
 |---|---|---|
 | A | Publier la **GitHub Release v0.9.5** (tag `v0.9.5` déjà poussé) | 🔜 À faire |
 | B | Arbitrer la **PR #2** (ouverte le 13/05) — rebase / merge / fermeture justifiée | 🔜 À faire |
-| C | Intégrer les **6 tests graphify** à la suite committée (503 → 509) | 🔜 À faire |
+| C | Intégrer les **tests graphify** à la suite committée | ✅ Fait (4 unit PASS + 1 integration Qdrant-gated) |
 | D | **Indexer le vault dans Qdrant** (collection dim 768) + exposer `search_vault` en tool MCP (DEC-023) | 🟡 En cours |
 | E | **Phase 10** — support multi-linked-project simultané, testé de bout en bout | 🟡 En cours |
 | F | Étendre le gate vers un **docs-sync** (vérifier mécaniquement la cohérence README ↔ structure) (DEC-027) | 🔜 À faire |
@@ -87,7 +87,7 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 ## État actuel (v0.9.5 — 2026-06-01)
 
 ```
-Tests       : 503 PASS — 0 FAIL — 15 skipped (live)  (+6 graphify locaux à intégrer)
+Tests       : 503 PASS — 0 FAIL — 15 skipped (live) · graphify : 4 tests unit PASS + 1 integration (Qdrant) intégrés au dépôt
 Plugins     : 10 actifs (3 production-ready, 7 evolving, 0 experimental)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
 Sécurité    : gate frontière publique appliqué (CI + pre-push, DEC-026) · licence MIT
