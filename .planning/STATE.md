@@ -1,7 +1,12 @@
 # STATE.md — TricorderKit v0.9
 
 > État courant du projet. Mettre à jour à chaque session.
-> Dernière mise à jour : 2026-05-29
+> Dernière mise à jour : 2026-06-01
+
+> **Session 2026-06-01** : optimisation des tâches planifiées Japan-Alliance (DEC-020) —
+> fusion du doublon d'enrichissement SO (un seul chargement de contexte vault/jour),
+> volume 10+10 → 12 fiches/nuit, recadrage horaires anti-chevauchement (fenêtre creuse 02h–07h),
+> correction dépendance (bilan 02h lit le rapport de la veille). Voir section « Tâches planifiées ».
 
 > **Session 2026-05-29 (E4)** : contrôle vault Japan-Alliance + liens modules.
 > Connexion vivante OK (5421 notes, rapports TK du jour écrits). DEC-014 : fix routing
@@ -93,6 +98,22 @@ Règle d'or : **TricorderKit exécute. Le projet lié spécialise. Le vault stoc
 
 ---
 
+## Tâches planifiées (Japan-Alliance) — DEC-020, 2026-06-01
+
+Fuseau : Europe/Paris. Prompts dans `%USERPROFILE%\Documents\Claude\Scheduled\` (hors repo versionné).
+
+| Heure | Tâche | Cron | Rôle |
+|---|---|---|---|
+| 02h00 quotidien | `analyse-japan-alliance` | `0 2 * * *` | Bilan veille + Master Index + **enrichissement SO consolidé (12 fiches)** |
+| 04h00 dimanche | `weekly-ecosystem-audit` | `0 4 * * 0` | Grand Audit écosystème (skills/plugins/MCPs) + 90_Templates |
+| 05h00 quotidien | `japan-alliance-an-tracker` | `0 5 * * *` | Tracker complétion fiches Anime (AN) |
+| 07h00 quotidien | `japan-alliance-tricorderkit-7h30` | `0 7 * * *` | Rapport matinal **allégé** (reporting run nuit, lecture seule) |
+| 12h00 quotidien | `rollout-studios-japan-alliance` | `0 12 * * *` | Création 10 fiches studios ST### depuis la file |
+
+Règles : enrichissement SO en **un seul passage nuit** (12 fiches) ; bilan 02h lit `RAPPORT_[DATE_HIER].md` ; écarts ≥ 1h, jitter ~8 min → aucun chevauchement.
+
+---
+
 ## Blockers actifs
 
 Aucun.
@@ -126,4 +147,4 @@ Aucun.
 
 ---
 
-*Dernière mise à jour : 2026-05-23 — v0.9 Public-ready COMPLET — 485 tests, 0 FAIL*
+*Dernière mise à jour : 2026-06-01 — DEC-020 optimisation tâches planifiées (fusion SO + recadrage horaires, volume 12)*

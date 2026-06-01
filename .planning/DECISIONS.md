@@ -220,3 +220,29 @@
 - **Statut** : Appliquée.
 
 *Dernière mise à jour : 2026-05-29 — DEC-019 rétrospective + auto-améliorations (R32-R36, next-id)*
+
+---
+
+## DEC-020 — Optimisation des tâches planifiées : fusion enrichissement SO + recadrage horaires (anti-chevauchement) — 2026-06-01
+
+- **Contexte** : à la demande de Sébastien (économie tokens, heures d'affluence, non-chevauchement), audit des 5 tâches planifiées Japan-Alliance. Deux constats : (1) deux horaires « menteurs » — `analyse-japan-alliance` décrite « Bilan 18h » tournait en réalité à 02h (cron `0 2 * * *`), `weekly-ecosystem-audit` décrite « Dimanche 21h » tournait à 05h dim. (cron `0 5 * * 0`) ; (2) **doublon d'enrichissement SO** : le rapport matinal 07h ET le bilan exécutaient chacun un lot « 10 fiches SO », soit deux chargements complets du contexte vault par jour.
+
+- **Challenge transparent (loggé)** : déplacer les horaires NE réduit PAS le coût en tokens (facturation au token, pas à l'heure) ; les tâches étaient déjà en heures creuses. Le seul vrai levier coût = suppression du doublon + réduction du volume. Heures creuses ≈ latence/rate-limit, pas prix.
+
+- **Décisions appliquées** :
+  1. **Fusion du doublon SO** : enrichissement retiré du rapport matinal `japan-alliance-tricorderkit-7h30` (devenu lecture seule : reporte le résultat de la nuit) ; passage d'enrichissement unique consolidé porté par `analyse-japan-alliance` (run nuit 02h) → **un seul chargement de contexte vault/jour** au lieu de deux.
+  2. **Volume réduit 10+10 → 12** (et non 20) fiches/nuit, sur recommandation, pour limiter le coût par run. Conserve la file d'attente SO (ordre numérique croissant, champs `title_jp`/`author_jp`/`publisher_jp` manquants).
+  3. **Dépendance corrigée** : le bilan tournant à 02h lit désormais le rapport matinal de la **VEILLE** (`RAPPORT_[DATE_HIER].md`) — le rapport du jour J n'existe pas encore à 02h.
+  4. **Recadrage horaires (anti-chevauchement, fenêtre creuse 02h–07h)** :
+     - `analyse-japan-alliance` : `0 2 * * *` (inchangé, description réalignée « Run nuit 02h »).
+     - `japan-alliance-an-tracker` : `0 0 * * *` → **`0 5 * * *`** (minuit → 05h).
+     - `weekly-ecosystem-audit` : `0 5 * * 0` → **`0 4 * * 0`** (05h → 04h dimanche).
+     - `japan-alliance-tricorderkit-7h30` : `0 7 * * *` (inchangé, allégé).
+     - `rollout-studios-japan-alliance` : `0 12 * * *` (inchangé — midi = creux US, isole la charge d'écriture).
+     - Écarts mini ≥ 1h (dim. 04h→05h), jitter ~8 min absorbé → aucun chevauchement.
+
+- **Gain** : ~1 chargement complet de contexte vault en moins/jour + 8 fiches/jour en moins (20→12) ; descriptions désormais conformes aux crons réels.
+- **Routage (DEC-016)** : prompts des tâches planifiées = `%USERPROFILE%\Documents\Claude\Scheduled\` (hors repo versionné) ; cette décision + journalisation → repo **TricorderKit**.
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-06-01 — DEC-020 optimisation tâches planifiées (fusion SO + recadrage horaires)*
