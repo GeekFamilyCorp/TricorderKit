@@ -1,6 +1,6 @@
 # ROADMAP — TricorderKit
 
-> Version : 0.9 — Mise à jour : 2026-05-23
+> Version : 0.9.5 — Mise à jour : 2026-06-01
 > Ce fichier décrit les phases publiques de TricorderKit.
 > Les détails opérationnels internes sont dans `.planning/ROADMAP_v0.9.md`.
 
@@ -26,7 +26,8 @@
 | Phase | Nom | Statut | Date |
 |---|---|---|---|
 | 7 | Orchestration + observabilité — Supabase, Langfuse hooks bout-en-bout, obsidian-agent-layer, tk doctor | ✅ Complete | 22/05/2026 |
-| 8 | Public-ready — INSTALL.md, exemples linked_project anonymisés, ROADMAP.md, docs anonymization, 485 tests PASS | ✅ Complete | 23/05/2026 |
+| 8 | Public-ready — INSTALL.md, exemples linked_project anonymisés, ROADMAP.md, docs anonymization, 503 tests PASS | ✅ Complete | 23/05/2026 |
+| 8.5 | v0.9.5 — graphify RAG vault local-first (DEC-023), dédup G1 ingestion veille, obsidian-goat ID safety (R29/R34), security hardening | ✅ Complete | 01/06/2026 |
 
 **Phase 7 livrables :**
 - Schéma Supabase (7 tables, RLS, seed 10 publishers) — `supabase/`
@@ -66,10 +67,10 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 
 ---
 
-## État actuel (v0.9 — 2026-05-23)
+## État actuel (v0.9.5 — 2026-06-01)
 
 ```
-Tests       : 485 PASS — 0 FAIL — 15 skipped (live)
+Tests       : 503 PASS — 0 FAIL — 15 skipped (live)  (+6 graphify locaux à intégrer)
 Plugins     : 10 actifs (3 production-ready, 6 evolving, 1 experimental)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (dry_run_validated)
 Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · claude-code-router
@@ -78,4 +79,4 @@ Infrastructure : Neo4j ✅ · Qdrant ✅ · Temporal ✅ · Langfuse ✅
 
 ---
 
-*TricorderKit v0.9 — GeekFamilyCorp — 2026*
+*TricorderKit v0.9.5 — GeekFamilyCorp — 2026*

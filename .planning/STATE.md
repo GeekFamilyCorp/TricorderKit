@@ -19,9 +19,9 @@
 
 ## Version courante
 
-- **Version** : 0.9 — Public-ready
-- **Date** : 2026-05-23
-- **Phase active** : v0.9 terminé — prochaine étape : commit + push public
+- **Version** : 0.9.5 — Public-ready
+- **Date** : 2026-06-01
+- **Phase active** : v0.9.5 poussé (graphify RAG local-first DEC-023 + dédup G1) — prochaine étape : verrouiller frontière privé/public (Lot 2) + tag release v0.9.5
 
 ---
 
@@ -51,8 +51,8 @@
 ## Tests
 
 ```
-Total     : 503 PASS — 0 FAIL — 15 skipped (live)
-Commit HEAD : 8e60aa8 (23/05/2026 M5 complet)
+Total     : 503 PASS — 0 FAIL — 15 skipped (live)  (+6 tests graphify locaux à intégrer)
+Commit HEAD : 124baba (01/06/2026 — graphify RAG local-first + dédup G1)
 ```
 
 ---

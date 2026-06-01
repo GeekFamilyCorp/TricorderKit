@@ -66,7 +66,7 @@ make install
 make doctor
 ```
 
-> `Makefile` — à venir. Équivalent manuel :
+> `Makefile` présent à la racine (cibles : `install`, `boot`, `doctor`, `health`, `test`, `lint`, `docker-up/down`, `validate`, `security`, `clean`). Équivalent manuel sans `make` :
 > ```bash
 > cp .env.example .env          # puis éditer .env
 > pip install requests httpx rich pyyaml qdrant-client temporalio feedparser
