@@ -112,7 +112,7 @@
   (2) `manifest.yml:31` déclarait déjà la bonne valeur (`obsidian-japan-alliance`) — le routeur Python était désynchronisé du manifeste et de la topologie MCP vivante.
   (3) Validation : les tests `test_obsidian_agent_layer.py` assertent sur l'enum `VaultId.NOTES`, pas sur la string MCP → non impactés.
 - Découvertes annexes (à arbitrer par Sébastien, non corrigées) :
-  - `configs/local/linked_projects.yaml` pointe le vault lié vers `Projects/Japan-Alliance/japan-alliance_vault/` qui est un **dossier vide en lecture seule** (size 0, perms 444) ; le vault de contenu vivant (5421 notes) est en réalité `%USERPROFILE%\Documents\obsidian\Japan-Alliance`.
+  - `configs/local/linked_projects.yaml` pointe le vault lié vers `Projects/Japan-Alliance/japan-alliance_vault/` qui est un **dossier vide en lecture seule** (size 0, perms 444) ; le vault de contenu vivant (5421 notes) est en réalité `<vault-path>/Japan-Alliance`.
   - `linked_projects.yaml` active `allow_tricorderkit_write: true` alors que DEC-012/DEC-013 définissent Japan-Alliance comme vault **read-only** ; divergence de politique à trancher.
 - Impact : fix local appliqué ; push GitHub en attente de validation (cf. E5).
 - Résolution (2026-05-29, arbitrage Sébastien) :
@@ -161,7 +161,7 @@
 
 ## DEC-017 — Assainissement vault Japan-Alliance : 4 chantiers (correction + back-fill + déduplication par archivage) — 2026-05-29
 
-- **Contexte** : les cartes de filière (MOC franchises + IX000) ont révélé 4 anomalies systémiques dans le vault de contenu `%USERPROFILE%\Documents\obsidian\Japan-Alliance` (non versionné git → toute opération destructrice = HIGH risk → archivage réversible imposé).
+- **Contexte** : les cartes de filière (MOC franchises + IX000) ont révélé 4 anomalies systémiques dans le vault de contenu `<vault-path>/Japan-Alliance` (non versionné git → toute opération destructrice = HIGH risk → archivage réversible imposé).
 - **Chantier 1 — Lien éditeur cassé** : `ED040_shueisha` → `[[ED039_shueisha]]` sur **41 fiches vivantes** (Shueisha). PowerShell déterministe, UTF-8 sans BOM, exclusion `99_Migration_Backups` + `03_Manifestes_Migration`. Vérif : 0 occurrence résiduelle.
   - ⚠️ **PIÈGE ÉVITÉ (leçon majeure)** : un remplacement global naïf `ED040`→`ED039` aurait corrompu `ED040_shufu_to_seikatsu_sha` (主婦と生活社, éditeur légitime distinct). Remplacement ciblé sur le **token complet** `ED040_shueisha` uniquement. → Règle gravée : **avant tout remplacement global d'ID, grep des collisions de préfixe et cibler le token entier**.
 - **Chantier 2 — Back-fill relations frontmatter** : ajout `related_anime` sur MA001/MA008/MA017/MA011 + `adaptation_de` bidirectionnel sur AN004/AN005/AN006/AN007/AN010. Schéma **natif des fiches** respecté (≠ schéma idéalisé du MOC) pour éviter une duplication de schéma.
@@ -242,7 +242,66 @@
      - Écarts mini ≥ 1h (dim. 04h→05h), jitter ~8 min absorbé → aucun chevauchement.
 
 - **Gain** : ~1 chargement complet de contexte vault en moins/jour + 8 fiches/jour en moins (20→12) ; descriptions désormais conformes aux crons réels.
-- **Routage (DEC-016)** : prompts des tâches planifiées = `%USERPROFILE%\Documents\Claude\Scheduled\` (hors repo versionné) ; cette décision + journalisation → repo **TricorderKit**.
+- **Routage (DEC-016)** : prompts des tâches planifiées = `<scheduled-path>/` (hors repo versionné) ; cette décision + journalisation → repo **TricorderKit**.
 - **Statut** : Appliquée.
 
 *Dernière mise à jour : 2026-06-01 — DEC-020 optimisation tâches planifiées (fusion SO + recadrage horaires)*
+
+---
+
+## DEC-021 — Durcissement du Registre Central (dédup vs Master Index complet + goat next-id) — 2026-06-01
+
+- **Contexte** : audit des 5 fichiers d'amélioration (juin 2026). Vérification vault : le Registre Central existe déjà (`Japan-Alliance/00_System/03_Manifestes_Migration/99_MASTER_INDEX.md`, 1 232 entrées nocturnes, 0 anomalie) + index typés par rubrique + Registre de Liaison. Le fichier 02 ne propose donc rien à créer.
+- **Risque identifié** : la règle « vérifier avant création » des `index.md` pointait vers un tableau **partiel** (« fiches clés ») ≠ Master Index exhaustif → faux négatif → doublon. ID attribué « dernier + 1 » manuel (ou figé, ex. « AN011 »), fragile car IDs épars.
+- **Décision appliquée** : en-têtes et « règles d'ajout » des index de rubrique repointés vers `99_MASTER_INDEX.md` comme source de vérité dédup, et attribution d'ID via `goat next-id <PREFIXE>` (R34) au lieu de « dernier + 1 ». `AGENTS.md` (repo public) laissé **générique** : la règle spécifique vit dans le vault (anonymisation DEC-016).
+- **Appliqué à** : `01_Mangas & Light Novels/index.md` (en-tête + étapes 1-2) et `02_Anime & Production/index.md` (en-tête + étapes 1-2, suppression de l'ID figé « AN011 »). Autres rubriques : même patch à répliquer (formulations propres à vérifier par fichier).
+- **Reste à faire** : passe fuzzy romaji/JP dans le générateur du Master Index (MangaTracker) ; répliquer aux rubriques restantes (jeux vidéo, personnes, lieux, etc.).
+- **Statut** : Appliquée (manga + anime) — extension en cours.
+
+## DEC-022 — Routeur SLM local zero-token (Ollama/Qwen) en complément de model-router — 2026-06-01
+
+- **Contexte** : `model-router` et `claude-code-router` décident côté Claude (facturé en tokens). Fichier 05 propose de déporter la décision de routage sur un SLM local gratuit.
+- **Décision** : introduire un routeur local (PoC `TricorderKit/.planning/poc-local-router/`) — gateway Python → Ollama (Structured Outputs, `temperature=0`, `keep_alive=0`) → choix d'un profil MCP filtré. Profils génériques (episodic/domain/dev), aucun chemin perso en dur. Complément, non remplacement, de `model-router`.
+- **Validation** : tests unitaires 6/6 PASS (repli sûr sans Ollama) ; harnais d'éval routage `eval_routing.py` sur jeu étiqueté = **9/9, accuracy 1.0** (classifieur de référence). Install Ollama réelle impraticable en sandbox (binaire + modèle 2 Go, éphémère) → exécution end-to-end côté poste.
+- **MAJ 2026-06-01 (test réel via Ollama / Desktop Commander)** : install confirmée (`qwen:1.8b`, `qwen3.6:latest`, `nomic-embed-text` sur `:11434`). PoC repassé en **REST urllib (zéro dépendance pip)**, modèle défaut `qwen:1.8b`. **Bug trouvé et corrigé** : `keep_alive=0` rechargeait le modèle à froid à chaque appel → timeout ; passé à `keep_alive="5m"` + timeout 120 s (env-configurables). Stratégie modèles : routage=`qwen:1.8b`, raisonnement lourd offloadé=`qwen3.6`, embeddings (G3)=`nomic-embed-text`.
+- **Résultat mesuré en réel (Desktop Commander, 2026-06-01)** : `qwen:1.8b` **seul** = 6/9 (0.667), latence 8-33 s/appel + 40 s de chargement à froid. → **Optimisation : routage HYBRIDE** mots-clés d'abord (déterministe, instantané, zéro token) + SLM en secours sur ambiguïté (marge < seuil). Mots-clés normalisés (accents strippés). **Résultat optimisé = 9/9 (accuracy 1.0), 9 prompts sur 9 routés en ~0 ms, zéro appel SLM.** Conclusion : pour CE routage, le SLM est plus lent et moins précis qu'un classifieur déterministe — il ne reste utile que comme filet sur les cas réellement ambigus.
+- **Reste à faire (poste)** : remplir `mcp-configs/*.json` réels ; brancher la sortie du routeur sur le chargement effectif des profils MCP.
+- **Statut** : Acceptée — testé et optimisé en réel (hybride 9/9). Industrialisation : câblage MCP restant.
+
+## DEC-023 — Pipeline RAG hybride (dense+sparse+RRF+cross-encoder) dans graphify — 2026-06-01
+
+- **Contexte** : `graphify` était doc-only (README/SKILL/manifest, aucun pipeline). Fichier 04 fournit une implémentation de référence.
+- **Décision** : implémenter `plugins/graphify/scripts/hybrid_rag.py` — Qdrant (dense) + BM25 (sparse) → fusion RRF → re-ranking cross-encoder, n'injectant que le Top-N. Dépendances lourdes en lazy-import (module testable sans torch/HF).
+- **Validation** : tests logique RRF 4/4 PASS + **test d'intégration end-to-end exécuté** (Qdrant `:memory:` réel + BM25 + RRF + rerank stand-in) — classe correctement les docs pertinents et écarte le bruit. Compatibilité API qdrant-client récente (`query_points`) + ancienne (`search`).
+- **MAJ 2026-06-01 (test réel via Ollama / Desktop Commander)** : backend d'embeddings **Ollama `nomic-embed-text`** ajouté au livrable (`OllamaEmbedder`, REST urllib, zéro torch) ; `embed_backend="ollama"` par défaut. **Exécuté en réel sur le poste** : embeddings 768 dims, pipeline dense+sparse+RRF remonte correctement les 2 docs pertinents (X500+REF-9942) et écarte le bruit (`PERTINENCE_OK=True`). Bug `import json` manquant trouvé par le test et corrigé. Vérif livrable : RRF ok + instanciation ollama + embedding réel 768d = OK.
+- **Reste à faire** : indexer le vault dans Qdrant `:6333` (collection dim 768) ; exposer `search_vault()` en tool MCP ; re-ranking cross-encoder optionnel (lourd) ou rerank lexical léger.
+- **Statut** : Acceptée — pipeline validé en réel avec embeddings nomic-embed-text ; indexation Qdrant prod restante.
+
+## DEC-024 — Hygiène MCP : audit descriptions (cap 2 Ko) + janitor d'archivage à froid — 2026-06-01
+
+- **Contexte** : fichier 06 — « Tool Schema Bloat » et hygiène active non automatisée. Vérification : `claude-vault/60_ARCHIVE` + `ARCHIVE_INDEX.md` (règle « > 90 j », « jamais supprimer ») existent mais **archive vide, aucune automatisation**.
+- **Décision** : outillage livré (`TricorderKit/.planning/poc-hygiene-mcp/`) — `mcp_desc_audit.py` (mesure descriptions, plafond 2 Ko) + `janitor.py` (dry-run par défaut, archive Daily Logs > 90 j vers `60_ARCHIVE/Processed`, jamais de suppression).
+- **Validation** : `mcp_desc_audit.py` exécuté sur `.mcp.json` réel = 1 serveur, 113 o, sous plafond. Janitor exécuté (logique) sur le vrai `claude-vault` via MCP = Daily Logs 2026-04-04→06-01, **0 candidat** au seuil 90 j (vault trop jeune) — comportement correct, aucune action destructive.
+- **Reste à faire** : planifier `janitor.py` en tâche hebdo (Temporal) quand des logs dépasseront 90 j ; compression en embeddings à brancher sur DEC-023.
+- **Statut** : Acceptée — outillage livré et vérifié, planification différée.
+
+*Dernière mise à jour : 2026-06-01 — DEC-021..024 intégration audit 5 fichiers (registre durci · routeur local · RAG hybride · hygiène MCP)*
+
+
+### DEC-023 — MAJ 2026-06-01 (mise en production G3 + collaboration Antigravity)
+- **Indexeur livré** : `plugins/graphify/scripts/index_vault.py` — lit le vault Japan-Alliance (5 533 .md), embeddings `nomic-embed-text` (768d) via REST urllib, collection `vault` (Cosine 768), payload {path,title,folder_top,kind,n_chars,text} → **découple search_vault de tout index positionnel**. IDs `uuid5(path)` (idempotent). Modes : `--dry-run`, `--limit`, **`--incremental`** (état mtime `index_state.json`, run nocturne léger). Validé : dry-run (5 533, dim 768) + upsert REST OK.
+- **Contention Ollama identifiée** : sur 16 Go, Qwen (Hermes) évince `nomic` → embeddings 5-9 s/note au lieu de ~0,15 s à froid. Index complet diurne = plusieurs heures + ralentit la veille Hermes de 12h.
+- **Décision de sérialisation** : indexation RAG **déportée la nuit (03:00 Europe/Paris)**, en incrémental, planifiée par Antigravity (tâche Windows `\Antigravity\TricorderKit_RAG_Index`). Premier run nocturne (état vide) = index complet à froid non contendu.
+- **search_vault livré** : `plugins/graphify/scripts/search_vault.py` — recherche dense Qdrant, prefixe `search_query:`, texte lu depuis le payload. CLI + fonction importable (à exposer en tool MCP après index nocturne).
+- **Reste** : e2e search après index nocturne ; exposition tool MCP ; rerank lexical léger optionnel.
+- **Statut** : Appliquée (prod) — index sérialisé nocturne en place ; e2e + tool MCP après premier run.
+
+## DEC-025 — Collaboration asynchrone avec Antigravity (Gemini) — 2026-06-01
+- **Contexte** : un second agent, **Antigravity (Gemini)**, opère en parallèle (protocole `Japan-Alliance_Antigravity\Protocole_Antigravity_Claude.md`). Risque de divergence (cf. dossier `Openclaw Autonome\TricorderKit_v0.7` vs zone de travail courante).
+- **Décision — séparation des responsabilités** : Antigravity = veilles/scraping/data-tracking, **crons & scheduling**, ops système PowerShell, flux Hermes. Claude = architecture, code complexe, RAG, fiches — **consommateur lecture seule** des sorties veille (`veille_fiches_detaillees_*.json`, `<source>/normalized_records.jsonl`), sans modifier scripts/schéma/crons d'Antigravity. Optimisation → **proposée** via handoff, jamais appliquée unilatéralement.
+- **Passage de témoin par fichiers** (zone unique `TricorderKit Autonome\`) : `a_faire_par_antigravity.md` (Claude→Antigravity) ↔ `fait_par_antigravity.md` (Antigravity→Claude).
+- **Consolidation zone de travail** : sortie de veille rapatriée dans `TricorderKit Autonome\tools\jp-scraper\runs\` via **jonction Windows** créée par Antigravity (backup `runs__pre_migration_bak`), schéma inchangé. Exécutée par Antigravity (sa voie), pas par Claude.
+- **Pont d'ingestion** : `plugins/graphify/scripts/ingest_veille.py` (Claude, lecture seule) — parse fiches veille, classifie fiabilité Japan-Alliance (✅/🟡/🟠/🔴), dry-run par défaut, indexation RAG gated `--index` (exclut 🔴). Validé en dry-run.
+- **Statut** : Acceptée — appliquée (consolidation + sérialisation + pont en dry-run). Reste : wiring écriture vault + dedup G1, e2e après index nocturne.
+
+*Dernière mise à jour : 2026-06-01 — DEC-023 prod (index sérialisé nocturne, search_vault) + DEC-025 collaboration Antigravity*

@@ -100,7 +100,7 @@ Règle d'or : **TricorderKit exécute. Le projet lié spécialise. Le vault stoc
 
 ## Tâches planifiées (Japan-Alliance) — DEC-020, 2026-06-01
 
-Fuseau : Europe/Paris. Prompts dans `%USERPROFILE%\Documents\Claude\Scheduled\` (hors repo versionné).
+Fuseau : Europe/Paris. Prompts dans `<scheduled-path>/` (hors repo versionné).
 
 | Heure | Tâche | Cron | Rôle |
 |---|---|---|---|
