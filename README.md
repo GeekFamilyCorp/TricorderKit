@@ -257,6 +257,8 @@ See [ROADMAP.md](ROADMAP.md) for full details.
 | 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
 | 7 | v0.9 — Orchestration + observability | ✅ Complete | 22/05/2026 |
 | 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 23/05/2026 |
+| 8.5 | v0.9.5 — graphify RAG local-first + obsidian-goat ID safety | ✅ Complete | 01/06/2026 |
+| 8.6 | Security & boundary governance — public-boundary gate (CI + pre-push), frontier cleanup, MIT license | ✅ Complete | 01/06/2026 |
 | 9 | VPS deployment (optional) | 🔲 Planned | — |
 | 10 | Multi-linked-project support (2 linked projects active) | 🟡 In progress | — |
 | 11 | Plugin marketplace / registry | 🔲 Planned | — |
