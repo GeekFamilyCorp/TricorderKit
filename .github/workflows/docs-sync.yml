@@ -1,0 +1,25 @@
+name: docs-sync
+
+# Gate docs-sync (DEC-028 / R39) : bloque tout push/PR ou la vitrine
+# (README.md, STATUS.md) a divergé de la réalité du dépôt — version
+# (CHANGELOG canonique), compte de tests, ou liste des plugins (plugins/).
+# Complément documentaire du gate public-boundary.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  docs-sync-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Gate docs-sync (README/STATUS <-> structure/version/tests)
+        run: python scripts/check_docs_sync.py

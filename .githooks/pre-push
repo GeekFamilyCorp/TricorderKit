@@ -25,5 +25,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "[pre-push] OK — aucune fuite."
+echo "[pre-push] Gate docs-sync..."
+"$PY" scripts/check_docs_sync.py
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "[pre-push] PUSH BLOQUE : vitrine desynchronisee (README/STATUS vs structure/version/tests)."
+  echo "  -> corriger README.md / STATUS.md (ou CHANGELOG), puis relancer."
+  exit 1
+fi
+
+echo "[pre-push] OK — aucune fuite, vitrine synchronisee."
 exit 0

@@ -8,7 +8,7 @@ PYTEST  := $(PYTHON) -m pytest
 
 .PHONY: help install boot doctor health test test-all lint \
         docker-up docker-down docker-logs clean validate security \
-        gate install-hooks
+        gate docs-sync gates install-hooks
 
 # ── Default ──────────────────────────────────────────────────────────────────
 
@@ -29,7 +29,9 @@ help:
 	@echo "  make validate     Validate repo structure"
 	@echo "  make security     Run security audit"
 	@echo "  make gate         Run public-boundary leak gate (terms + personal paths)"
-	@echo "  make install-hooks Enable the pre-push leak gate (.githooks)"
+	@echo "  make docs-sync    Run docs-sync gate (README/STATUS <-> structure/version/tests)"
+	@echo "  make gates        Run all release gates (boundary + docs-sync)"
+	@echo "  make install-hooks Enable the pre-push gates (.githooks)"
 	@echo "  make clean        Remove __pycache__ and .pytest_cache"
 	@echo ""
 
@@ -88,9 +90,15 @@ security:
 gate:
 	$(PYTHON) scripts/check_public_boundary.py
 
+docs-sync:
+	$(PYTHON) scripts/check_docs_sync.py
+
+# Aggregate: every gate that must be green before a public push (R37 + R39)
+gates: gate docs-sync
+
 install-hooks:
 	git config core.hooksPath .githooks
-	@echo "Pre-push gate active (.githooks/pre-push). Disable: git config --unset core.hooksPath"
+	@echo "Pre-push gates active (.githooks/pre-push). Disable: git config --unset core.hooksPath"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 
