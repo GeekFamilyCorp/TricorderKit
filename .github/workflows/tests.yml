@@ -1,0 +1,32 @@
+name: tests
+
+# Suite de tests TricorderKit lancee a chaque push/PR sur main.
+# Premiere CI de tests du repo : rend le badge "tests" verifiable au lieu
+# d'une assertion manuelle. Les tests reseau (marker `live`) sont exclus ;
+# la cible est l'ensemble deterministe importable sans services externes.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e plugins/security-audit-cli
+      - name: Run test suite (non-live)
+        run: python -m pytest -m "not live" -q
