@@ -87,7 +87,7 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 ## État actuel (v0.9.5 — 2026-06-01)
 
 ```
-Tests       : 503 PASS — 0 FAIL — 15 skipped (live) · graphify : 4 tests unit PASS + 1 integration (Qdrant) intégrés au dépôt
+Tests       : 544 PASS — 0 FAIL — 15 live désélectionnés + 1 skip (Qdrant) — 560 collectés · graphify : 4 tests unit PASS + 1 integration (Qdrant) intégrés au dépôt
 Plugins     : 10 actifs (3 production-ready, 7 evolving, 0 experimental)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
 Sécurité    : gate frontière publique appliqué (CI + pre-push, DEC-026) · licence MIT
