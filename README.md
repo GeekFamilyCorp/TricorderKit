@@ -6,6 +6,7 @@
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
 [![Tests](https://img.shields.io/badge/tests-503%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ---
 
@@ -288,6 +289,12 @@ See [ROADMAP.md](ROADMAP.md) for full details.
 This is a personal/research project. If you fork it, please respect the atomic knowledge rule:
 
 > **1 idea = 1 node (100–500 tokens)**
+
+---
+
+## License
+
+TricorderKit is released under the [MIT License](LICENSE) — © 2026 GeekFamilyCorp.
 
 ---
 
