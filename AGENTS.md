@@ -95,6 +95,7 @@ Budget : max [N] tokens de sortie
 - Ne jamais exécuter de commande destructive sans confirmation explicite
 - Utiliser `tools/audit/linked_project_audit.py --scan-secrets` avant tout push
 - **R37 — Gate frontière publique (DEC-026, NON-NÉGOCIABLE)** : aucun push n'est valide si `python scripts/check_public_boundary.py` échoue. Le gate (CI `.github/workflows/public-boundary.yml` + pre-push `.githooks/pre-push`, activable via `make install-hooks`) bloque tout terme privé hors whitelist `.check-anon-ignore` et **tout chemin personnel absolu** (`C:\Users\<nom>`, `/home/<nom>`, `/Users/<nom>` — jamais whitelistables). Une fonctionnalité n'est « terminée » qu'avec le gate au vert.
+- **R38 — Sync page centrale + modules à chaque push (DEC-027, NON-NÉGOCIABLE)** : tout push met à jour `README.md` (page vitrine centrale) ET `STATUS.md` (tableau des modules) — plus `ROADMAP.md`/`CHANGELOG.md`/`.planning/` si impactés — pour refléter l'état réel (plugins, tools, CLIs, version, tests). Un commit de fonctionnalité n'est pas terminé sans cette synchro.
 
 ### Tokens
 - Boot : charger `tasks/lessons.md` + `STATE.md` + TASKS pending + 5 dernières DECISIONS
