@@ -117,7 +117,7 @@
 - Impact : fix local appliqué ; push GitHub en attente de validation (cf. E5).
 - Résolution (2026-05-29, arbitrage Sébastien) :
   - Push : différé — le fix sera inclus dans un prochain commit groupé (non poussé seul).
-  - `linked_projects.yaml` corrigé sur les deux points : `vault` repointé vers `C:/Users/sebas/Documents/obsidian/Japan-Alliance/` ; `allow_tricorderkit_write` repassé à `false` (conformité DEC-012/DEC-013, vault read-only ; écriture via MangaTracker uniquement).
+  - `linked_projects.yaml` corrigé sur les deux points : `vault` repointé vers `<vault-path>/Japan-Alliance/` ; `allow_tricorderkit_write` repassé à `false` (conformité DEC-012/DEC-013, vault read-only ; écriture via MangaTracker uniquement).
 
 *Dernière mise à jour : 2026-05-29 — DEC-014 routing fix vault JP + résolution config*
 
@@ -303,5 +303,16 @@
 - **Consolidation zone de travail** : sortie de veille rapatriée dans `TricorderKit Autonome\tools\jp-scraper\runs\` via **jonction Windows** créée par Antigravity (backup `runs__pre_migration_bak`), schéma inchangé. Exécutée par Antigravity (sa voie), pas par Claude.
 - **Pont d'ingestion** : `plugins/graphify/scripts/ingest_veille.py` (Claude, lecture seule) — parse fiches veille, classifie fiabilité Japan-Alliance (✅/🟡/🟠/🔴), dry-run par défaut, indexation RAG gated `--index` (exclut 🔴). Validé en dry-run.
 - **Statut** : Acceptée — appliquée (consolidation + sérialisation + pont en dry-run). Reste : wiring écriture vault + dedup G1, e2e après index nocturne.
+
+## DEC-026 — Gate frontière publique APPLIQUÉ (cause racine fuites) — 2026-06-01
+
+- **Contexte** : audit de la vitrine GitHub (v0.9.5). Le garde-fou d'anonymisation (`plugins/security-audit-cli/anonymization_checker.py` + `.check-anon-ignore`) **existait mais n'était jamais exécuté avant push** → fuites dans le repo public : capsules privées Japan-Alliance, doc d'architecture interne, dossiers legacy, et chemins personnels `C:\Users\<nom>\…` (back-slash ET forward-slash) dans scripts, `.planning/`, `.gitleaksignore`, TS. Trois défauts du checker existant : (1) scanne tout l'arbre de travail (faux positifs sur fichiers non suivis), (2) plante sous Windows (emoji cp1252), (3) jamais câblé à un hook/CI.
+- **Décision** : nouveau gate `scripts/check_public_boundary.py` — scanne **uniquement les fichiers suivis** (`git ls-files`), détecte (a) termes privés hors whitelist `.check-anon-ignore`, (b) **chemins personnels absolus toujours bloquants** (jamais whitelistables) ; sortie 100 % ASCII ; `exit 1` si fuite. **Appliqué** via `.github/workflows/public-boundary.yml` (CI push/PR) + `.githooks/pre-push` (local, `make install-hooks`). Règle ajoutée à `AGENTS.md` : aucun push si le gate échoue.
+- **Nettoyage associé (Lot 2)** : `git rm` legacy (`TricorderKit_v0.7/`, `TricorderKit_Project/`), capsules privées (`vault/session_capsule_*.json`), `Architecture_Adaptee_Instructions.md`, `data/mangatracker/` ; `skills/cowork-boot/` relocalisé vers MangaTracker (DEC-016) ; chemins perso anonymisés (`<vault-path>`, `<scheduled-path>`, `$PSScriptRoot`/`%~dp0` auto-localisants) ; `.check-anon-ignore` réconcilié.
+- **Validation** : gate exécuté sur le poste = `[OK] aucune fuite` (exit 0) après corrections. 18 fuites réelles détectées puis corrigées (dont chemins forward-slash et `trigger_workflow.ts` qu'une simple relecture aurait manqués).
+- **Reste à faire (différé)** : publier release `v0.9.5` + LICENSE ; arbitrer PR #2 (13/05) ; envisager de sortir le schéma Supabase `japan_alliance` du moteur (domaine) ; intégrer les 6 tests graphify à la suite committée.
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-06-01 — DEC-026 gate frontière publique appliqué (CI + pre-push), Lot 2 nettoyage frontière*
 
 *Dernière mise à jour : 2026-06-01 — DEC-023 prod (index sérialisé nocturne, search_vault) + DEC-025 collaboration Antigravity*

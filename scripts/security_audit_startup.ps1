@@ -4,7 +4,7 @@
 # Déclencheur : logon Windows (Task Scheduler)
 # ============================================================
 
-$ProjectRoot      = "C:\Users\sebas\Documents\Claude\Projects\TricorderKit Autonome"
+$ProjectRoot      = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $PluginDir        = "$ProjectRoot\plugins\security-audit-cli"
 $LogDir           = "$ProjectRoot\logs\security"
 $LogFile          = "$LogDir\audit_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').log"

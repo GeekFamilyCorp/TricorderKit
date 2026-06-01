@@ -17,7 +17,7 @@ Avant tout push vers le repo public, un audit d'anonymisation doit être effectu
 | Catégorie | Exemples | Risque |
 |---|---|---|
 | Clés API et secrets | `ANTHROPIC_API_KEY=sk-ant-...`, tokens GitHub | Compromission compte |
-| Chemins personnels | `C:\Users\ton-nom\`, `/home/user/` | Fingerprinting |
+| Chemins personnels | `C:\Users\<ton-nom>\`, `/home/<user>/` | Fingerprinting |
 | Noms de projets liés | `Japan-Alliance`, `MangaTracker` | Exposition stratégie |
 | Données métier | listes de sources privées, schémas BDD propriétaires | Fuite propriété intellectuelle |
 | Identifiants Supabase réels | `https://xxxx.supabase.co`, service role keys | Accès BDD |

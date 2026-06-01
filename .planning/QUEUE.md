@@ -151,8 +151,8 @@ Structure :
     "japan_alliance": "stocke"
   },
   "phase_active": "v0.9 M3 — Observabilité + tests live",
-  "vault_claude": "C:/Users/sebas/Documents/Claude/claude-vault",
-  "vault_ja": "C:/Users/sebas/Documents/obsidian/Japan-Alliance",
+  "vault_claude": "<claude-vault-path>",
+  "vault_ja": "<vault-path>/Japan-Alliance",
   "session_rules": [
     "CLI avant LLM",
     "Output JSON obligatoire",

@@ -1,2 +1,2 @@
 @echo off
-powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Users\sebas\Documents\Claude\Projects\TricorderKit Autonome\scripts\security_audit_startup.ps1"
+powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0security_audit_startup.ps1"

@@ -7,7 +7,8 @@ TK      := $(PYTHON) cli/tk.py
 PYTEST  := $(PYTHON) -m pytest
 
 .PHONY: help install boot doctor health test test-all lint \
-        docker-up docker-down docker-logs clean validate security
+        docker-up docker-down docker-logs clean validate security \
+        gate install-hooks
 
 # ── Default ──────────────────────────────────────────────────────────────────
 
@@ -27,6 +28,8 @@ help:
 	@echo "  make docker-logs  Tail service logs"
 	@echo "  make validate     Validate repo structure"
 	@echo "  make security     Run security audit"
+	@echo "  make gate         Run public-boundary leak gate (terms + personal paths)"
+	@echo "  make install-hooks Enable the pre-push leak gate (.githooks)"
 	@echo "  make clean        Remove __pycache__ and .pytest_cache"
 	@echo ""
 
@@ -79,6 +82,15 @@ validate:
 
 security:
 	$(TK) security scan
+
+# ── Public boundary gate (DEC-026) ────────────────────────────────────────────
+
+gate:
+	$(PYTHON) scripts/check_public_boundary.py
+
+install-hooks:
+	git config core.hooksPath .githooks
+	@echo "Pre-push gate active (.githooks/pre-push). Disable: git config --unset core.hooksPath"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 
