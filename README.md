@@ -268,9 +268,36 @@ See [ROADMAP.md](ROADMAP.md) for full details.
 
 ## Contributing
 
-This is a personal/research project. If you fork it, please respect the atomic knowledge rule:
+TricorderKit is currently a personal research project, but contributions are welcome if they respect the project’s core principles.
+
+If you fork the project, please keep the atomic knowledge rule:
 
 > **1 idea = 1 node (100–500 tokens)**
+
+Contributions should remain aligned with TricorderKit’s architecture:
+
+- local-first by default;
+- CLI-first and agent-friendly;
+- modular, testable and auditable;
+- readable in Markdown / YAML / JSON;
+- respectful of privacy and linked-project boundaries;
+- no unnecessary framework or dependency bloat.
+
+Before opening a pull request, please make sure that your change:
+
+1. solves a clear problem;
+2. does not duplicate an existing module;
+3. includes or updates the relevant documentation;
+4. keeps tests passing;
+5. does not expose private data, secrets or linked-project content.
+
+### Support the project
+
+If you want to support TricorderKit development, documentation, testing and infrastructure costs, you can help here:
+
+[Support GeekFamilyCorp on Ko-fi](https://ko-fi.com/geekfamilycorp_france)
+
+Your support helps fund the open-source research work behind TricorderKit and its related knowledge projects.
 
 ---
 
