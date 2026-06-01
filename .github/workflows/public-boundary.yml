@@ -1,0 +1,25 @@
+name: public-boundary
+
+# Gate anti-fuite (DEC-026) : bloque tout push/PR introduisant un terme privé
+# (hors whitelist .check-anon-ignore) ou un chemin personnel absolu dans un
+# fichier suivi. Cause racine corrigée : le gate est désormais APPLIQUÉ en CI,
+# pas seulement disponible localement.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  anon-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Gate frontière publique (termes privés + chemins personnels)
+        run: python scripts/check_public_boundary.py

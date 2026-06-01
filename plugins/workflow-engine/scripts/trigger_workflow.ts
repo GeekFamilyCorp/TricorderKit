@@ -26,7 +26,7 @@ const WORKFLOW_NAME       = process.env['WORKFLOW_NAME']       ?? 'source-watch'
 const WORKFLOW_ID         = process.env['WORKFLOW_ID']         ?? `tricorderkit-${WORKFLOW_NAME}-${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
 const WORKFLOW_SOURCES    = (process.env['WORKFLOW_SOURCES']   ?? 'mangadex,anilist').split(',');
 const DRY_RUN             = process.env['DRY_RUN'] === '1';
-const OBSIDIAN_VAULT      = process.env['OBSIDIAN_VAULT_PATH'] ?? 'C:/Users/sebas/Documents/Claude/claude-vault';
+const OBSIDIAN_VAULT      = process.env['OBSIDIAN_VAULT_PATH'] ?? './vault';
 
 // Mapping nom → nom de fonction Temporal
 const WORKFLOW_FN_MAP: Record<string, string> = {

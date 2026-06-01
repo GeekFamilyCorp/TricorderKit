@@ -33,7 +33,7 @@ Ces données ne doivent **jamais** apparaître dans un repo public.
 ## Checklist avant push public
 
 ### Fichiers de config
-- [ ] Aucun chemin absolu personnel (`C:/Users/votre-nom/...`)
+- [ ] Aucun chemin absolu personnel (`C:/Users/<votre-nom>/...`)
 - [ ] Aucune clé API (même expirée — l'historique git est permanent)
 - [ ] Aucun token GitHub, Supabase, Langfuse, etc.
 - [ ] ID projet remplacé par `sample-linked-project`

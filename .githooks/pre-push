@@ -1,0 +1,29 @@
+#!/bin/sh
+# Gate anti-fuite avant push (DEC-026) — frontière privé/public.
+# Activer une fois : git config core.hooksPath .githooks   (ou: make install-hooks)
+#
+# Bloque le push si un fichier suivi contient un terme privé (hors whitelist
+# .check-anon-ignore) ou un chemin personnel absolu (C:\Users\<nom>, /home/<nom>).
+
+echo "[pre-push] Gate frontiere publique..."
+
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  echo "[pre-push] python introuvable — gate non execute, push autorise." >&2
+  exit 0
+fi
+
+"$PY" scripts/check_public_boundary.py
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "[pre-push] PUSH BLOQUE : fuite detectee dans des fichiers suivis."
+  echo "  -> corriger le contenu, OU whitelister un fichier LEGITIME dans .check-anon-ignore."
+  echo "  -> les chemins personnels (C:\\Users\\<nom>) ne sont jamais whitelistables."
+  exit 1
+fi
+
+echo "[pre-push] OK — aucune fuite."
+exit 0

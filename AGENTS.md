@@ -94,6 +94,7 @@ Budget : max [N] tokens de sortie
 - Audit obligatoire : prompt injection, shell commands, accès réseau, fichiers sensibles
 - Ne jamais exécuter de commande destructive sans confirmation explicite
 - Utiliser `tools/audit/linked_project_audit.py --scan-secrets` avant tout push
+- **R37 — Gate frontière publique (DEC-026, NON-NÉGOCIABLE)** : aucun push n'est valide si `python scripts/check_public_boundary.py` échoue. Le gate (CI `.github/workflows/public-boundary.yml` + pre-push `.githooks/pre-push`, activable via `make install-hooks`) bloque tout terme privé hors whitelist `.check-anon-ignore` et **tout chemin personnel absolu** (`C:\Users\<nom>`, `/home/<nom>`, `/Users/<nom>` — jamais whitelistables). Une fonctionnalité n'est « terminée » qu'avec le gate au vert.
 
 ### Tokens
 - Boot : charger `tasks/lessons.md` + `STATE.md` + TASKS pending + 5 dernières DECISIONS

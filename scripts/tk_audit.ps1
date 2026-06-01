@@ -1,4 +1,4 @@
-$ProjectRoot    = "%USERPROFILE%\Documents\Claude\Projects\TricorderKit Autonome"
+$ProjectRoot    = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $PluginDir      = "$ProjectRoot\plugins\security-audit-cli"
 $LogDir         = "C:\ProgramData\TricorderKit\logs"
 $LogFile        = "$LogDir\audit_$(Get-Date -Format 'yyyy-MM-dd_HH-mm').log"

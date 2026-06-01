@@ -1,13 +1,14 @@
-# .check-anon-ignore — Fichiers exclus du scan d'anonymisation
+# .check-anon-ignore — Fichiers exclus du scan de TERMES privés (gate public)
 # Syntaxe : un pattern par ligne (fnmatch). # = commentaire.
-# Ces fichiers contiennent des références aux projets liés de façon LÉGITIME :
-#   - fichiers de configuration interne des agents (AGENTS.md, CLAUDE.md…)
-#   - historique et décisions architecturales (.planning/)
-#   - tests et fixtures de sécurité (le checker scanne ses propres termes cibles)
-#   - code source du checker lui-même
 #
-# RÈGLE : tout fichier listé ici ne doit PAS être public ou doit contenir
-# uniquement des références génériques visibles dans docs/anonymization.md.
+# Lu par scripts/check_public_boundary.py (gate avant push) ET par
+# plugins/security-audit-cli/anonymization_checker.py.
+#
+# RÈGLE : seuls les fichiers contenant des références LÉGITIMES aux projets
+# liés (contexte opérationnel interne, code du checker, tests, schémas de
+# domaine) peuvent figurer ici. Les CHEMINS PERSONNELS ne sont JAMAIS
+# whitelistables — ils sont bloqués partout par le gate.
+# Réconcilié le 2026-06-01 (DEC-026) après nettoyage frontière (Lot 2).
 
 # ── Configuration agents (noms liés comme contexte opérationnel) ──────────────
 AGENTS.md
@@ -20,54 +21,37 @@ README_FIRST.md
 .planning/DECISIONS.md
 .planning/STATE.md
 .planning/TASKS.md
+.planning/QUEUE.md
 .planning/ROADMAP_v0.9.md
 .planning/ROADMAP_v0.7.md
 .planning/RISKS.md
-.planning/QUEUE.md
 
-# ── Changelog et historique (références historiques légitimes) ────────────────
+# ── Changelog (références historiques légitimes) ──────────────────────────────
 CHANGELOG.md
 
-# ── Code source du checker lui-même (contient les termes à détecter) ──────────
+# ── Code source du checker + gate (contiennent les termes à détecter) ─────────
 plugins/security-audit-cli/anonymization_checker.py
 plugins/security-audit-cli/manifest.yml
 plugins/security-audit-cli/README.md
+scripts/check_public_boundary.py
 
 # ── Tests (fixtures contenant délibérément des termes privés) ─────────────────
 tests/test_security_audit.py
+tests/test_cli_local.py
+tests/test_linked_project.py
 tests/supabase/test_japan_alliance_schema.py
 tests/supabase/test_content_tables.py
+core/hooks/tests/test_hooks.py
 
-# ── Rapports générés (gitignorés mais présents localement) ────────────────────
-reports/local_first_audit_2026-05-17.md
-TricorderKit_Audit_v0.8_2026-05-18.md
+# ── Schéma de domaine Supabase (noms de schéma/tables — contexte technique) ───
+supabase/migrations/*.sql
+supabase/seed/*.sql
 
-# ── Sous-dossier archivé v0.7 ─────────────────────────────────────────────────
-TricorderKit_v0.7/*
-TricorderKit_Project/*
-
-# ── Skills contenant des exemples de domaine (contexte opérationnel) ──────────
+# ── Skills & docs contenant des exemples de domaine (contexte opérationnel) ───
 skills/docmancer/SKILL.md
 skills/docmancer/examples/*
 skills/claude-code-router/SKILL.md
-skills/cowork-boot/SKILL.md
-
-# ── Plugin READMEs (documentation interne) ────────────────────────────────────
-plugins/connector-hub/README.md
-plugins/connector-hub/SKILL.md
-plugins/obsidian-agent-layer/README.md
-plugins/eval-lab/eval_runner.py
-
-# ── Fichiers deep-research liés au domaine ────────────────────────────────────
-plugins/deep-research-core/tests/test_live_pipeline.py
-plugins/deep-research-core/scripts/collect_sources.py
-
-# ── Pipelines (références de domaine dans logique métier) ─────────────────────
-tools/pipelines/pipeline_rtk_docmancer.py
-tools/audit/linked_project_audit.py
-tools/audit/local_vs_github_audit.py
-
-# ── Docs internes TIER 3 (lazy-load, non publics, contiennent contexte domaine)
+.claude/skills/*/SKILL.md
 docs/00_WHAT_IS_TRICORDERKIT.md
 docs/01_HOW_IT_WORKS.md
 docs/02_WHAT_IS_IN_PLACE.md
@@ -75,14 +59,36 @@ docs/03_WHAT_TO_DO_NEXT.md
 docs/04_LLM_OPERATING_GUIDE.md
 docs/05_*.md
 docs/06_workflow_standard.md
-
-# ── Notre propre doc d'anonymisation (cite les termes comme exemples) ──────────
 docs/anonymization.md
 
-# ── Vault (session capsules — gitignorées mais présentes localement) ──────────
-vault/*.json
-vault/*.yaml
-vault/*.yml
+# ── Plugins & core (routage de domaine, hints, manifestes) ────────────────────
+plugins/connector-hub/README.md
+plugins/connector-hub/SKILL.md
+plugins/obsidian-agent-layer/README.md
+plugins/obsidian-agent-layer/manifest.yml
+plugins/eval-lab/eval_runner.py
+plugins/workflow-engine/activities/sanitize_input.activity.ts
+plugins/cli-forge/generated/obsidian-goat/manifest.yml
+core/mainbrain/MainBrain_v1.5.md
+
+# ── Fichiers deep-research liés au domaine ────────────────────────────────────
+plugins/deep-research-core/tests/test_live_pipeline.py
+plugins/deep-research-core/scripts/collect_sources.py
+
+# ── Pipelines & outils (références de domaine dans logique métier) ────────────
+tools/pipelines/pipeline_rtk_docmancer.py
+tools/obsidian-goat/obsidian_goat.py
+tools/audit/linked_project_audit.py
+tools/audit/local_vs_github_audit.py
+
+# ── Leçons internes (codes de tâches planifiées) ──────────────────────────────
+tasks/lessons.md
 
 # ── Configs exemple (commentaires de domaine) ─────────────────────────────────
 configs/local/linked_projects.example.yaml
+
+# ── Rapports d'audit internes (références d'architecture légitimes) ───────────
+reports/*
+
+# ── Backups locaux (non revus) ────────────────────────────────────────────────
+*.bak
