@@ -313,6 +313,14 @@
 - **Reste à faire (différé)** : publier release `v0.9.5` + LICENSE ; arbitrer PR #2 (13/05) ; envisager de sortir le schéma Supabase `japan_alliance` du moteur (domaine) ; intégrer les 6 tests graphify à la suite committée.
 - **Statut** : Appliquée.
 
-*Dernière mise à jour : 2026-06-01 — DEC-026 gate frontière publique appliqué (CI + pre-push), Lot 2 nettoyage frontière*
+## DEC-027 — Sync obligatoire « page centrale + modules » à chaque push — 2026-06-01
+
+- **Contexte** : audit README (panneau Chrome + recoupement terrain). Sections jamais mises à jour depuis l'origine : `CLI Usage`, `Agent Commands`, `Repo Structure` → références à des CLIs disparus (`github-goat`/`your-scraper` cités sous `tools/` alors que github-goat vit dans `plugins/cli-forge/generated/`), omission de `graphify`, `obsidian-goat`, `tk doctor`, et **10 plugins réels** vs 7 listés.
+- **Décision (règle R38, demande de Sébastien)** : tout push doit s'accompagner de la mise à jour de la **page centrale** (`README.md`) ET de **tous les modules** impactés (`STATUS.md` tableau des modules ; et le cas échéant `ROADMAP.md`, `CHANGELOG.md`, `.planning/`). Aucun commit de fonctionnalité n'est « terminé » si README + STATUS ne reflètent pas l'état réel (plugins, tools, CLIs, version, tests).
+- **Appliqué (ce push)** : README `Quick Start` (INSTALL/Makefile), `CLI Usage` (tk + obsidian-goat + github-goat chemin réel), `Agent Commands` (9 slash réels), `Repo Structure` (10 plugins dont graphify, vrais `tools/`, fichiers racine), `Health Check` (tk doctor + gate) ; STATUS `graphify` 🧪WIP → 🔄Evolving/✅Actif (RAG livré).
+- **Reste à faire** : envisager d'étendre le gate (`check_public_boundary` / un `docs-sync`) pour vérifier mécaniquement la cohérence README ↔ structure.
+- **Statut** : Appliquée (règle active).
+
+*Dernière mise à jour : 2026-06-01 — DEC-027 sync page centrale + modules à chaque push (R38) ; DEC-026 gate frontière publique appliqué*
 
 *Dernière mise à jour : 2026-06-01 — DEC-023 prod (index sérialisé nocturne, search_vault) + DEC-025 collaboration Antigravity*

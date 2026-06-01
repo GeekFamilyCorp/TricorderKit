@@ -51,9 +51,11 @@
 | Phase | Nom | Statut | Priorité |
 |---|---|---|---|
 | 9 | VPS deployment — déploiement optionnel (DEC-011 : local-first maintenu) | 🔲 Planned | LOW |
-| 10 | Multi-linked-project — support de plusieurs projets liés simultanés | 🔲 Planned | MEDIUM |
+| 10 | Multi-linked-project — support de plusieurs projets liés simultanés | 🟡 In progress | MEDIUM |
 | 11 | Plugin marketplace — registry public, contribution guidelines | 🔲 Planned | LOW |
 | 12 | Community release — GitHub public, documentation communautaire | 🔲 Planned | LOW |
+
+> **Phase 10 — état réel** : socle livré (moteur linked_project générique, phase 6). **Deux projets liés actifs** sont déjà déclarés et routés — un assistant IA de domaine + un vault Obsidian read-only — via `configs/local/linked_projects.example.yaml`, `tk project <id>` et la doctrine de routage interne. Reste pour « complet » : support simultané testé de bout en bout (concurrence, conflits) + documentation.
 
 ---
 

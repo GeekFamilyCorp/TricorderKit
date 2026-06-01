@@ -22,7 +22,7 @@
 | `plugins/security-audit-cli` | ✅ Stable | Secrets scan + anonymization check + dep audit |
 | `plugins/memory-boot` | 🔄 Evolving | Boot de session — migration v0.8 complète |
 | `plugins/token-optimizer` | ✅ Stable | Budget guard + router + caveman mode |
-| `plugins/graphify` | 🧪 Experimental | Hybrid Neo4j + Qdrant — WIP |
+| `plugins/graphify` | 🔄 Evolving | RAG vault local-first — index_vault · hybrid_rag · search_vault · ingest_veille (DEC-023) |
 | `supabase/` | 🔄 Evolving | Schéma PostgreSQL domain data (7 tables, RLS) |
 
 ---
@@ -39,7 +39,7 @@
 | eval-lab | ✅ Actif | ❌ | ✅ | ❌ | ⚠️ Partiel |
 | memory-boot | ✅ Actif v0.8 | ❌ | ✅ | ✅ | ⚠️ Partiel |
 | obsidian-agent-layer | ✅ Actif | ✅ | ✅ | ✅ | ⚠️ Partiel |
-| graphify | 🔧 WIP | ❌ | ❌ | ✅ | ❌ |
+| graphify | ✅ Actif | ✅ | ⚠️ | ✅ | ⚠️ Partiel |
 | token-optimizer | ✅ Actif v0.8 | ✅ | ✅ | ✅ | ✅ |
 
 ---
@@ -68,9 +68,9 @@
 ## Résumé
 
 - **Prêts production** : 3 / 10 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
-- **Partiels** : 6 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`)
+- **Partiels** : 7 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`)
 - **Non prêts** : 0 / 10
-- **WIP** : 1 / 10 (`graphify`)
+- **WIP** : 0 / 10
 
 ---
 
