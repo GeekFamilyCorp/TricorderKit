@@ -73,3 +73,27 @@ pytest-cache-files-*/
 
 # Quarantaine d'audit locale (volumineuse — ne jamais committer)
 .quarantine_audit_*/
+
+# --- Ajouts 2026-06-01 (anonymisation / artefacts locaux) ---
+# Handoffs de collaboration (operationnel, chemins perso)
+a_faire_par_antigravity.md
+fait_par_antigravity.md
+PROMPT_pour_Antigravity.md
+# Donnees de veille locales (linked_project prive)
+tools/jp-scraper/
+# Scratch diagnostic local
+.planning/poc-graphify-index/
+# Session capsules (etat operationnel local)
+.planning/SESSION_CAPSULE_*.md
+# Artefacts d'execution dans les dossiers scripts
+plugins/**/scripts/*.txt
+plugins/**/scripts/*.out
+plugins/**/scripts/*.err
+plugins/**/scripts/*_report.json
+plugins/**/scripts/*_report.md
+plugins/**/scripts/index_state.json
+plugins/**/scripts/index_progress.json
+plugins/**/scripts/health_heartbeat.log
+# Fichiers temp d'anonymisation
+_anon.txt
+_anon.err
