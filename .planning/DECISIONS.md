@@ -417,3 +417,23 @@
 - **Statut** : Appliquée (7 tâches re-routées + 1 créée le 2026-06-03).
 
 *Dernière mise à jour : 2026-06-03 — DEC-031 routage modèle token-optimizer sur les tâches planifiées (clôt le gisement laissé par DEC-030)*
+
+---
+
+## DEC-035 — Politique de sourcing v2 : exhaustivité routée + sources non officielles en signal/cross-check — 2026-06-03
+
+- **Contexte** : la base Japan-Alliance est le **noyau du futur site** (arbitrage Sébastien). Besoin de large captation des signaux sans abaisser le niveau de preuve des fiches publiées ; budget contraint (DEC-030 : ~97 % de la conso en Opus). Cette décision **amende les « Exclusions strictes »** des règles métier du projet.
+- **Décision (arbitrage Sébastien, 2026-06-03)** :
+  1. **Exhaustivité OBLIGATOIRE mais routée** : le *gathering* exhaustif (max résultats, **chaque source visitée**) est porté par **Antigravity/Hermes** (moins chers, propriétaires du scraping — DEC-025/029) ; Claude porte l'exhaustivité sur **intégration / dédup / QA / arbitrage / architecture** (lecture seule vaults).
+  2. **Sources non officielles DÉBLOQUÉES** en deux rôles seulement : (a) **lead/surveillance** → classées `🟠 À vérifier`, déclenchent une recherche approfondie sur source officielle/primaire ; (b) **cross-check** = 2e source corroborante. **Jamais fondatrices d'un `✅ Confirmé` seules.**
+  3. **Cadrage par source** : Wikipedia (cross-check/lead) ; X/Twitter = **comptes vérifiés/officiels uniquement** pour cross-check, comptes non vérifiés = lead `🟠` seulement ; MangaUpdates (cross-check métadonnées) ; **MangaDex = métadonnées et signaux de sortie uniquement** (listings, IDs, dates) — **jamais le contenu scanlé** (exclusion piratage maintenue sur le *contenu*).
+  4. **Boucle d'auto-amélioration tri-agent** : après chaque run, chaque agent (Claude, Antigravity, Hermes) logge ses *gaps* (champ template récurremment vide, type d'entité sans gabarit, source jamais couverte) au format `_sync_antigravity/GAPS_LOG_FORMAT.md` et **propose** une MAJ template/registre-de-sources par handoff ; Claude intègre et arbitre. Alimente templates → fiches → sources en continu.
+- **Inchangé et prioritaire sur le volume** : règle des **2 sources**, ossature validante **officielle/primaire**, classification `✅/🟡/🟠/🔴`, exclusion des sources de **contenu** piraté (cf. catch `magicbusinc.com`, ST104).
+- **Risk Guard** : HIGH (élargit une règle système + délègue 3 flux). **Validé nominativement par Sébastien (2026-06-03).**
+- **Routage (DEC-016)** : politique + journalisation → repo **TricorderKit** ; coordination/handoff → `_sync_antigravity/` ; fiches → **Japan-Alliance** (lecture seule).
+- **Dry-run / rollback** : extension par famille avec **métrique de couverture** (seuil **validé Sébastien 2026-06-03** : ≥ 95 % sources visitées, **0** source de contenu interdite — en particulier **sites de scantrad / piratage** : la lecture des *annonces de nouveautés* est tolérée mais l'information doit être **contrôlée et recoupée impérativement** sur source officielle, jamais de citation de contenu piraté) ; rollback = revenir au pilote SO seul (DEC-029) + exclusions strictes d'origine.
+- **Application en cours** : (a) câblage du rôle `🟠 → recherche officielle` dans `plugins/graphify/scripts/ingest_veille.py` ; (b) `GAPS_LOG_FORMAT.md` ; (c) handoff Antigravity (délégation scraping exhaustif + demande d'install MCP Japon/manga côté Hermes/Antigravity).
+- **Reste à faire** : instrumenter la métrique de couverture par run ; reverser la liste MCP retenue dans le registre de sources. (Seuil de couverture **figé** le 2026-06-03.)
+- **Statut** : **Acceptée — application en cours** (journalisation faite ; câblage + handoff en cours).
+
+*Dernière mise à jour : 2026-06-03 — DEC-035 politique de sourcing v2 (exhaustivité routée + non-officiel en signal/cross-check + boucle auto-amélioration)*
