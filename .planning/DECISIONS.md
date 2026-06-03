@@ -437,3 +437,23 @@
 - **Statut** : **Acceptée — application en cours** (journalisation faite ; câblage + handoff en cours).
 
 *Dernière mise à jour : 2026-06-03 — DEC-035 politique de sourcing v2 (exhaustivité routée + non-officiel en signal/cross-check + boucle auto-amélioration)*
+
+---
+
+## DEC-036 — Unification du schéma frontmatter des fiches œuvres : clés EN canoniques (`author_jp` / `title_jp`) — 2026-06-03
+
+- **Contexte** : un audit déterministe (`audit_v2.ps1`, scan PowerShell des 1 313 fiches manga/LN via Desktop Commander, 2026-06-03) a révélé la **coexistence de deux schémas de frontmatter** dans `01_Mangas & Light Novels/` : schéma « migration BDD » (clés **FR** `auteur`/`artiste`/`titre_jp`/`editeur`, champ `record_status`) et schéma « Expert v1.0 » (clés **EN** `author_jp`/`artist_jp`/`title_jp`/`publisher_jp`, validation par `confidence_label`, **sans** `record_status`).
+- **Impact mesuré (cause racine d'erreurs de comptage)** : tout décompte mono-schéma est faux. Exemple vécu pendant l'audit : « coquilles vides » comptées à **1 019** en ne lisant que les clés FR, **610** une fois les deux schémas pris en compte. Également : `record_status` présent sur **297** fiches seulement, `confidence_label` sur **1 067**, et **22 valeurs distinctes** de `confidence_label` (`à vérifier` 711, `à-valider` 212, `importé` 51, `vérifié` 40, + 18 one-off).
+- **Décision (arbitrage Sébastien, 2026-06-03)** : **schéma canonique unique = clés ANGLAISES.** Table de migration des clés créateurs/titres :
+  - `auteur` → `author_jp` · `artiste` → `artist_jp` · `titre_jp` → `title_jp` · `editeur` → `publisher_jp`.
+  - Doublons de clés (`auteur_jp`/`artiste_jp` déjà présents ici ou là) → fusion vers `author_jp`/`artist_jp`.
+  - **Champ de validation unifié** : `confidence_label` (schéma EN). `record_status` (FR) est migré/déprécié — valeur reportée dans `confidence_label` si plus riche, sinon archivée.
+- **Exécution = chantier gardé, déterministe, NON appliqué par cette décision** : migration par **CLI** (`obsidian-goat` ou script dédié), jamais en édition LLM fiche par fiche (« CLI avant LLM »). Séquence imposée : `--dry-run` + diff → archivage réversible (`99_Migration_Backups/_schema_unif_2026/`) → écriture → **validation post-migration par re-scan `audit_v2.ps1`** (0 fiche en clé FR résiduelle ; comptes `author`/`title` stables avant/après).
+- **Clés annexes à harmoniser — À ARBITRER (non figé)** : `status`/`statut`, `volumes`/`volume`, `isbn`/`isbn_13`, `prix`/`price_jpy`, `magazine`/`magazine_or_platform`, `demographie`/`demographic`. Élargir la table de mapping après un scan exhaustif de **toutes** les clés frontmatter du corpus.
+- **Risk Guard : HIGH** (écriture de masse ~1 300 fiches sur vault **non versionné**). Vault read-only côté Claude → exécution **via MangaTracker** (DEC-012/013/016). Dry-run + diff + archivage obligatoires avant tout `--apply`.
+- **Réversibilité** : archivage avant écriture ; rollback = restauration depuis `99_Migration_Backups/`.
+- **Routage (DEC-016)** : cette décision + journalisation → repo **TricorderKit** ; script de migration → **MangaTracker** (liaison vault) ; contenu des fiches → **Japan-Alliance** (exécution via MangaTracker, non versionné).
+- **Reste à faire** : (1) scan exhaustif des clés frontmatter → table de mapping complète ; (2) écrire le script de migration déterministe (dry-run par défaut, tests de contrat) ; (3) arbitrer les clés annexes ; (4) exécuter le chantier gardé puis re-scan de validation.
+- **Statut** : **Acceptée — décision de schéma (clés EN `author_jp`/`title_jp`)** ; migration à exécuter en chantier gardé (dry-run), **non encore appliquée**.
+
+*Dernière mise à jour : 2026-06-03 — DEC-036 unification schéma frontmatter (clés EN canoniques `author_jp`/`title_jp`) ; migration gardée à venir*
