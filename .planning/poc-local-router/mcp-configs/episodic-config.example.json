@@ -1,0 +1,9 @@
+{
+  "_comment": "Profil EPISODIC — mémoire/historique/logs/reprise. Ne charger QUE les MCP de ce contexte.",
+  "mcpServers": {
+    "obsidian-claude-vault": {
+      "command": "npx",
+      "args": ["-y", "<serveur-mcp-obsidian>", "--vault", "<chemin_claude_vault>"]
+    }
+  }
+}

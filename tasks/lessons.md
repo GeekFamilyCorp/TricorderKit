@@ -106,3 +106,24 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 **Règle préventive (R39) :** Avant tout push public, exécuter `make gates` — boundary **et** docs-sync — qui doivent tous deux être verts. Le docs-sync (`scripts/check_docs_sync.py`) vérifie version (CHANGELOG canonique), compte de tests cross-doc, et structure plugins (STATUS/README vs `plugins/` réel). Complète R37 (boundary vert) et R38 (sync page centrale + modules).
 **Fichiers concernés :** `scripts/check_docs_sync.py`, `.github/workflows/docs-sync.yml`, `.githooks/pre-push`, `Makefile`, `README.md`, `STATUS.md`.
 **Statut :** [RÉSOLU] — gate appliqué (CI + pre-push), 7 tests PASS, dérive STATUS corrigée.
+
+## LESSON-014 — 2026-06-02
+**Contexte :** Configuration de la tâche planifiée "Daily News Mangas" (dans l'interface de l'application Antigravity, planifiée chaque soir vers 20h00-20h30) pour générer le rapport quotidien de veille de l'écosystème japonais (manga / LN / anime) à partir des sources situées dans `<antigravity-sources>` (dossier local hors repo).
+**Erreur :** Oubli potentiel de vérification de l'exécution et des résultats de cette tâche lors de l'exécution automatique d'Antigravity de 21h10.
+**Règle préventive (R40) :** Lors du run automatique d'Antigravity à 21h10, l'agent doit systématiquement lire le rapport de veille produit par la tâche "Daily News Mangas" (à 20h30), en synthétiser les points marquants et consigner cette synthèse dans la section « Veille Quotidienne JP » du rapport `antigravity_vers_claude.md`.
+**Fichiers concernés :** `tasks/lessons.md`, `_sync_antigravity/antigravity_vers_claude.md`.
+**Statut :** [RÉSOLU] — Règle de reporting pour "Daily News Mangas" intégrée.
+
+## LESSON-015 — 2026-06-03
+**Contexte :** 7 battements consécutifs crashés la nuit du 03/06 (00:02→06:02 Paris). Pattern : verrou `claude` posé, aucun log, aucune intégration, verrou jamais libéré. Backlog accumulé à ~120 fiches Phase 2.
+**Cause racine :** Overflow de contexte composé au démarrage de chaque run :
+- `ETAT_PARTAGE.md` : 205 lignes (~8 000 tokens), croissance illimitée
+- `antigravity_vers_claude.md` : 265 lignes (~6 000 tokens), accumulation non bornée
+- Répertoire `rapports/` : 221 fichiers à énumérer
+- Total ≈ 20 000+ tokens avant tout travail → crash après prise de verrou, avant le journal.
+**Règle préventive (R41) :** Pour toute tâche planifiée lisant des fichiers de coordination :
+1. Imposer une **limite stricte de taille** sur chaque fichier lu (max 100 lignes pour ETAT_PARTAGE.md, 60 lignes pour les fichiers de rapport). Archiver l'excédent dans un fichier archive AVANT d'écrire.
+2. Imposer un **plafond de traitement par run** (MAX 10 fiches/battement) indépendamment du backlog réel.
+3. Lire les fichiers en **mode ciblé** (frontmatter + sections actives uniquement, jamais l'historique complet).
+**Fichiers concernés :** `_sync_antigravity/ETAT_PARTAGE.md`, `_sync_antigravity/antigravity_vers_claude.md`, `Scheduled/sync-antigravity-fiches/SKILL.md`.
+**Statut :** [RÉSOLU] — Fichiers archivés + SKILL.md mis à jour (garde-fous + plafond 10 fiches). Voir `_sync_antigravity/journal_archive.md`.

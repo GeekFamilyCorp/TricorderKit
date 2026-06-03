@@ -1,0 +1,20 @@
+{
+  "default_profile": "episodic",
+  "profiles": {
+    "episodic": {
+      "when": "historique, erreurs passées, reprise de tâche, logs, gestion de la mémoire, derniers digests de session",
+      "mcp_config": "./mcp-configs/episodic-config.json",
+      "agent_cmd": ["claude"]
+    },
+    "domain": {
+      "when": "données du projet, templates, fiches, analyse métier, recherche/scraping de la base de connaissances",
+      "mcp_config": "./mcp-configs/domain-config.json",
+      "agent_cmd": ["claude"]
+    },
+    "dev": {
+      "when": "code, dépôt git, système de fichiers, exécution shell, audits techniques, refactoring",
+      "mcp_config": "./mcp-configs/dev-config.json",
+      "agent_cmd": ["claude"]
+    }
+  }
+}

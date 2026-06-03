@@ -97,3 +97,6 @@ plugins/**/scripts/health_heartbeat.log
 # Fichiers temp d'anonymisation
 _anon.txt
 _anon.err
+
+# Coordination runtime Claude<->Antigravity (donnees operationnelles, hors public)
+_sync_antigravity/
