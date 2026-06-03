@@ -67,12 +67,15 @@ def classify_reliability(f):
     non_valides = tr.get("champs_non_valides") or []
     titre_jp_ok = bool(_txt(f.get("titre_japonais")))
 
+    official = has_official_source(f)  # DEC-035 : ossature validante
     if not _txt(f.get("titre_international")) or (not valides and len(non_valides) >= 5):
         return "incomplet"      # 🔴
+    # DEC-035 : un ✅ EXIGE au moins une source officielle/primaire.
+    # Niveau "haute" reposant uniquement sur des sources signal -> plafond 🟡 Probable.
     if niveau in ("haute", "elevee", "élevée") and len(sources) >= 2 and valides:
-        return "confirme"       # ✅
+        return "confirme" if official else "probable"   # ✅ si officielle, sinon 🟡
     if niveau in ("haute", "elevee", "élevée") and sources and titre_jp_ok:
-        return "confirme"       # ✅
+        return "confirme" if official else "probable"   # ✅ si officielle, sinon 🟡
     if niveau in ("moyenne",) and sources:
         return "probable"       # 🟡
     if sources:
@@ -82,6 +85,42 @@ def classify_reliability(f):
 
 RELIAB_BADGE = {"confirme": "✅ Confirmé", "probable": "🟡 Probable",
                 "a_verifier": "🟠 À vérifier", "incomplet": "🔴 Incomplet"}
+
+
+# --- DEC-035 : tiering des sources (officielle/primaire vs signal/cross-check) ---
+# Une source non officielle ne FONDE JAMAIS seule un ✅ Confirmé : elle sert de lead (🟠)
+# ou de 2e source de cross-check. L'ossature validante reste officielle/primaire.
+OFFICIAL_SOURCE_HINTS = (
+    "shueisha", "kodansha", "shogakukan", "kadokawa", "shonenjump", "shonen-jump",
+    "viz.com", "yenpress", "squareenix", "square-enix", "hakusensha", "futabasha",
+    "ichijinsha", "akitashoten", "comic-walker", "bookwalker", "cdjapan",
+    "oricon.co.jp", "natalie.mu", ".co.jp", "official",
+)
+# Sources DEBLOQUEES mais NON fondatrices : signal/surveillance + cross-check uniquement.
+SIGNAL_SOURCE_HINTS = (
+    "wikipedia.org", "twitter.com", "x.com", "mangaupdates.com", "baka-updates",
+    "mangadex.org", "myanimelist.net", "anilist.co", "jikan",
+)
+
+
+def source_tier(s):
+    """Classe une source/URL : 'officielle' (primaire) ou 'signal' (cross-check/lead).
+    Defaut prudent : une source inconnue est traitee comme 'signal' (non fondatrice)."""
+    low = (s or "").lower()
+    if any(h in low for h in SIGNAL_SOURCE_HINTS):
+        return "signal"
+    if any(h in low for h in OFFICIAL_SOURCE_HINTS):
+        return "officielle"
+    return "signal"
+
+
+def has_official_source(f):
+    """True si >=1 source/URL de la fiche est de tier officiel/primaire (DEC-035)."""
+    tr = f.get("tracabilite") or {}
+    for s in (tr.get("sources") or []) + (tr.get("urls") or []):
+        if source_tier(s) == "officielle":
+            return True
+    return False
 
 
 # --- Dedup G1 : confronte les fiches au Master Index (source de verite opposable) ---
@@ -145,6 +184,8 @@ def normalize(f):
         "urls": tr.get("urls") or [],
         "fiabilite": reliab,
         "fiabilite_badge": RELIAB_BADGE[reliab],
+        "has_official": has_official_source(f),                       # DEC-035
+        "champs_manquants": tr.get("champs_non_valides") or [],       # pour les leads
         "date_detection": f.get("date_detection"),
     }
 
@@ -226,6 +267,46 @@ def index_into_rag(normalized, qdrant, collection, ollama, model):
     return len(payload_pts)
 
 
+def build_leads(normalized):
+    """DEC-035 : file de surveillance -> recherche OFFICIELLE.
+    Toute fiche 🟠 (a_verifier), ou 🟡/✅ sans source officielle, devient un *lead* :
+    une demande de creuser plus profond sur source primaire (editeur, Oricon, BookWalker,
+    Natalie, site studio). C'est le role 'signal' des sources non officielles."""
+    leads = []
+    for n in normalized:
+        needs = (n["fiabilite"] == "a_verifier") or (
+            n["fiabilite"] in ("probable", "confirme") and not n.get("has_official"))
+        if not needs:
+            continue
+        leads.append({
+            "id_fiche": n.get("id_fiche"),
+            "titre": n["titre_international"] or n["titre_japonais"],
+            "fiabilite": n["fiabilite"],
+            "champs_manquants": n.get("champs_manquants", []),
+            "sources_actuelles": n["sources"],
+            "action": "rechercher source officielle/primaire (editeur, Oricon, BookWalker, Natalie, site studio) puis cross-check",
+        })
+    return leads
+
+
+def write_leads(path, leads, src_path):
+    """Ecrit la file de leads (JSON + MD) consommable en handoff par Antigravity/Hermes."""
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump({"source_file": src_path,
+                   "generated_at": datetime.datetime.now().isoformat(timespec="seconds"),
+                   "n_leads": len(leads), "leads": leads}, fh, ensure_ascii=False, indent=2)
+    md = ["# Leads -> recherche officielle (DEC-035)", "",
+          "> Source : `%s` · %d leads" % (src_path, len(leads)),
+          "> Chaque entree = fiche a corroborer sur source primaire avant tout ✅.", ""]
+    for d in leads:
+        md.append("- **%s** [%s] — manque: %s — sources actuelles: %s" % (
+            d["titre"] or "(sans titre)", d["fiabilite"],
+            ", ".join(d["champs_manquants"]) or "—",
+            ", ".join(d["sources_actuelles"]) or "—"))
+    with open(os.path.splitext(path)[0] + ".md", "w", encoding="utf-8") as fh:
+        fh.write("\n".join(md))
+
+
 def main():
     ap = argparse.ArgumentParser(description="Pont d'ingestion veille -> fiches + RAG.")
     ap.add_argument("--runs-root", action="append", default=None,
@@ -255,6 +336,13 @@ def main():
         n["dedup"] = dedup_status(n, index_titles)
     rep = build_report(src, normalized)
     rep["master_index"] = args.master_index or None
+
+    # DEC-035 : file de leads (surveillance -> recherche officielle), ecrite meme en dry-run.
+    leads = build_leads(normalized)
+    rep["n_leads"] = len(leads)
+    leads_path = os.path.join(os.path.dirname(args.report) or HERE, "veille_leads_officiel.json")
+    write_leads(leads_path, leads, src)
+    rep["leads_file"] = leads_path
 
     with open(args.report, "w", encoding="utf-8") as fh:
         json.dump(rep, fh, ensure_ascii=False, indent=2)
