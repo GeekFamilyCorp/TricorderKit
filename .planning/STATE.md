@@ -3,6 +3,14 @@
 > État courant du projet. Mettre à jour à chaque session.
 > Dernière mise à jour : 2026-06-01
 
+> **Session 2026-06-03** : audit déterministe du vault (1 313 fiches manga/LN, `audit_v2.ps1`) →
+> **DEC-036** : dérive de schéma frontmatter (clés FR vs EN) tranchée → **canon = clés EN**
+> (`author_jp`/`title_jp`/`artist_jp`/`publisher_jp`, validation `confidence_label`).
+> Chiffres fiables : 226 validées, 692 avec auteur, **610 coquilles vides**, **319 fiches créateurs manquantes**.
+> Migration EN = **chantier gardé** (CLI dry-run + archivage, exécution via MangaTracker) — **non encore exécutée**.
+> Mission de nettoyage déposée pour Antigravity (`_sync_antigravity/commands/antigravity_inbox/`).
+> Outils livrés (dossier projet) : `audit_v2.ps1`, `audit_fiches_raw.csv`, `createurs_manquants.csv`.
+
 > **Session 2026-06-01** : optimisation des tâches planifiées Japan-Alliance (DEC-020) —
 > fusion du doublon d'enrichissement SO (un seul chargement de contexte vault/jour),
 > volume 10+10 → 12 fiches/nuit, recadrage horaires anti-chevauchement (fenêtre creuse 02h–07h),
@@ -147,4 +155,4 @@ Aucun.
 
 ---
 
-*Dernière mise à jour : 2026-06-01 — DEC-020 optimisation tâches planifiées (fusion SO + recadrage horaires, volume 12)*
+*Dernière mise à jour : 2026-06-03 — DEC-036 unification schéma frontmatter (canon clés EN `author_jp`/`title_jp`) ; audit déterministe vault + mission Antigravity déposée*
