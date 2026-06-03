@@ -1,0 +1,10 @@
+{
+  "_comment": "Profil DEV — code/git/système de fichiers/audit. Charger uniquement les outils de dev.",
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "<serveur-mcp-github>"],
+      "env": {"GITHUB_TOKEN": "<token>"}
+    }
+  }
+}

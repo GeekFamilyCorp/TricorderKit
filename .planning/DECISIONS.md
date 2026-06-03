@@ -334,3 +334,86 @@
 - **Statut** : Appliquée.
 
 *Dernière mise à jour : 2026-06-01 — DEC-028 gate docs-sync (clôt le reste-à-faire de DEC-027) ; R39 ajoutée*
+
+---
+
+## DEC-029 — Réallocation des veilles Claude → Antigravity (cible complète, pilote SO d'abord) — 2026-06-01
+
+- **Contexte** : extension de DEC-025. Le système de coordination horaire `_sync_antigravity/` est opérationnel (Antigravity vérifie/complète les fiches via web, Claude intègre au vault). Constat de redondance coûteuse : plusieurs tâches planifiées Claude (modèle cher) font du *gathering web* en masse — enrichissement SO nuit 02h (12 fiches/nuit via `mangatracker-lookup`, cf. DEC-020), rollout création studios 12h (DEC-018), collecte AN 05h — alors qu'Antigravity (moins cher, propriétaire du scraping, horaire) est mieux placé. Boucle absurde identifiée : le rollout crée des fiches studios que Antigravity vérifie ensuite (Claude produit, Antigravity contrôle Claude).
+- **Décision (arbitrage Sébastien, 2026-06-01)** :
+  - **Cible** : confier à Antigravity le rôle « collecter + compléter via web » sur les 4 familles — (1) enrichissement SO, (2) collecte/brouillon création studios, (3) collecte fiches AN, (4) détection nouveautés/sorties. Claude conserve **intégration au vault + arbitrage des conflits + QA + architecture**. Antigravity n'écrit jamais dans les vaults ; il dépose des rapports, Claude intègre.
+  - **Séquençage = PILOTE** : cette semaine, bascule de la **seule** tâche la plus sûre — **enrichissement SO** (champs `title_jp`/`author_jp`/`publisher_jp` des fiches `SO` de `01_Mangas & Light Novels/`). Métriques d'Antigravity accumulées en parallèle (durée/fiche, taux succès, taille de lot auto-scalée). Extension aux 3 autres familles la semaine prochaine **sur preuve**.
+- **Application immédiate (pilote)** :
+  1. Tâche `analyse-japan-alliance` (02h) : **Partie 3 (enrichissement SO) mise en PAUSE** (déléguée). Parties 1-2 (bilan + Master Index) inchangées. Rollback trivial = réactiver la Partie 3.
+  2. Antigravity : nouvelle piste de veille « SO » définie dans `_sync_antigravity/claude_vers_antigravity.md` + file SO dans `ETAT_PARTAGE.md`. Auto-scaling et reporting de métriques déjà en place (GUIDE §8bis).
+  3. Tâche horaire `sync-antigravity-fiches` (Claude, XX:01) : intègre désormais aussi les rapports SO (fiches `01_Mangas & Light Novels/`, champs JP), même règle de validation 2 sources.
+- **Garde-fous** : règle des 2 sources et exclusion des sources interdites priment sur le volume (cf. catch `magicbusinc.com`, fiche ST104, 2026-06-01). On ne touche ni aux crons ni aux scripts d'Antigravity (DEC-025). Rollback du pilote = réactiver Partie 3 du run 02h.
+- **Routage (DEC-016)** : prompts des tâches planifiées = `<scheduled-path>/` (hors repo) ; cette décision + journalisation → repo **TricorderKit** ; fichiers de coordination → `TricorderKit Autonome/_sync_antigravity/`.
+- **Statut** : Acceptée — pilote SO appliqué ; extension conditionnée aux métriques.
+
+---
+
+## DEC-032 — Canal de commandes `_sync_antigravity/commands/` (communication quasi temps réel) — 2026-06-03
+
+- **Contexte** : audit à froid de la collaboration Claude⇄Antigravity (tâche `audit-collab-claude-antigravity`). Friction identifiée : toute commande inter-agents attend le battement horaire (XX:01 / XX:10). Sébastien veut à terme une communication sans attente. Contrainte de fond : aucun des deux agents n'est « toujours à l'écoute » ; chacun ne s'exécute que sur déclencheur.
+- **Décision** : créer un canal de commandes par fichiers, avec inbox dédiée par agent, lu en poll rapide (~1–2 min) de chaque côté. Latence cible 1–2 min, **zéro nouvelle infra**. Structure : `commands/{claude_inbox,antigravity_inbox,archive}/` + `commands/README.md` (contrat : nommage `AAAA-MM-JJThhmm__sujet.md`, frontmatter `from/to/priorite/statut`, cycle nouveau→en_cours→traite→archive).
+- **Garde-fous** : chacun n'écrit que dans l'inbox de l'autre ; canal indépendant du verrou `ETAT_PARTAGE.md` (ne touche ni fiches, ni vault, ni journaux) ; aucune écriture vault via ce canal ; ne déclenche pas l'autre agent (mode poll pur tant que DEC-033/034 non validés) ; Claude ne câble jamais le cron d'Antigravity (DEC-025).
+- **Application (run audit 2026-06-03)** : scaffold créé (`README.md` + 3 sous-dossiers avec `.gitkeep`). **Câblage des polls NON appliqué** : (a) côté Claude, lecture `claude_inbox/` à ajouter au prompt `sync-antigravity-fiches` (validation Sébastien) ; (b) côté Antigravity, poll de `antigravity_inbox/` à câbler par Sébastien/Antigravity. Édits des fichiers partagés (`claude_vers_antigravity.md`, `ETAT_PARTAGE.md`) reportés : verrou claude récent posé à l'heure du run.
+- **Routage (DEC-016)** : décision + journalisation → repo **TricorderKit** ; fichiers de coordination → `TricorderKit Autonome/_sync_antigravity/commands/`.
+- **Statut** : **Acceptée — scaffold appliqué (faible risque)** ; câblage des polls en attente de validation Sébastien.
+
+## DEC-033 — Déclencheur événementiel (watcher local) pour comm temps réel — 2026-06-03 — PROPOSÉE
+
+- **Contexte** : phase 2 du volet communication temps réel (suite DEC-032). Pour passer d'une latence de 1–2 min (poll) à ~secondes.
+- **Proposition** : watcher local (PowerShell `FileSystemWatcher` ou Python `watchdog`) surveillant `commands/<inbox>/` et **lançant l'agent cible en headless** à chaque écriture.
+- **Point critique non résolu** : Antigravity est-il **déclenchable de l'extérieur** (CLI / API / webhook) ? Côté Claude, le mode headless existe. Côté Antigravity : non vérifiable en autonome (Claude ne touche pas ses scripts). **Question ouverte à instruire avec Sébastien.** Si non, le côté Antigravity reste en poll rapide (DEC-032).
+- **Risque** : MEDIUM (process résident, robustesse au redémarrage, lancement headless par agent).
+- **Statut** : **Proposée** — conditionnée à la confirmation de déclenchabilité externe d'Antigravity. Pas d'implémentation sans validation.
+
+## DEC-034 — Dispatch des commandes via Temporal — 2026-06-03 — PROPOSÉE
+
+- **Contexte** : phase 3 du volet communication temps réel. Temporal est déjà dans la stack TricorderKit (`TEMPORAL_ADDRESS`, worker `tricorderkit-hooks`).
+- **Proposition** : un workflow Temporal reçoit un signal « commande » et dispatche l'exécution de l'agent cible. Apporte durabilité, retry, et observabilité (Langfuse).
+- **Point critique** : même dépendance que DEC-033 (déclenchabilité externe d'Antigravity).
+- **Risque** : MEDIUM-HIGH (couplage stack, effort élevé).
+- **Statut** : **Proposée** — go/no-go après DEC-033 et confirmation Sébastien.
+
+> **Écart de traçabilité signalé (audit 2026-06-03)** : DEC-030 (réparation budget-tracking) et DEC-031 (routage token-optimizer par tier) sont référencés dans la mémoire persistante et les en-têtes de tâches planifiées, mais **absents de ce fichier** (dernière entrée loguée avant l'audit = DEC-029). Back-fill proposé, contenu à reconstituer avec Sébastien (ne pas inventer). Voir `_sync_antigravity/AUDIT_collab_2026-06-05.md`.
+
+*Dernière mise à jour : 2026-06-03 — DEC-032 canal de commandes (appliqué, faible risque) + DEC-033/034 proposés (comm temps réel) ; écart DEC-030/031 signalé*
+
+
+---
+
+## DEC-030 — Réparation du tracking budget tokens (capture réelle via transcripts) — 2026-06-03
+
+- **Contexte** : la commande « analyse mon budget » a révélé que `~/.token-optimizer/budget.json` était **figé** (schéma v1.0, mois `2026-05`, consommation et `events[]` à zéro) alors que `budget.py` est en v1.1. Diagnostic : le tracker n'avait **jamais** réussi à s'exécuter. Trois causes cumulées : (1) le hook `PostToolUse(Task)` appelle `python3 …` introuvable sous Windows (seul `C:\Python314\python.exe` existe) ; (2) bug plateforme connu `${CLAUDE_PLUGIN_ROOT}` non expansé dans les hooks Cowork ; (3) périmètre `matcher: "Task"` qui, même réparé, ne capturerait que les sous-agents — jamais la conso du fil principal (majoritaire). De plus la tâche planifiée matinale utilisait le `python3` du sandbox Linux → cible un `budget.json` différent (split-brain).
+- **Décision** : abandonner la capture par hook (non fiable en Cowork) au profit d'une **ingestion depuis les transcripts de session**, source de vérité de la conso **facturée** (champs `message.usage` : `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`, `output_tokens`, `model`).
+  - Nouveau script `scripts/track_usage.py` : scan des transcripts JSONL, agrégation par modèle, idempotent (état `~/.token-optimizer/track_state.json` par nb de lignes traitées), filtre mois courant, `--dry-run`. Pondération cache : `input_effectif = input + cache_creation + 0.1 × cache_read` (**arbitrage Sébastien** : inclure cache_read ×0,1, fidèle à la facturation).
+  - `hooks/hooks.json` : **suppression** du hook `PostToolUse(Task)` budget (cassé + redondant ⇒ évite tout double comptage). `PreToolUse(Bash)` rtk inchangé. Backup `hooks.json.bak-<stamp>`.
+  - `scheduled-tasks/daily-budget-morning-check/SKILL.md` : réécrit pour **ingérer d'abord** via `track_usage.py` exécuté en **python Windows** (Desktop Commander) — jamais le sandbox — puis lire `budget.py status`. Backup `.bak-<stamp>`. Écrivain unique = ce script, fichier canonique = `~/.token-optimizer/budget.json`.
+  - **Recalibration** du plafond mensuel : `20 000 000` → `25 000 000 000` équiv-Haiku (**arbitrage Sébastien** : calé sur le rythme réel). L'ancien 20 M était un placeholder non validé (faux d'un facteur ~60–110×).
+- **Validation** : `track_usage.py` compile, `hooks.json` parse OK. Ingestion juin (1–3) : 5 853 messages / 242 transcripts. `budget status` = 2,27 Md / 25 Md (9,1 %, OK) ; **Opus 88,2 % de son sous-budget [WARNING]** = facteur limitant. `budget_analyzer` : projection fin de mois 119 %, Opus = 97 % de la conso, 2 sorties longues non compressées détectées. Rollover `2026-05` → `2026-06` + migration v1.1 effectués.
+- **Constat métier** : le `model-router` n'est dans les faits **pas appliqué** — ~97 % de la conso part en Opus (4 512 messages Opus vs 1 190 Sonnet, 144 Haiku sur 3 jours). Vrai gisement d'économie = router le simple vers Sonnet/Haiku + Session Rotation (réduire le cache_read). À traiter hors de cette décision.
+- **Routage (DEC-016)** : scripts/hooks/SKILL du plugin = instance `rpm/` (chemins absolus assumés tant que bug `${CLAUDE_PLUGIN_ROOT}`) ; cette journalisation → repo **TricorderKit**. Copie durable de `track_usage.py` à reverser dans le repo plugin source.
+- **Statut** : Appliquée.
+
+*Dernière mise à jour : 2026-06-03 — DEC-030 réparation tracking budget (ingestion transcripts, recalibration 25 Md)*
+
+---
+
+## DEC-031 — Routage modèle token-optimizer appliqué aux tâches planifiées (Haiku/Sonnet/Opus par tier) — 2026-06-03
+
+- **Contexte** : suite directe du gisement laissé ouvert par DEC-030 (« le model-router n'est pas appliqué : ~97 % de la conso part en Opus ; router le simple vers Sonnet/Haiku ; à traiter hors de cette décision »). Les 7 tâches planifiées tournaient toutes sur le modèle par défaut (Opus) quel que soit leur poids réel — y compris le battement horaire `sync-antigravity-fiches` (24 runs/j, majoritairement no-op) et les rapports de lecture quotidiens. Demande de Sébastien : « sélectionne Haiku, Sonnet ou Opus selon les tâches, optimise pour une meilleure gestion ».
+- **Décision (arbitrage Sébastien)** : injecter dans le prompt de chaque tâche planifiée un **header standardisé « 🎚️ ROUTAGE TOKEN-OPTIMIZER »** déclarant le tier (T1/T2/T3), le modèle cible, le niveau caveman (compression sortie) et la politique Extended Thinking, aligné sur le skill `model-router` du plugin token-optimizer. Répartition retenue :
+  - **T1 · Haiku 4.5 · caveman full** — `sync-antigravity-fiches` (horaire, no-op fast-exit), `japan-alliance-an-tracker` (05h), `japan-alliance-tricorderkit-7h30` (07h). Lecture/extraction/reporting sans raisonnement lourd.
+  - **T2 · Sonnet 4.6 · caveman lite** — `analyse-japan-alliance` (02h, bilan + Master Index), `rollout-studios-japan-alliance` (12h, **caveman OFF sur le contenu** des fiches : anti-hallucination prioritaire), `weekly-ecosystem-audit` (dim 04h), `weekly-news-digest` (**nouvelle tâche**, lun 08h).
+  - **T3 · Opus 4.6 · Extended Thinking ON · caveman OFF** — `audit-collab-claude-antigravity` (one-time 05/06, raisonnement multi-fichiers + DEC irréversibles).
+- **Nouvelle tâche créée** : `weekly-news-digest` (lun 08h, Sonnet) — consolide la veille Antigravity des 7 derniers jours + recoupe les sorties manga/anime confirmées (règle 2 sources), produit un digest ≤200 mots archivé dans le vault. Complète DEC-029 (veille produite par Antigravity, consolidée par Claude).
+- **Limite technique documentée** : les sous-agents exécuteurs du plugin (`haiku/sonnet/opus-executor`) **ne portent pas les MCP** (obsidian-japan-alliance, Windows-MCP). Pour les tâches liées au vault, le tier est donc appliqué comme **directive comportementale** (caveman + Extended Thinking OFF + token-light + no-op rapide) plutôt que par délégation dure à un sous-agent ; le vrai gain immédiat = compression sortie + lecture ciblée. La délégation `subagent_type` reste possible pour les tâches purement web/fichiers.
+- **Contrôle continu** : `weekly-ecosystem-audit` (étape 2bis ajoutée) vérifie chaque dimanche que chaque tâche porte toujours son header de routage et que le tier est cohérent ; alerte si Opus repasse au-dessus de ~40 % de la conso mensuelle (signe de dérive du routage). Le suivi chiffré reste assuré par `budget.py`/`budget_analyzer` (DEC-030).
+- **Réversibilité** : header purement additif en tête de prompt ; retrait = rollback trivial, aucune logique métier modifiée.
+- **Routage (DEC-016)** : prompts des tâches planifiées = `<scheduled-path>` (hors repo) ; cette journalisation → repo **TricorderKit**.
+- **Statut** : Appliquée (7 tâches re-routées + 1 créée le 2026-06-03).
+
+*Dernière mise à jour : 2026-06-03 — DEC-031 routage modèle token-optimizer sur les tâches planifiées (clôt le gisement laissé par DEC-030)*

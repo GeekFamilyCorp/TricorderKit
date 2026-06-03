@@ -1,0 +1,11 @@
+[
+  {"prompt": "reprends la tache d'hier sur les erreurs de scraping", "expected": "episodic"},
+  {"prompt": "lis le dernier digest de session pour reprendre le contexte", "expected": "episodic"},
+  {"prompt": "montre l'historique des logs de la nuit", "expected": "episodic"},
+  {"prompt": "cree la fiche d'un nouvel editeur dans la base", "expected": "domain"},
+  {"prompt": "recherche les donnees du template manga et complete les fiches", "expected": "domain"},
+  {"prompt": "analyse metier des sources et scraping du catalogue", "expected": "domain"},
+  {"prompt": "audit securite du depot git et refactor du module hooks", "expected": "dev"},
+  {"prompt": "execute le shell pour lancer les tests du code", "expected": "dev"},
+  {"prompt": "ouvre le systeme de fichiers et corrige le code source", "expected": "dev"}
+]

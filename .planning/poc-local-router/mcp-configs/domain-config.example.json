@@ -1,0 +1,9 @@
+{
+  "_comment": "Profil DOMAIN — données métier/templates/fiches/recherche. Ajouter ici le MCP RAG quand G3 sera prêt.",
+  "mcpServers": {
+    "obsidian-domain-vault": {
+      "command": "npx",
+      "args": ["-y", "<serveur-mcp-obsidian>", "--vault", "<chemin_vault_domaine>"]
+    }
+  }
+}
