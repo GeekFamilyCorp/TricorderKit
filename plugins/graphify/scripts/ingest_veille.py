@@ -123,6 +123,28 @@ def has_official_source(f):
     return False
 
 
+# DEC-035 : sources de CONTENU interdites (piratage / scantrad) — seuil tolere = 0.
+# NB : MangaDex N'EST PAS ici (autorise en metadonnees/signal), mais l'est si scanle -> on
+# bloque sur les agregateurs de scan connus.
+FORBIDDEN_CONTENT_HINTS = (
+    "scantrad", "scan-trad", "lelscan", "scan-manga", "japscan", "mangakawai",
+    "reaperscans", "mangapark", "mangakakalot", "manganato", "mangafire",
+    "mangabuddy", "bato.to", "aquamanga", "scanvf", "anime-sama",
+)
+
+
+def forbidden_content_source(s):
+    """True si la source pointe un agregateur de contenu pirate/scanle (DEC-035)."""
+    low = (s or "").lower()
+    return any(h in low for h in FORBIDDEN_CONTENT_HINTS)
+
+
+def has_forbidden_content(f):
+    tr = f.get("tracabilite") or {}
+    return any(forbidden_content_source(s)
+               for s in (tr.get("sources") or []) + (tr.get("urls") or []))
+
+
 # --- Dedup G1 : confronte les fiches au Master Index (source de verite opposable) ---
 def _norm_title(s):
     """Normalise un titre pour comparaison : sans accents, minuscule, alphanum + espaces."""
@@ -185,6 +207,7 @@ def normalize(f):
         "fiabilite": reliab,
         "fiabilite_badge": RELIAB_BADGE[reliab],
         "has_official": has_official_source(f),                       # DEC-035
+        "has_forbidden": has_forbidden_content(f),                    # DEC-035 (seuil 0)
         "champs_manquants": tr.get("champs_non_valides") or [],       # pour les leads
         "date_detection": f.get("date_detection"),
     }
@@ -230,8 +253,16 @@ def write_report_md(path, rep):
     L += ["", "Par type : " + ", ".join("%s=%d" % (t, c) for t, c in rep["par_type"].items()),
           "Dedup G1 (vs Master Index) : " + ", ".join("%s=%d" % (d, c) for d, c in rep.get("par_dedup", {}).items()),
           "Indexables RAG (hors 🔴) : %d" % rep["n_indexables"],
-          "À créer dans le vault (nouveau ET hors 🔴) : %d" % rep.get("n_a_creer", 0), "",
-          "## Fiches", ""]
+          "À créer dans le vault (nouveau ET hors 🔴) : %d" % rep.get("n_a_creer", 0), ""]
+    cov = rep.get("couverture", {})
+    if cov:
+        L += ["## 📈 Couverture (DEC-035)", "",
+              "- Fiches sourcées : %.0f%%" % (cov.get("pct_sourced", 0) * 100),
+              "- Avec source officielle/primaire : %.0f%%" % (cov.get("pct_official", 0) * 100),
+              "- Règle 2 sources (proxy) : %.0f%%" % (cov.get("pct_two_sources", 0) * 100),
+              "- Sources de contenu INTERDITES : %d → **%s** (seuil 0)" % (cov.get("n_forbidden", 0), cov.get("verdict", "?")),
+              "> Couverture « sources visitées ≥ 95 % » mesurée côté gathering (rapport veille amont).", ""]
+    L += ["## Fiches", ""]
     for n in rep["fiches"]:
         L.append("### %s [%s] — %s" % (n["fiabilite_badge"], n.get("dedup", "inconnu"),
                                        n["titre_international"] or "(sans titre)"))
@@ -247,7 +278,7 @@ def index_into_rag(normalized, qdrant, collection, ollama, model):
     import index_vault as iv
     payload_pts = []
     for n in normalized:
-        if n["fiabilite"] == "incomplet":
+        if n["fiabilite"] == "incomplet" or n.get("has_forbidden"):  # DEC-035 : jamais indexer du contenu interdit
             continue
         vec = iv.embed(doc_text(n), ollama, model)
         pid = str(uuid.uuid5(uuid.NAMESPACE_URL, "veille:" + (n["id_fiche"] or n["titre_international"])))
@@ -265,6 +296,29 @@ def index_into_rag(normalized, qdrant, collection, ollama, model):
     iv._req("PUT", "%s/collections/%s/points?wait=true" % (qdrant, collection),
             {"points": payload_pts})
     return len(payload_pts)
+
+
+def build_coverage(normalized):
+    """DEC-035 : metrique de couverture par run.
+    Seuil valide (2026-06-03) : >=95% sources visitees (mesure gathering, reportee par
+    l'agent de veille amont) + 0 source de CONTENU interdite (mesuree ici, bloquante)."""
+    n = len(normalized) or 1
+    n_sourced = sum(1 for x in normalized if x["sources"])
+    n_official = sum(1 for x in normalized if x.get("has_official"))
+    n_two = sum(1 for x in normalized if len(x["sources"]) >= 2)
+    forbidden = [{"id_fiche": x.get("id_fiche"),
+                  "sources": [s for s in x["sources"] if forbidden_content_source(s)]}
+                 for x in normalized if x.get("has_forbidden")]
+    return {
+        "n_fiches": len(normalized),
+        "pct_sourced": round(n_sourced / n, 3),
+        "pct_official": round(n_official / n, 3),
+        "pct_two_sources": round(n_two / n, 3),
+        "n_forbidden": len(forbidden),
+        "forbidden": forbidden,
+        "verdict": "PASS" if len(forbidden) == 0 else "FAIL",
+        "seuil": {"sources_visitees_min_pct": 95, "contenu_interdit_max": 0},
+    }
 
 
 def build_leads(normalized):
@@ -343,6 +397,7 @@ def main():
     leads_path = os.path.join(os.path.dirname(args.report) or HERE, "veille_leads_officiel.json")
     write_leads(leads_path, leads, src)
     rep["leads_file"] = leads_path
+    rep["couverture"] = build_coverage(normalized)  # DEC-035
 
     with open(args.report, "w", encoding="utf-8") as fh:
         json.dump(rep, fh, ensure_ascii=False, indent=2)
