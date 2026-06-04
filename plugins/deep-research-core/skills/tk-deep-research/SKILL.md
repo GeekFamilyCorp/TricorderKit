@@ -1,3 +1,8 @@
+---
+name: tk-deep-research
+description: "Recherche autonome local-first : collecte multi-sources, deduplication, scoring et synthese Markdown. Declencheurs : /tk:deep-research, recherche approfondie, synthese de sources, pipeline de recherche, deep research."
+---
+
 # Skill: deep-research-core — TricorderKit v0.7
 
 > Local-first autonomous research: collect, deduplicate, score and synthesize.

@@ -59,8 +59,9 @@ Final sourced report
 ```text
 plugins/deep-research-core/
 ├── README.md
-├── SKILL.md
 ├── manifest.yml
+├── .claude-plugin/plugin.json
+├── skills/tk-deep-research/SKILL.md
 ├── sources/
 │   ├── trusted_sources.yml    ← allowed trusted sources
 │   └── blocked_sources.yml    ← blocked sources

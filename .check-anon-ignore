@@ -63,7 +63,7 @@ docs/anonymization.md
 
 # ── Plugins & core (routage de domaine, hints, manifestes) ────────────────────
 plugins/connector-hub/README.md
-plugins/connector-hub/SKILL.md
+plugins/connector-hub/skills/connector-hub/SKILL.md
 plugins/obsidian-agent-layer/README.md
 plugins/obsidian-agent-layer/manifest.yml
 plugins/eval-lab/eval_runner.py

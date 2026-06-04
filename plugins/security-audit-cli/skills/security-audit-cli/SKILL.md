@@ -1,3 +1,8 @@
+---
+name: security-audit-cli
+description: "Audit de securite TricorderKit : secret scanning, audit des dependances vs CVE, controle des permissions, analyse de patterns a risque, verification d'anonymisation avant depot public. Declencheurs : audit securite, scan secrets, verifie les fuites, check anonymisation, security scan."
+---
+
 # security-audit-cli — Skill Audit de Sécurité TricorderKit
 > Version : 0.1.0 — 16/05/2026
 > Ancrage : TricorderKit v0.8 — Phase 5 active

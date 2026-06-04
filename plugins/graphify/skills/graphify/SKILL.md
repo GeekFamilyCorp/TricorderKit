@@ -1,3 +1,8 @@
+---
+name: graphify
+description: "Knowledge graph hybride Neo4j + Qdrant. Stocker et retrouver concepts, decisions et entites ; traversee de graphe et recherche semantique ; indexer la sortie de recherche ; seed depuis le vault Obsidian. Declencheurs : stocke dans le graphe, qu'est-ce qui est relie a X, retrouve les concepts lies, graphify_store, graphify_retrieve."
+---
+
 # SKILL -- graphify
 
 ## Trigger conditions

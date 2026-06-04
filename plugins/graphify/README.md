@@ -33,8 +33,9 @@ RELATES_TO | DEPENDS_ON | PRODUCES | CONSUMES | REFERENCES | DERIVED_FROM | PART
 
 plugins/graphify/
   README.md
-  SKILL.md
   manifest.yml
+  .claude-plugin/plugin.json
+  skills/graphify/SKILL.md
   schema/
     ontology.cypher    (Neo4j constraints + indexes)
     graph.schema.json  (JSON schema for graph objects)
