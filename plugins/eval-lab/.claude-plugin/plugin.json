@@ -1,0 +1,18 @@
+{
+  "name": "eval-lab",
+  "version": "0.1.0",
+  "description": "Non-régression et validation de contrat — évalue chaque skill contre skill_output.schema.json.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "eval",
+    "regression",
+    "validation",
+    "qa"
+  ]
+}
