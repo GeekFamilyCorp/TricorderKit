@@ -1,3 +1,8 @@
+---
+name: connector-hub
+description: "Hub d'ingestion passif multi-sources. Lit les declarations sources.yaml de chaque linked_project actif, construit un registre unifie et route chaque ingestion vers le CLI adapte. Declencheurs : ingestion sources, veille multi-sources, registre de connecteurs, router une source, connector hub."
+---
+
 # SKILL.md — connector_hub
 
 > Plugin TricorderKit v0.8 — Hub d'ingestion passif multi-sources

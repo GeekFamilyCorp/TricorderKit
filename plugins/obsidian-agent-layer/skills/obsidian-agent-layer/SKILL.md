@@ -1,3 +1,8 @@
+---
+name: obsidian-agent-layer
+description: "Couche d'integration Obsidian : CRUD notes avec frontmatter structure, recherche semantique full-text + tags, fiches conformes aux templates (manga, anime, studio, seiyu), routing vault, sync HOT_CACHE. Declencheurs : creer/lire/patcher une note, ecrire dans le vault, fiche structuree Obsidian."
+---
+
 # obsidian-agent-layer — Skill Intégration Vault Obsidian
 > Version : 0.1.0 — 16/05/2026
 > Ancrage : TricorderKit v0.8 — Phase 5 active
