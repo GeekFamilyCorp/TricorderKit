@@ -1,0 +1,18 @@
+{
+  "name": "token-optimizer",
+  "version": "0.2.0",
+  "description": "Optimisation tokens — routing Haiku/Sonnet/Opus, classification T1/T2/T3, compression caveman, budget tracking. Inclut 6 skills + 3 agents.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "tokens",
+    "routing",
+    "budget",
+    "compression"
+  ]
+}

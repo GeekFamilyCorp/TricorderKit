@@ -1,0 +1,143 @@
+{
+  "name": "tricorderkit",
+  "owner": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "metadata": {
+    "description": "TricorderKit — Agentic Knowledge OS. Plugins réutilisables : recherche, knowledge graph, mémoire, vault Obsidian, optimisation tokens, orchestration.",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "cli-forge",
+      "source": "cli-forge",
+      "description": "Forge de CLIs validées pour agents — registre central, scaffolding et manifestes CLI normalisés.",
+      "version": "0.2.0",
+      "category": "tooling",
+      "keywords": [
+        "cli",
+        "scaffolding",
+        "registry",
+        "agents"
+      ]
+    },
+    {
+      "name": "connector-hub",
+      "source": "connector-hub",
+      "description": "Hub d'ingestion passif multi-sources — lit les sources des linked_projects et route vers le bon CLI d'ingestion.",
+      "version": "0.1.0",
+      "category": "ingestion",
+      "keywords": [
+        "ingestion",
+        "sources",
+        "connector",
+        "linked-projects"
+      ]
+    },
+    {
+      "name": "deep-research-core",
+      "source": "deep-research-core",
+      "description": "Moteur de recherche autonome local-first — collecte multi-sources, dédup, scoring, synthèse Markdown.",
+      "version": "0.1.0",
+      "category": "research",
+      "keywords": [
+        "research",
+        "rag",
+        "synthesis",
+        "local-first"
+      ]
+    },
+    {
+      "name": "eval-lab",
+      "source": "eval-lab",
+      "description": "Non-régression et validation de contrat — évalue chaque skill contre skill_output.schema.json.",
+      "version": "0.1.0",
+      "category": "quality",
+      "keywords": [
+        "eval",
+        "regression",
+        "validation",
+        "qa"
+      ]
+    },
+    {
+      "name": "graphify",
+      "source": "graphify",
+      "description": "Knowledge graph hybride — Neo4j + Qdrant + LangGraph. Fournit le MCP graph-server (store/retrieve/relate).",
+      "version": "0.1.0",
+      "category": "knowledge",
+      "keywords": [
+        "knowledge-graph",
+        "neo4j",
+        "qdrant",
+        "mcp"
+      ]
+    },
+    {
+      "name": "memory-boot",
+      "source": "memory-boot",
+      "description": "Initialise la mémoire de session depuis le vault Obsidian — HOT_CACHE, patterns d'erreurs, daily log.",
+      "version": "0.2.0",
+      "category": "memory",
+      "keywords": [
+        "memory",
+        "boot",
+        "obsidian",
+        "session"
+      ]
+    },
+    {
+      "name": "obsidian-agent-layer",
+      "source": "obsidian-agent-layer",
+      "description": "Couche d'intégration Obsidian — CRUD notes, templates structurés, routing vault, sync HOT_CACHE.",
+      "version": "0.1.0",
+      "category": "vault",
+      "keywords": [
+        "obsidian",
+        "vault",
+        "notes",
+        "templates"
+      ]
+    },
+    {
+      "name": "security-audit-cli",
+      "source": "security-audit-cli",
+      "description": "Audit de sécurité — secret scanning, CVE deps, contrôle d'anonymisation, analyse de patterns.",
+      "version": "0.1.0",
+      "category": "security",
+      "keywords": [
+        "security",
+        "audit",
+        "secrets",
+        "cve"
+      ]
+    },
+    {
+      "name": "token-optimizer",
+      "source": "token-optimizer",
+      "description": "Optimisation tokens — routing Haiku/Sonnet/Opus, classification T1/T2/T3, compression caveman, budget tracking. Inclut 6 skills + 3 agents.",
+      "version": "0.2.0",
+      "category": "optimization",
+      "keywords": [
+        "tokens",
+        "routing",
+        "budget",
+        "compression"
+      ]
+    },
+    {
+      "name": "workflow-engine",
+      "source": "workflow-engine",
+      "description": "Orchestration Temporal (TypeScript) — workflows skill_eval, source_watch, usage_observer + activities.",
+      "version": "0.1.0",
+      "category": "orchestration",
+      "keywords": [
+        "temporal",
+        "workflows",
+        "orchestration",
+        "typescript"
+      ]
+    }
+  ]
+}
