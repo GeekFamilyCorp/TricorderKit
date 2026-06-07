@@ -127,3 +127,13 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 3. Lire les fichiers en **mode ciblé** (frontmatter + sections actives uniquement, jamais l'historique complet).
 **Fichiers concernés :** `_sync_antigravity/ETAT_PARTAGE.md`, `_sync_antigravity/antigravity_vers_claude.md`, `Scheduled/sync-antigravity-fiches/SKILL.md`.
 **Statut :** [RÉSOLU] — Fichiers archivés + SKILL.md mis à jour (garde-fous + plafond 10 fiches). Voir `_sync_antigravity/journal_archive.md`.
+
+
+## R42 - Wrappers MCP a secret : .cmd + stdin protege + config client sans BOM (2026-06-07)
+**Contexte :** migration d'un PAT (connecteur GitHub MCP) du fichier de config en clair vers le Credential Manager Windows, via wrapper de lancement.
+**Trois pieges rencontres :**
+1. Wrapper PowerShell pur -> le serveur stdio recoit EOF immediat (PowerShell consomme le pipe au lieu de le transmettre au natif). Wrapper `.cmd` obligatoire (handles bruts).
+2. `for /f` (capture du secret) fait heriter stdin au PowerShell imbrique qui l'avale -> `^< nul` obligatoire sur l'appel imbrique.
+3. `Set-Content -Encoding UTF8` (PS 5.1) ecrit un BOM -> le client MCP ne parse plus sa config au redemarrage et la REINITIALISE (perte de toute la section serveurs). Toujours `[IO.File]::WriteAllText` + `UTF8Encoding($false)`. Generalise la lecon git du 06-01 (commit -F en ASCII) a TOUTE config JSON consommee par une app.
+**Regle preventive :** tester un wrapper MCP en STANDALONE (pipe JSON-RPC initialize, stdin maintenu ouvert via `(type f & ping)`) avant tout redemarrage du client ; ne jamais valider via la session MCP courante (elle reflete l'etat d'avant redemarrage).
+**Statut :** [RESOLU] - patron documente dans RUNBOOK_INFRA.md section 14 (DEC-039).

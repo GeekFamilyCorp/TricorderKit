@@ -495,4 +495,16 @@
 - **Reste a faire** : (1) Antigravity adopte `canal_agents` a son prochain run (deprecier l'ancien chemin) ; (2) brancher `health --write-status` en scheduled task (poll minute) ; (3) Codex execute `T-2026-06-06-DEDUP-ORICON` et livre via la zone de tri.
 - **Statut** : **Acceptee — appliquee** (canal_agents v1.0 en ligne, 2026-06-07).
 
-*Derniere mise a jour : 2026-06-07 — DEC-038 canal multi-agents unifie canal_agents (remplace _sync_antigravity)*
+## DEC-039 - Secrets MCP hors fichiers de config : Credential Manager + wrapper (hote Windows) - 2026-06-07
+- **Contexte** : un PAT de connecteur MCP etait stocke en clair dans la config du client MCP cote hote Windows, et avait ete expose dans des transcriptions de session. L'audit du 06/06 (DEC-037) avait deja identifie le meme defaut sur un autre service (couche Docker Toolkit).
+- **Decision** :
+  1. **Aucun secret en clair** dans les fichiers de config des clients MCP. Stockage = Windows **Credential Manager** (credential generique), saisie par invite masquee (`cmdkey /generic:<nom> /user:token /pass`) - le secret ne transite jamais par une conversation LLM ni par l'historique shell.
+  2. **Lancement via wrapper `.cmd`** : script PowerShell dedie lit le credential (CredRead/advapi32, stdout capture par `for /f`), injection en variable d'environnement process-local, puis exec du serveur (handles stdio bruts).
+  3. **Contraintes techniques** (toutes verifiees) : appel PowerShell imbrique avec `^< nul` (sinon stdin JSON-RPC avale) ; ecriture de la config client en UTF-8 SANS BOM (sinon le client reinitialise sa config au redemarrage) ; test standalone du wrapper avant tout redemarrage.
+  4. **Token expose = token revoque** : rotation + verification du rejet par l'API (401), purge des backups de config contenant l'ancien secret.
+- **Verification** : handshake JSON-RPC `initialize` complet en standalone (stdin maintenu ouvert), connecteur fonctionnel apres redemarrage, ancien token rejete (401), scan des backups (aucun secret residuel).
+- **Risk Guard** : MEDIUM (manipulation de secrets, reversible - le wrapper se substitue a la config initiale sans toucher au serveur).
+- **Routage (DEC-016)** : patron generique anonymise -> repo TricorderKit (`RUNBOOK_INFRA.md` section 14 + R42 dans `tasks/lessons.md`) ; details operatoires -> vault prive (Infrastructure_Hub).
+- **Statut** : **Acceptee - appliquee** (connecteur GitHub migre, ancien PAT revoque, 2026-06-07).
+
+*Derniere mise a jour : 2026-06-07 - DEC-039 secrets MCP via Credential Manager + wrapper (zero secret en clair)*
