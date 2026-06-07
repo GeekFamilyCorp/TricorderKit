@@ -507,4 +507,16 @@
 - **Routage (DEC-016)** : patron generique anonymise -> repo TricorderKit (`RUNBOOK_INFRA.md` section 14 + R42 dans `tasks/lessons.md`) ; details operatoires -> vault prive (Infrastructure_Hub).
 - **Statut** : **Acceptee - appliquee** (connecteur GitHub migre, ancien PAT revoque, 2026-06-07).
 
-*Derniere mise a jour : 2026-06-07 - DEC-039 secrets MCP via Credential Manager + wrapper (zero secret en clair)*
+## DEC-040 - Externalisation .env + rotation des secrets DB + backups automatiques - 2026-06-07
+- **Contexte** : mots de passe en dur dans docker-compose.yml (Postgres Temporal/Langfuse) et defauts faibles publics (Neo4j, NEXTAUTH_SECRET, SALT Langfuse) ; aucun backup automatique des volumes DB (plan A2).
+- **Decision** :
+  1. Compose 100% parametre via .env (gitignore) avec syntaxe stricte `${VAR:?message}` - echec explicite si variable absente, plus aucun defaut faible.
+  2. Rotation complete : Neo4j (ALTER CURRENT USER), Postgres x2 (ALTER USER), NEXTAUTH_SECRET et SALT Langfuse. Secrets generes localement (28 car. alphanumeriques), jamais transmis via conversation. Rotation SALT = cles API Langfuse a regenerer (assume).
+  3. Consommateur graph-server bascule sur le patron DEC-039 (wrapper lit le .env du repo) - plus de mot de passe en clair dans la config du client MCP.
+  4. Backups : `scripts/backup_db.ps1` (pg_dump x2 + tar Qdrant a chaud + tar Neo4j avec arret bref + retention 14 j) + tache planifiee Windows quotidienne 03h30 (apres l'index RAG nocturne de 03h00).
+- **Verification** : nouveaux mdp acceptes (cypher RETURN 1, psql SELECT 1 x2), ancien mdp Neo4j rejete (unauthorized), Langfuse health 200, temporal SERVING (tctl), backup reel 0 echec, restore a blanc 36 tables.
+- **Risk Guard** : MEDIUM (stack locale, backups .bak des composes, .env.bak avant rotation).
+- **Routage (DEC-016)** : compose + script + .env.example + RUNBOOK -> repo public (anonymises) ; valeurs reelles -> .env local uniquement.
+- **Statut** : **Acceptee - appliquee** (2026-06-07). Reste : regeneration cles API Langfuse (login Sebastien requis).
+
+*Derniere mise a jour : 2026-06-07 - DEC-040 externalisation .env + rotation secrets DB + backups automatiques*
