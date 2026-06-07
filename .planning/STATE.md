@@ -156,3 +156,10 @@ Aucun.
 ---
 
 *Dernière mise à jour : 2026-06-03 — DEC-036 unification schéma frontmatter (canon clés EN `author_jp`/`title_jp`) ; audit déterministe vault + mission Antigravity déposée*
+
+---
+
+## Canal multi-agents (2026-06-07 — DEC-038)
+
+`canal_agents/` EN LIGNE (remplace _sync_antigravity). Bus tri-agent claude/antigravity/codex, CLI `canal_agents/scripts/sync_bus.py`, zero token LLM. Handoff `T-2026-06-06-DEDUP-ORICON` poste dans inbox/codex. Regles R39 (bus unique) + R40 (zone de tri `97_A_Trier\05_A_Integrer\Fiches a trier - en attente`) actives dans AGENTS.md.
+A faire : Antigravity bascule sur canal_agents ; `health --write-status` en scheduled task ; Codex execute la lane dedup-oricon.

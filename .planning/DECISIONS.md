@@ -1,4 +1,4 @@
-# DECISIONS.md — TricorderKit v0.7
+﻿# DECISIONS.md — TricorderKit v0.7
 
 > Log des decisions architecturales. Ne jamais supprimer une entree.
 
@@ -457,3 +457,42 @@
 - **Statut** : **Acceptée — décision de schéma (clés EN `author_jp`/`title_jp`)** ; migration à exécuter en chantier gardé (dry-run), **non encore appliquée**.
 
 *Dernière mise à jour : 2026-06-03 — DEC-036 unification schéma frontmatter (clés EN canoniques `author_jp`/`title_jp`) ; migration gardée à venir*
+
+---
+
+## DEC-037 — Politique de chargement MCP : noyau always-on minimal + à la demande + une couche par capacité — 2026-06-06
+
+- **Contexte** : trois couches MCP coexistent sur le poste (Docker MCP Toolkit ~18 serveurs, connecteurs Claude Cowork, conteneurs locaux à rôle MCP) avec ~7 capacités dupliquées (GitHub, Obsidian, Airtable, Desktop Commander, context7, accès fichiers, web fetch). Double coût : **processus** (RAM/CPU des serveurs always-on) + **tokens** (le schéma de chaque outil est injecté dans le contexte à chaque tour, ~200-700 tokens/outil → 30-50k tokens de taxe permanente pour ~100 outils), aggravé par une conso quasi tout-Opus. Question de Sébastien : est-il pertinent de charger beaucoup de MCP en permanence plutôt que de filtrer à la demande ?
+- **Décision (arbitrage Sébastien, 2026-06-06)** :
+  1. **Noyau always-on minimal** (3-6 connecteurs haute-fréquence : 2 vaults Obsidian, Desktop Commander, GitHub, éventuellement le graphe).
+  2. **Tout le reste à la demande** (chargement paresseux des schémas / deferred tools — modèle natif Cowork, pas un pis-aller).
+  3. **Une seule couche par capacité** : le connecteur Claude natif est la source unique pour l'usage Cowork ; le Docker MCP Toolkit est réservé aux clients hors-Cowork.
+  4. **Raisonner par profils d'usage** (veille, dev, infra) plutôt que par accumulation — transposition de « CLI avant LLM ».
+  5. **Arbitrage latence vs token** : always-on uniquement si l'outil sert à chaque message ; sinon à la demande (cold-start accepté).
+- **Appliqué le 2026-06-06** : 9 serveurs Toolkit redondants désactivés (`airtable`, `github-official`, `obsidian`, `desktop-commander`, `context7`, `filesystem`, `fetch`, `brave`, `wikipedia`) ; `registry.yaml` 18 → 9 ; `config.yaml` aligné (blocs orphelins `filesystem`/`desktop-commander` retirés ; bloc Airtable + PAT supprimés). 2 conteneurs `github-mcp` redondants arrêtés.
+- **Incident & leçon** : l'un des conteneurs `github-mcp` était en réalité le **backend du connecteur GitHub** (pas un doublon inerte) → déconnexion du connecteur, reconnecté depuis. **Règle ajoutée** : ne jamais supprimer un conteneur « redondant » sans confirmer ce qu'il dessert (un connecteur peut être implémenté par un conteneur local).
+- **Risk Guard** : MEDIUM (édition de configuration MCP, entièrement réversible). Backups `.bak` de `registry.yaml`/`config.yaml`.
+- **Routage (DEC-016)** : politique + journalisation → repo **TricorderKit** ; hub de gestion détaillé (services, doublons, sécurité) → claude-vault `Infrastructure_Hub/`.
+- **Réversibilité** : ré-ajout des entrées depuis les backups ; images présentes → conteneurs relançables.
+- **Reste à faire** : trancher les serveurs Toolkit « à clarifier » (`dockerhub`, `hostinger`, `linkedin`, `mcp-python-refactoring`, `time`) et conditionnels (`git`, `markitdown`, `playwright`, `puppeteer`) ; définir les profils d'usage.
+- **Statut** : **Acceptée — appliquée** (rationalisation MCP du 2026-06-06).
+
+*Dernière mise à jour : 2026-06-06 — DEC-037 politique de chargement MCP (noyau + à la demande + une couche par capacité)*
+---
+
+## DEC-038 — Canal multi-agents unifie `canal_agents` (remplace `_sync_antigravity`) — 2026-06-07
+
+- **Contexte** : le bus de coordination `_sync_antigravity` (binome Claude<->Antigravity) n'etait dans AUCUN repertoire autorise de Desktop Commander cote Cowork (acces : TricorderKit Autonome, vault Japan-Alliance, claude-vault, Scheduled, outputs). Claude ne pouvait pas y poster (handoff Codex bloque, cf. `Japan-Alliance-Audit-2026-06-06/05_HANDOFF_CODEX.md`). Recherche disque exhaustive (Documents, drives cloud, homes `.codex`/`.antigravity`/`.hermes`) : le dossier de 192 fichiers du rapport du 04/06 etait ephemere (outputs d'une session Cowork passee) et n'existe plus. Demande de Sebastien : fusionner les canaux Antigravity et Codex en un bus unique, rapide, avec dispatch par force et anti-doublon, deplacable dans TricorderKit, renomme generiquement.
+- **Decision** :
+  1. **Canal unique generique** `canal_agents/` cree DANS le depot TricorderKit (donc accessible a Claude sans relais). Remplace `_sync_antigravity` (nom neutre, 3 agents : claude/antigravity/codex).
+  2. **Transport** append-only `bus/events.jsonl` + curseurs par agent (anti-staleness), CLI deterministe `scripts/sync_bus.py` (stdlib only, zero token LLM). Commandes : init/heartbeat/post/dispatch/read/inbox/health/status. `--dry-run` sur les ecritures.
+  3. **Dispatcher par defaut = Claude** ; exclusivite de lane (anti-doublon). Forces : Claude=integration/QA/dedup-vault/archi ; Antigravity=enrichissement/veille/gathering-web/scraping ; Codex=dedup-oricon/refactor/scripts/data-transform/batch. (`canal_agents/ROUTING.md`)
+  4. **R39** (bus unique) + **R40** (zone de tri unique) ajoutees a `AGENTS.md`. R40 : Antigravity/Codex deposent tout livrable dans `Japan-Alliance\97_A_Trier\05_A_Integrer\Fiches a trier - en attente\` + event `deliverable_ready` ; Claude seul corrige et classe dans le vault.
+  5. **Embarquement** : `PROMPT_INITIAL_Codex.md` + `PROMPT_INITIAL_Antigravity.md` dans canal_agents ; pointeur ajoute a `%USERPROFILE%\.codex\AGENTS.md` (idempotent).
+- **Verification** : bus initialise, genese postee, heartbeats des 3 agents, dispatch dry-run + reel du handoff `T-2026-06-06-DEDUP-ORICON` vers `inbox/codex/`, read cote Codex (4 non-lus, curseur avance), `health` = ok (5 events, 0 corrompu). Preuve observable (R11) OK.
+- **Risk Guard** : MEDIUM (infrastructure de coordination, reversible — il suffit de supprimer `canal_agents/` et de retirer le bloc `<!-- canal_agents -->` de la config Codex).
+- **Routage (DEC-016)** : canal + CLI + protocole + journalisation -> repo **TricorderKit** ; la zone de tri et les fiches livrees -> **Japan-Alliance** (vault).
+- **Reste a faire** : (1) Antigravity adopte `canal_agents` a son prochain run (deprecier l'ancien chemin) ; (2) brancher `health --write-status` en scheduled task (poll minute) ; (3) Codex execute `T-2026-06-06-DEDUP-ORICON` et livre via la zone de tri.
+- **Statut** : **Acceptee — appliquee** (canal_agents v1.0 en ligne, 2026-06-07).
+
+*Derniere mise a jour : 2026-06-07 — DEC-038 canal multi-agents unifie canal_agents (remplace _sync_antigravity)*

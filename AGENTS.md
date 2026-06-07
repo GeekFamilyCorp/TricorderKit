@@ -106,6 +106,32 @@ Budget : max [N] tokens de sortie
 
 ---
 
+## Canal multi-agents — `canal_agents/` (NOUVEAU, remplace `_sync_antigravity`)
+
+Canal de communication **unique et générique** entre **Claude**, **Antigravity** et
+**Codex**. Emplacement canonique : `canal_agents/` (dans le dépôt TricorderKit, donc
+accessible à Claude sans relais). Transport append-only, lecture par curseur, **zéro
+token LLM**. Référence : `canal_agents/PROTOCOL.md` + `canal_agents/ROUTING.md`.
+
+**R39 — Bus unique (NON-NÉGOCIABLE).** Toute coordination inter-agents passe par
+`canal_agents/scripts/sync_bus.py` (events `heartbeat`/`task_assign`/`task_done`/
+`deliverable_ready`/`gap`/`lock`). Plus de canal ad hoc, plus de référence à un seul
+agent. `--dry-run` avant toute écriture. Le **dispatcher par défaut est Claude** ;
+chaque lane n'est tenue que par un agent à la fois (anti-doublon — voir `ROUTING.md`).
+
+**R40 — Zone de tri unique pour livrables (NON-NÉGOCIABLE).** Quand **Antigravity** ou
+**Codex** terminent un travail produisant des fiches/contenus, ils déposent le livrable
+dans `…\Japan-Alliance\97_A_Trier\05_A_Integrer\Fiches a trier - en attente\` PUIS
+émettent un event `deliverable_ready`. **Claude seul** analyse, corrige (validation
+croisée + fiabilité ✅🟡🟠🔴 + `make gate`) et **range** ensuite dans les bons dossiers
+du vault. Les agents ne classent **jamais** directement dans l'arborescence finale.
+
+**Répartition par force** : Claude = intégration/QA/dédup-vault/archi/arbitrage ;
+Antigravity = enrichissement/veille/gathering-web/scraping ; Codex = dédup-oricon/
+refactor/scripts/data-transform/batch. Détail : `canal_agents/ROUTING.md`.
+
+---
+
 ## Workflow Standard v1.0 — Règles non-négociables
 
 | # | Règle |
