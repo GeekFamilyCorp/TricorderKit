@@ -100,3 +100,8 @@ _anon.err
 
 # Coordination runtime Claude<->Antigravity (donnees operationnelles, hors public)
 _sync_antigravity/
+
+# Canal multi-agents : infra runtime locale (chemins machine) - non public (DEC-038)
+canal_agents/
+_userpath_backup_*.txt
+_find_bus.txt
