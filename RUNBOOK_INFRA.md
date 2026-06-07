@@ -168,6 +168,8 @@ docker exec -it tricorder-temporal-db psql -U temporal -d temporal -c "\dt"
 
 ## 10. Backups
 
+> **Automatise** : `scripts/backup_db.ps1` fait tout (pg_dump Temporal + Langfuse, tar Qdrant a chaud, tar Neo4j avec arret bref, retention 14 j) et est branche en tache planifiee Windows quotidienne 03h30 ("TricorderKit DB Backup"). Restore a blanc valide (dump -> base temporaire -> drop). Les commandes ci-dessous restent la reference manuelle.
+
 ### Qdrant (volume → archive)
 
 Le mapping de volume Docker se note `nom_volume:/chemin_interne`. Le dossier hôte de destination doit exister.
