@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tricorderkit://scraper-runtime/run_contract.schema.json",
+  "title": "ScrapingRunContract",
+  "description": "Objet de run standard d'une collecte (DEC-046, plan v1.0 §10). Générique : aucun nom de projet/source en dur.",
+  "type": "object",
+  "required": ["run_id", "profile", "source", "status", "started_at", "artifacts"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": { "type": "string", "pattern": "^run_\\d{4}-\\d{2}-\\d{2}_\\d{3,}$" },
+    "profile": { "type": "string", "enum": ["static_html", "markdown_rag", "dynamic_browser"] },
+    "project_scope": { "type": "string", "minLength": 1, "description": "Scope projet (chaîne libre, paramètre de l'intégrateur)." },
+    "source": {
+      "type": "object",
+      "required": ["name", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "official": { "type": "boolean" }
+      }
+    },
+    "status": { "type": "string", "enum": ["success", "partial", "failed"] },
+    "started_at": { "type": "string", "format": "date-time" },
+    "ended_at": { "type": "string", "format": "date-time" },
+    "artifacts": {
+      "type": "object",
+      "description": "Chemins relatifs des artefacts produits par étape du pipeline.",
+      "additionalProperties": false,
+      "properties": {
+        "raw": { "type": "array", "items": { "type": "string" } },
+        "normalized": { "type": "array", "items": { "type": "string" } },
+        "validated": { "type": "array", "items": { "type": "string" } },
+        "indexed": { "type": "array", "items": { "type": "string" } },
+        "report": { "type": "string" },
+        "run_log": { "type": "string" },
+        "score_yaml": { "type": "string" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pages_fetched": { "type": "integer", "minimum": 0 },
+        "items_extracted": { "type": "integer", "minimum": 0 },
+        "duplicates_detected": { "type": "integer", "minimum": 0 },
+        "http_429": { "type": "integer", "minimum": 0 },
+        "errors_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "reliability": {
+      "type": "object",
+      "description": "Scores de fiabilité 0-100 (alimentent le source reliability engine, N6).",
+      "additionalProperties": false,
+      "properties": {
+        "officiality": { "type": "number", "minimum": 0, "maximum": 100 },
+        "freshness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "extractability": { "type": "number", "minimum": 0, "maximum": 100 },
+        "completeness": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "recoverable": { "type": "boolean" }
+        }
+      }
+    },
+    "executor": { "type": "string", "enum": ["hermes", "antigravity", "vps", "cli"], "description": "Exécution déportée (DEC-029) — jamais un moteur de scraping côté Claude." }
+  }
+}

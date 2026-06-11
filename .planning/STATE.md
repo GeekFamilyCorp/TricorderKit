@@ -214,3 +214,25 @@ A faire (hors Lot A) : commit cible TricorderKit (`plugins/learning-engine/`, `c
 A faire (suite) : exécuter `vps_doctor.sh` sur le VPS (diagnostic), puis backup réel + restore_test ; Uptime Kuma ; Lots C-E.
 
 *Derniere mise a jour : 2026-06-11 — Lot B scripts VPS livres (non executes), en attente feu vert run live.*
+
+---
+
+## Phase 1 VPS — Lot B EXECUTE EN LIVE + Phase 2 — Lot C LIVRE (2026-06-11 soir — DEC-046)
+
+**Lot B live (VPS japan-alliance-vps via paramiko tailnet 100.84.70.50)** :
+- ⚠️ **Cause racine des « auth timeout » trouvee** : Tailscale SSH etait en `action: check` (ré-auth navigateur) → **corrige en `accept`** (Sébastien). Debloque aussi la tache horaire `vps-scraping-engine-build` qui echouait ~23x.
+- `vps_doctor.sh` execute : FAIL=0, VPS sain (Docker 6 conteneurs, 13,8 Go RAM, disque 29%, Ollama+ufw OK).
+- **fail2ban + borgbackup installes** ; jail sshd active avec `ignoreip 100.64.0.0/10` (anti-lockout tailnet).
+- `backup.sh` (dry-run + reel) + `restore_test.sh` **valides en prod** : archive `agents-hub-*` creee, restauration verifiee (`borg check` OK). Passphrase generee, stockee `/root/.borg-passphrase` (600) + Google Drive utilisateur (jamais en memoire agent).
+
+**Lot C — scraper-runtime (N2)** : `plugins/scraper-runtime/` livre.
+- 3 profils YAML : `static_html`, `markdown_rag`, `dynamic_browser` (+ quand l'utiliser, fetch/extraction/garde-fous).
+- Contrat de run `schemas/run_contract.schema.json` (pipeline raw→normalized→validated→indexed→report + metrics + reliability ; `project_scope` string libre, executor deporte).
+- `scripts/gen_source_registry.py` : genere `source_registry.yaml` depuis un registre normalise (lecture seule), zero dep pip, **4 tests PASS**. Aucun nom de projet en dur.
+- Garde-fous : contenu scrape non fiable, execution deportee VPS/Hermes (DEC-029), registre genere jamais ecrit a la main.
+
+Vitrine MAJ : **12 plugins** (README arbre/compte + STATUS dashboard/resume). Gates publics OK.
+
+A faire : Lots D (gouvernance MCP machine-lisible, N3) + E (workflows Temporal auto-amelioration, N7/N6) ; brancher les profils scraper-runtime au pipeline VPS existant ; eval-lab N5.
+
+*Derniere mise a jour : 2026-06-11 soir — Lot B live (VPS durci + backup prouve) + Lot C scraper-runtime livre (DEC-046).*

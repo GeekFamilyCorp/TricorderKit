@@ -1,0 +1,31 @@
+# Profil scraper-runtime : static_html
+# Pages server-rendered (listes, fiches HTML). HTTP simple, pas de JS.
+id: static_html
+version: "1.0"
+description: >
+  Collecte de pages rendues côté serveur. Récupération HTTP directe puis
+  extraction par sélecteurs CSS/XPath ou JSON inline embarqué dans la page.
+when_to_use:
+  - listes de nouveautés / catalogues paginés
+  - fiches produit/article au HTML stable
+  - JSON-LD ou objets JSON inline présents dans le HTML
+fetch:
+  method: http_get
+  respect_robots: true
+  rate_limit_per_host_seconds: 2      # backoff obligatoire sur 429
+  user_agent_policy: identifiable     # UA honnête, pas d'usurpation
+  retries: 3
+  backoff: exponential
+extraction:
+  strategies: [css_selector, xpath, jsonld, inline_json]
+  encoding: utf-8
+validation:
+  required_fields_from: run_contract   # cf. schemas/run_contract.schema.json
+  drop_if_missing: [title]
+artifacts: [raw, normalized, validated, report]
+reliability_hint:
+  extractability: high
+  freshness_depends_on: source_update_cadence
+guardrails:
+  scraped_content_is_untrusted: true
+  execution: "VPS/Hermes (déporté)"

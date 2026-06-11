@@ -1,0 +1,32 @@
+# Profil scraper-runtime : dynamic_browser
+# Pages client-rendered (JS obligatoire). Navigateur headless SANDBOXÉ. Dernier recours.
+id: dynamic_browser
+version: "1.0"
+description: >
+  Pour les pages dont le contenu n'existe qu'après exécution JavaScript. Coût élevé
+  (CPU/latence) → à n'employer que si static_html échoue. Navigateur headless
+  strictement sandboxé, jamais sur l'hôte principal.
+when_to_use:
+  - SPA / contenu injecté par JS
+  - pagination ou données chargées en XHR après rendu
+  - static_html renvoie une coquille vide
+fetch:
+  method: headless_browser
+  sandbox: required            # conteneur isolé, pas l'hôte
+  block_resources: [media, font, ad, tracker]   # réduire le coût
+  rate_limit_per_host_seconds: 5
+  timeout_seconds: 45
+  retries: 2
+extraction:
+  strategies: [dom_after_load, intercepted_xhr]
+  wait_for: selector_or_network_idle
+validation:
+  required_fields_from: run_contract
+artifacts: [raw, normalized, validated, report]
+cost:
+  tier: high                   # privilégier static_html/markdown_rag d'abord
+reliability_hint:
+  extractability: medium
+guardrails:
+  scraped_content_is_untrusted: true
+  execution: "VPS/Hermes sandboxé (déporté) — browser non sandboxé interdit (plan v1.0 §25)"
