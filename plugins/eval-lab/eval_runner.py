@@ -41,6 +41,7 @@ from report_generator import (
     save_markdown_report,
 )
 from schema_validator import validate_output, validate_json_string
+from evaluators import EVALUATORS, evaluate, evaluate_all
 
 # -- App -----------------------------------------------------------------------
 
@@ -333,6 +334,59 @@ def cmd_dry_run(
         typer.echo(f"Niveau de risque : {dr['risk_level']}")
 
     store.close()
+
+
+@app.command("evaluate")
+def cmd_evaluate(
+    kind: Optional[str] = typer.Argument(None, help="Evaluateur (omis = tous les pertinents)"),
+    input: Optional[Path] = typer.Option(None, "--input", help="Fichier JSON de metriques (stdin si omis)"),
+    output_json: bool = typer.Option(False, "--json", help="Sortie JSON skill_output"),
+) -> None:
+    """Note un run via les evaluateurs de qualite (N5) : scraping_quality,
+    source_reliability, dedup_quality, rag_retrieval_quality, cost_latency."""
+    import datetime as _dt
+
+    if input is not None:
+        if not input.exists():
+            typer.echo(f"❌ Fichier introuvable : {input}", err=True)
+            raise typer.Exit(1)
+        raw = input.read_text(encoding="utf-8-sig")
+    else:
+        typer.echo("📥 Lecture des metriques depuis stdin…", err=True)
+        raw = sys.stdin.read()
+    metrics = json.loads(raw) if raw.strip() else {}
+
+    if kind:
+        if kind not in EVALUATORS:
+            typer.echo(f"❌ Evaluateur inconnu : {kind} (connus : {', '.join(EVALUATORS)})", err=True)
+            raise typer.Exit(1)
+        data = evaluate(kind, metrics)
+        passed = data["passed"]
+        summary = f"{kind} — {data['grade']} ({data['score']}/100)"
+    else:
+        data = evaluate_all(metrics)
+        passed = data["passed"]
+        summary = (f"score global {data['overall_score']}/100 ({data['overall_grade']}) "
+                   f"sur {data['count']} evaluateur(s)")
+
+    envelope = {
+        "status": "success" if passed else "partial",
+        "skill_name": "eval-lab-evaluators",
+        "skill_version": "0.1.0",
+        "timestamp": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "output": {"summary": summary[:500], "data": data},
+    }
+
+    if output_json:
+        print(json.dumps(envelope, ensure_ascii=False, indent=2))
+    else:
+        typer.echo(f"{'✅' if passed else '⚠️'} {summary}")
+        for r in (data.get("evaluators") or [data]):
+            if "evaluator" in r:
+                typer.echo(f"   {r['evaluator']:<24} {r['grade']:<10} {r['score']}/100"
+                           + (f"  — {'; '.join(r['notes'])}" if r.get("notes") else ""))
+
+    sys.exit(0 if passed else 1)
 
 
 # -- Entree principale --------------------------------------------------------
