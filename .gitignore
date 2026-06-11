@@ -105,3 +105,23 @@ _sync_antigravity/
 canal_agents/
 _userpath_backup_*.txt
 _find_bus.txt
+
+# --- Ajouts 2026-06-11 (durcissement frontiere publique) ---
+# Backups de rotation (secrets potentiels) : *.bak ne couvre pas les suffixes datés
+*.bak-rotation-*
+.env.bak*
+docker-compose*.bak*
+# Scratch diagnostic local à la racine (scripts jetables, agents parallèles)
+/_q_*.py
+/_run_remote_q.py
+/_remote_q.py
+/vps_*.py
+/_vps_exec.py
+/inspect_hk*.py
+/dry_hk.py
+/repair_run.py
+/splice_engine.py
+/_patch_*.py
+/run*_out.txt
+/audit_fiches_raw.csv
+/createurs_manquants.csv
