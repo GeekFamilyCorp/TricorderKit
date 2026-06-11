@@ -17,8 +17,12 @@
 - **plugins/workflow-engine/workflows/** (N7) — 4 workflows Temporal d'auto-amélioration : `learning_review` (hebdo : compare → leçons → drafts, jamais de promotion), `skill_regression_test` (gate des tests + approbation humaine avant promotion), `source_freshness` (score N6 → re-scrape déporté), `tool_scout` (veille outillage déportée). Exécution collecte/veille **déportée** Antigravity/Hermes via `canal_agents` (DEC-029).
 - **plugins/workflow-engine/activities/self_improving.activities.ts** — activities dédiées (dispatch canal_agents + consolidation CLI), type `SelfImprovingActivities` **isolé du worker en production** ; barrel séparé `workflows/self_improving.index.ts` ; doc d'activation `plugins/workflow-engine/SELF_IMPROVING.md`.
 
+### Ajouté (N5 — extension eval-lab)
+- **plugins/eval-lab/evaluators.py** — 5 évaluateurs de qualité (fonctions pures, zéro dép) : `scraping_quality`, `source_reliability`, `dedup_quality`, `rag_retrieval_quality`, `cost_latency` ; grille de notation (excellent/good/warn/fail), dispatch + agrégat `evaluate_all` (ne note que les dimensions mesurées).
+- **plugins/eval-lab/eval_runner.py** — commande `evaluate [<type>] --input metrics.json [--json]` (sortie skill_output). **17 tests** (`tests/test_evaluators.py`).
+
 ### Référence
-- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N6 (source reliability engine), N7 (workflows d'auto-amélioration). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
+- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N5 (extension eval-lab), N6 (source reliability engine), N7 (workflows d'auto-amélioration). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
 
 ## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
 
