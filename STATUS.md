@@ -42,6 +42,7 @@
 | graphify | ✅ Actif | ✅ | ⚠️ | ✅ | ⚠️ Partiel |
 | token-optimizer | ✅ Actif v0.8 | ✅ | ✅ | ✅ | ✅ |
 | learning-engine | ✅ Actif v0.1.0 | ✅ | ✅ | ✅ | ⚠️ Partiel |
+| scraper-runtime | ✅ Actif v0.1.0 | ❌ | ✅ | ✅ | ⚠️ Partiel |
 
 ---
 
@@ -68,10 +69,10 @@
 
 ## Résumé
 
-- **Prêts production** : 3 / 11 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
-- **Partiels** : 8 / 11 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`, `learning-engine`)
-- **Non prêts** : 0 / 11
-- **WIP** : 0 / 11
+- **Prêts production** : 3 / 12 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
+- **Partiels** : 9 / 12 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`, `learning-engine`, `scraper-runtime`)
+- **Non prêts** : 0 / 12
+- **WIP** : 0 / 12
 
 ---
 
