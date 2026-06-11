@@ -1075,6 +1075,24 @@ def cmd_learning(args):
         _fail(f"Erreur : {e}")
 
 
+_MCP_GATEWAY = REPO_ROOT / "mcp" / "scripts" / "mcp_gateway.py"
+
+
+def cmd_mcp(args):
+    """Délègue à mcp/scripts/mcp_gateway.py (gouvernance MCP, DEC-046/N3)."""
+    if not _MCP_GATEWAY.exists():
+        _fail("mcp_gateway.py introuvable", str(_MCP_GATEWAY)); sys.exit(1)
+    mc = getattr(args, "mcp_cmd", None)
+    if not mc:
+        print("Usage: tk mcp <list|audit|allowlist-check>")
+        return
+    fmt = "md" if getattr(args, "format", "markdown") in ("markdown", "md") else "json"
+    cmd = [sys.executable, str(_MCP_GATEWAY), mc, "--format", fmt]
+    if mc == "allowlist-check":
+        cmd += ["--server", args.server, "--tool", args.tool]
+    sys.exit(subprocess.run(cmd, cwd=REPO_ROOT).returncode)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="tk", description="TricorderKit CLI v0.2.0 — Agentic Knowledge OS",
@@ -1136,6 +1154,19 @@ def main():
                             "review | propose-skill-update | promote-skill")
     p_learning.add_argument("passthrough", nargs=argparse.REMAINDER,
                             help="Arguments transmis au script (ex : --run x.json --task-type t)")
+
+    # ── mcp (gouvernance MCP, DEC-046 / N3) ──
+    p_mcp = sub.add_parser("mcp", help="Gouvernance MCP machine-lisible (allowlist deny-by-default)")
+    _add_format(p_mcp)
+    mcp_sub = p_mcp.add_subparsers(dest="mcp_cmd", metavar="<sous-commande>")
+    p_mcl = mcp_sub.add_parser("list", help="Serveurs/tools déclarés + configurés")
+    _add_format(p_mcl)
+    p_mca = mcp_sub.add_parser("audit", help="Auditer .mcp.json vs allowlist (deny-by-default)")
+    _add_format(p_mca)
+    p_mcc = mcp_sub.add_parser("allowlist-check", help="Vérifier si un serveur/tool est autorisé")
+    p_mcc.add_argument("--server", required=True, help="Nom du serveur MCP")
+    p_mcc.add_argument("--tool", required=True, help="Nom du tool MCP")
+    _add_format(p_mcc)
 
     # ── project ──
     p_project = sub.add_parser("project", help="Commandes linked_project")
@@ -1281,6 +1312,11 @@ def main():
             cmd_learning(args)
         else:
             p_learning.print_help()
+    elif args.command == "mcp":
+        if getattr(args, "mcp_cmd", None):
+            cmd_mcp(args)
+        else:
+            p_mcp.print_help()
     elif args.command == "project":
         pc = getattr(args, "project_cmd", None)
         if pc == "list":      cmd_project_list(args)
