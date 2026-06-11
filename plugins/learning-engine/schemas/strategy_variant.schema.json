@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tricorderkit://learning-engine/strategy_variant.schema.json",
+  "title": "StrategyVariant",
+  "description": "Variante d'exécution d'une même tâche, comparable A/B/C (plan v1.0 + Learning Engine §2).",
+  "type": "object",
+  "required": ["task_type", "variants"],
+  "additionalProperties": false,
+  "properties": {
+    "task_type": { "type": "string", "minLength": 1 },
+    "project_scope": { "type": "string", "enum": ["tricorderkit", "mangatracker", "japan-alliance", "agents-hub"] },
+    "variants": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "description": { "type": "string" },
+          "query_pattern": { "type": "array", "items": { "type": "string" } },
+          "executor": { "type": "string", "enum": ["hermes", "antigravity", "claude", "codex", "cli"], "description": "Gathering exhaustif routé Hermes/Antigravity (DEC-029)." },
+          "score_average": { "type": "number", "minimum": 0, "maximum": 1 },
+          "runs_count": { "type": "integer", "minimum": 0 },
+          "last_run": { "type": "string", "format": "date" },
+          "status": { "type": "string", "enum": ["candidate", "active", "default", "deprecated"] }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "winning_variant": { "type": "string" },
+        "action": { "type": "string" },
+        "risk": { "type": "string" },
+        "decided_at": { "type": "string", "format": "date" },
+        "decided_by": { "type": "string" }
+      }
+    }
+  }
+}

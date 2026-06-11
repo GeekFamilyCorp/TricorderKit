@@ -15,6 +15,11 @@ Commandes :
   tk workflow list              → lister les workflows disponibles
   tk vault scan                 → scanner le vault TricorderKit
   tk research run [query]       → lancer deep-research (--dry-run supporté)
+  tk learning record ...        → ingérer un run → experience card (learning-engine)
+  tk learning compare-strategies → classer les stratégies d'un task_type
+  tk learning review ...        → extraire des leçons (file de revue humaine)
+  tk learning propose-skill-update → créer un draft de mise à jour de skill
+  tk learning promote-skill ... → promouvoir un skill si le gate des 8 tests passe
   tk project list               → lister les linked_projects
   tk project status [id]        → état d'un linked_project
   tk project audit [id]         → audit complet d'un linked_project
@@ -1036,6 +1041,40 @@ def _add_format(p: argparse.ArgumentParser):
     p.add_argument("--format", choices=["markdown", "json", "md"],
                    default="markdown", help="Format de sortie (défaut: markdown)")
 
+# ── learning (learning-engine, DEC-046) ───────────────────────────────────────
+
+_LEARNING_SCRIPTS = {
+    "record": "record_experience.py",
+    "compare-strategies": "compare_strategies.py",
+    "review": "extract_lessons.py",
+    "propose-skill-update": "propose_skill_update.py",
+    "promote-skill": "promote_skill.py",
+}
+
+
+def cmd_learning(args):
+    """Relaie vers les scripts plugins/learning-engine/scripts/ (passthrough d'args)."""
+    sub = getattr(args, "learning_cmd", None)
+    script = _LEARNING_SCRIPTS.get(sub)
+    base = REPO_ROOT / "plugins" / "learning-engine" / "scripts"
+    if not script:
+        print("Sous-commandes : " + ", ".join(_LEARNING_SCRIPTS))
+        return
+    script_path = base / script
+    if not script_path.exists():
+        _fail(f"Script introuvable : {script_path}")
+        return
+    passthrough = [a for a in (getattr(args, "passthrough", None) or []) if a != "--"]
+    try:
+        result = subprocess.run([sys.executable, str(script_path), *passthrough],
+                                cwd=str(base))
+        sys.exit(result.returncode)
+    except SystemExit:
+        raise
+    except Exception as e:  # noqa: BLE001
+        _fail(f"Erreur : {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="tk", description="TricorderKit CLI v0.2.0 — Agentic Knowledge OS",
@@ -1085,6 +1124,18 @@ def main():
     p_rr.add_argument("query", nargs="?", default="test query", help="Requête de recherche")
     p_rr.add_argument("--dry-run", action="store_true", help="Simuler sans appel réseau")
     _add_format(p_rr)
+
+    # ── learning (DEC-046) ──
+    # REMAINDER doit suivre un positionnel (patron fiable) : learning_cmd capture
+    # la sous-commande, passthrough récupère tout le reste (y compris les --flags).
+    p_learning = sub.add_parser(
+        "learning", help="Boucle learning-engine (DEC-046)",
+        description="Sous-commandes : " + ", ".join(_LEARNING_SCRIPTS))
+    p_learning.add_argument("learning_cmd", nargs="?", choices=list(_LEARNING_SCRIPTS),
+                            metavar="<sous-commande>", help="record | compare-strategies | "
+                            "review | propose-skill-update | promote-skill")
+    p_learning.add_argument("passthrough", nargs=argparse.REMAINDER,
+                            help="Arguments transmis au script (ex : --run x.json --task-type t)")
 
     # ── project ──
     p_project = sub.add_parser("project", help="Commandes linked_project")
@@ -1225,6 +1276,11 @@ def main():
             cmd_research_run(args)
         else:
             p_res.print_help()
+    elif args.command == "learning":
+        if getattr(args, "learning_cmd", None):
+            cmd_learning(args)
+        else:
+            p_learning.print_help()
     elif args.command == "project":
         pc = getattr(args, "project_cmd", None)
         if pc == "list":      cmd_project_list(args)

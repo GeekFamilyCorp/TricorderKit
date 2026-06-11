@@ -1,7 +1,20 @@
 # STATE.md — TricorderKit v0.9
 
 > État courant du projet. Mettre à jour à chaque session.
-> Dernière mise à jour : 2026-06-01
+> Dernière mise à jour : 2026-06-11
+
+> **Session 2026-06-11** : vérification d'amélioration v1.0 + plan de restructuration.
+> Analyse des 4 fichiers de cadrage du 09-06 (vision v1.0 Self-Improving Scraping & Knowledge OS,
+> Learning Engine, veille outils, format rapport scraping) → **~60 % des modules cibles déjà couverts**
+> (Règle 6 vérifiée : workflow-engine, eval-lab, graphify, security-audit-cli, obsidian-agent-layer,
+> deep-research-core, politique MCP, registres sources vault). 7 chantiers neufs N1–N7 identifiés
+> (learning-engine, scraper-runtime, allowlist MCP machine-lisible, durcissement VPS, extension eval-lab,
+> source reliability engine, workflows d'auto-amélioration).
+> Livrables : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md` (5 phases) ;
+> **DEC-046 VALIDÉE (Sébastien, 2026-06-11)** → démarrage **Phase 3** :
+> `plugins/learning-engine/` créé (README + manifest + **5 schemas JSON**, parse OK, schemas-first §28,
+> aucune logique d'exécution). Prochaine étape : scripts record/compare/extract/propose/promote + tests,
+> puis Phase 1 (durcissement VPS).
 
 > **Session 2026-06-03** : audit déterministe du vault (1 313 fiches manga/LN, `audit_v2.ps1`) →
 > **DEC-036** : dérive de schéma frontmatter (clés FR vs EN) tranchée → **canon = clés EN**
@@ -163,3 +176,24 @@ Aucun.
 
 `canal_agents/` EN LIGNE (remplace _sync_antigravity). Bus tri-agent claude/antigravity/codex, CLI `canal_agents/scripts/sync_bus.py`, zero token LLM. Handoff `T-2026-06-06-DEDUP-ORICON` poste dans inbox/codex. Regles R39 (bus unique) + R40 (zone de tri `97_A_Trier\05_A_Integrer\Fiches a trier - en attente`) actives dans AGENTS.md.
 A faire : Antigravity bascule sur canal_agents ; `health --write-status` en scheduled task ; Codex execute la lane dedup-oricon.
+
+---
+
+## Phase 3 — Learning Engine — Lot A LIVRE (2026-06-11 — DEC-046)
+
+`plugins/learning-engine/scripts/` : 5 scripts livres + valides.
+
+- `record_experience.py` — run (run_experience) -> experience card validee (collision d'ID corrigee : date+task+strategie+suffixe run_id).
+- `compare_strategies.py` — cartes -> classement strategy_variant + rapport MD (degrade en `partial` si < 2 variantes).
+- `extract_lessons.py` — cartes -> lecons (status `observed`, `human_review_required:true`, seuil de confiance parametrable).
+- `propose_skill_update.py` — lecons acceptees -> draft de proposition (jamais le skill actif ; 8 tests initialises `pending`).
+- `promote_skill.py` — gate des 8 tests + validation humaine + rollback/backup ; **dry-run par defaut**, refus explicite sinon.
+- `_common.py` — contrat skill_output, validation jsonschema Draft 2020-12, UTF-8 (utf-8-sig tolere le BOM Windows).
+
+Tests : `plugins/learning-engine/tests/` — **20/20 PASS** (Windows + sandbox). E2E complet OK (record->compare->lessons->propose->gate refuse). `make gate` / `check_public_boundary.py` = OK (aucune fuite). CLI cable : `tk learning record|compare-strategies|review|propose-skill-update|promote-skill` (argparse REMAINDER, parse OK).
+
+Conventions : CLI **argparse** (pas typer) — zero dep pip hors `jsonschema`, sur sous Windows (cf. feedback_typer_windows_cli) et coherent avec `cli/tk.py`.
+
+A faire (hors Lot A) : commit cible TricorderKit (`plugins/learning-engine/`, `cli/tk.py`, `.planning/STATE.md`) via DC, git add cible (jamais -A) ; puis Lots B-E (VPS, scraper-runtime, gouvernance MCP, workflows) ; brancher les 8 tests reels sur eval-lab (N5).
+
+*Derniere mise a jour : 2026-06-11 — Lot A learning-engine livre (DEC-046, Phase 3).*

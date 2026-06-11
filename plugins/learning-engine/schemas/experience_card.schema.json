@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tricorderkit://learning-engine/experience_card.schema.json",
+  "title": "ExperienceCard",
+  "description": "Carte d'expérience — synthèse exploitable d'un ou plusieurs runs (plan v1.0 §15).",
+  "type": "object",
+  "required": ["experience_card_id", "date", "task_type", "project_scope", "strategy_used", "quality", "status", "human_review_required"],
+  "additionalProperties": false,
+  "properties": {
+    "experience_card_id": { "type": "string", "pattern": "^exp_\\d{4}_\\d{2}_\\d{2}_[a-z0-9_]+$" },
+    "date": { "type": "string", "format": "date" },
+    "task_type": { "type": "string", "minLength": 1 },
+    "project_scope": { "type": "string", "enum": ["tricorderkit", "mangatracker", "japan-alliance", "agents-hub"] },
+    "strategy_used": { "type": "string", "minLength": 1 },
+    "run_ids": { "type": "array", "items": { "type": "string" } },
+    "input_query": { "type": "array", "items": { "type": "string" } },
+    "tools_used": { "type": "array", "items": { "type": "string" } },
+    "sources_used": { "type": "array", "items": { "type": "string" } },
+    "results": {
+      "type": "object",
+      "additionalProperties": { "type": ["integer", "number", "string", "array"] }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "relevance_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "novelty_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source_reliability_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "duplicate_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "completeness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "freshness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "cost_score": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "recoverable": { "type": "boolean" }
+        }
+      }
+    },
+    "lesson": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string" },
+        "proposed_change": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "status": { "type": "string", "enum": ["proposed", "accepted", "rejected", "promoted"] },
+    "human_review_required": { "type": "boolean", "default": true }
+  }
+}
