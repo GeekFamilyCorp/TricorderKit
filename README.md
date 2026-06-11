@@ -2,7 +2,7 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-v0.9.5-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.0.0-blue)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
 [![Tests](https://img.shields.io/badge/tests-544%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
@@ -20,7 +20,10 @@ v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + d
 v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
 v0.9 definition : Supabase layer + Langfuse observability + obsidian-agent-layer + tk doctor + public-ready documentation
 v0.9.5 definition : graphify hybrid RAG (vault local-first, dense search, incremental indexer) + veille ingestion dedup (G1) + obsidian-goat ID safety (replace-id R29 / next-id R34) + security hardening
+v1.0 definition : Self-Improving — learning-engine (experience cards → lessons → guarded skill updates) + machine-readable MCP governance (deny-by-default) + standardized scraper-runtime + source reliability engine + eval-lab quality evaluators + Temporal self-improvement workflows (DEC-046)
 ```
+
+> **What's New (v1.0 — Self-Improving, DEC-046)** : TricorderKit closes its self-improvement loop. The new **learning-engine** turns runs into experience cards, then lessons, then *guarded* skill-update proposals (drafts only — promotion requires 8 green tests **and** human review). **MCP governance** becomes machine-readable and deny-by-default (`mcp/registry_allowlist.yaml` + `tk mcp audit`). A **scraper-runtime** standardizes scraping profiles and the run contract; a **source reliability engine** scores sources (dry-run, read-only); **eval-lab** gains five quality evaluators (scraping, source reliability, dedup, RAG retrieval, cost/latency); and four **Temporal self-improvement workflows** (learning review, skill regression test, source freshness, tool scout) orchestrate the loop with execution deported to external collectors. All 7 chantiers (N1–N7) are code-complete.
 
 > **What's New (v0.9.5)** : the graphify plugin gains a local-first hybrid RAG layer — incremental vault indexer, dense semantic search, a veille-ingestion bridge with G1 deduplication (new vs existing entries gated against the Master Index), and a health heartbeat (DEC-023). The `obsidian-goat` tool now guarantees safe ID operations (`replace-id`, `next-id`).
 
@@ -77,6 +80,8 @@ python cli/tk.py status --format json    # system state
 python cli/tk.py security audit          # secrets + anonymization + patterns
 python cli/tk.py research run "<query>" --dry-run
 python cli/tk.py project audit <id>      # audit a linked_project
+python cli/tk.py mcp audit               # MCP allowlist governance (deny-by-default, DEC-046/N3)
+python cli/tk.py learning compare-strategies --task-type <type>   # self-improvement loop (DEC-046/N1)
 ```
 
 ### obsidian-goat — safe vault ID operations (v0.9.5)
@@ -138,17 +143,17 @@ TricorderKit/
 │
 ├── plugins/                  ← 12 plugins
 │   ├── cli-forge/            ← deterministic CLI generator (generated/github-goat, …)
-│   ├── workflow-engine/      ← Temporal workflows + activities + worker
+│   ├── workflow-engine/      ← Temporal workflows + activities + worker (+ self-improvement workflows, DEC-046/N7)
 │   ├── deep-research-core/   ← autonomous research pipelines
 │   ├── graphify/             ← hybrid RAG (index_vault · hybrid_rag · search_vault · ingest_veille)
 │   ├── connector-hub/        ← service dispatch (Temporal)
-│   ├── eval-lab/             ← quality loop — eval runner + regression checker
+│   ├── eval-lab/             ← quality loop — eval runner + regression checker + 5 quality evaluators (DEC-046/N5)
 │   ├── obsidian-agent-layer/ ← vault router + note builder
 │   ├── security-audit-cli/   ← security runner (audit, secrets, anon-check)
 │   ├── memory-boot/          ← session boot + rapport skills
 │   ├── token-optimizer/      ← budget guard + model router + caveman
 │   ├── learning-engine/      ← experience cards → lessons → controlled skill updates (DEC-046)
-│   └── scraper-runtime/      ← scraping profiles + run contract + source registry generator (DEC-046)
+│   └── scraper-runtime/      ← scraping profiles + run contract + source registry + reliability engine (DEC-046)
 │
 ├── tools/
 │   ├── obsidian-goat/        ← safe vault ID ops (replace-id R29 / next-id R34)
@@ -261,7 +266,8 @@ See [ROADMAP.md](ROADMAP.md) for full details.
 | 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 23/05/2026 |
 | 8.5 | v0.9.5 — graphify RAG local-first + obsidian-goat ID safety | ✅ Complete | 01/06/2026 |
 | 8.6 | Security & boundary governance — public-boundary gate (CI + pre-push), frontier cleanup, MIT license | ✅ Complete | 01/06/2026 |
-| 9 | VPS deployment (optional) | 🔲 Planned | — |
+| **v1.0** | **Self-Improving (DEC-046)** — learning-engine · MCP governance · scraper-runtime · source reliability · eval-lab evaluators · Temporal self-improvement workflows (N1–N7 code-complete) | ✅ Complete | 11/06/2026 |
+| 9 | VPS deployment (hardening live: doctor + Borg backups + fail2ban) | 🟡 In progress | — |
 | 10 | Multi-linked-project support (2 linked projects active) | 🟡 In progress | — |
 | 11 | Plugin marketplace / registry | 🔲 Planned | — |
 | 12 | Community release | 🔲 Planned | — |
@@ -309,5 +315,5 @@ TricorderKit is released under the [MIT License](LICENSE) — © 2026 GeekFamily
 
 ---
 
-*TricorderKit v0.9.5 — GeekFamilyCorp — 2026*  
+*TricorderKit v1.0.0 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*
