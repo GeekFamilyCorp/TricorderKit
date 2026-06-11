@@ -197,3 +197,20 @@ Conventions : CLI **argparse** (pas typer) — zero dep pip hors `jsonschema`, s
 A faire (hors Lot A) : commit cible TricorderKit (`plugins/learning-engine/`, `cli/tk.py`, `.planning/STATE.md`) via DC, git add cible (jamais -A) ; puis Lots B-E (VPS, scraper-runtime, gouvernance MCP, workflows) ; brancher les 8 tests reels sur eval-lab (N5).
 
 *Derniere mise a jour : 2026-06-11 — Lot A learning-engine livre (DEC-046, Phase 3).*
+
+---
+
+## Phase 1 — Durcissement VPS — Lot B SCRIPTS LIVRES (2026-06-11 — DEC-046, N4)
+
+`scripts/vps/` : 3 scripts shell + README, ecrits et **valides en syntaxe** (`bash -n` x3 OK ; smoke `vps_doctor.sh` = rapport + JSON propres). **Non executes sur le VPS** (frontiere d'execution live = feu vert requis).
+
+- `vps_doctor.sh` — diagnostic lecture seule (Docker, ports loopback, RAM/disque, Tailscale, ufw, fail2ban) ; sortie texte + JSON ; exit 1 si check critique.
+- `backup.sh` — Borg chiffre (zstd), init idempotent, retention/prune ; **dry-run par defaut** (Regle 4) ; secrets via env (DEC-039), zero IP/secret en dur.
+- `restore_test.sh` — extraction vers repertoire jetable + temoins + `borg check` ; ne touche jamais le live (critere « reboot sans perte »).
+- `README.md` — exploitation paramiko/Tailscale, prealables (debannissement fail2ban du 11/06, ne durcir que le manquant — durcissement 09/06 deja fait), Uptime Kuma a deployer.
+
+**Prealables avant run live (Risk Guard MEDIUM/HIGH — feu vert Sebastien)** : (1) verifier debannissement fail2ban du poste ; (2) une seule session SSH reutilisee (paramiko/Tailscale) ; (3) installer borgbackup + Uptime Kuma cote VPS ; (4) passphrase Borg via coffre. `vps_doctor.sh` confirme l'etat reel avant de durcir quoi que ce soit.
+
+A faire (suite) : exécuter `vps_doctor.sh` sur le VPS (diagnostic), puis backup réel + restore_test ; Uptime Kuma ; Lots C-E.
+
+*Derniere mise a jour : 2026-06-11 — Lot B scripts VPS livres (non executes), en attente feu vert run live.*
