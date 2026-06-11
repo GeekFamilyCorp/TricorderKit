@@ -41,6 +41,7 @@
 | obsidian-agent-layer | ✅ Actif | ✅ | ✅ | ✅ | ⚠️ Partiel |
 | graphify | ✅ Actif | ✅ | ⚠️ | ✅ | ⚠️ Partiel |
 | token-optimizer | ✅ Actif v0.8 | ✅ | ✅ | ✅ | ✅ |
+| learning-engine | ✅ Actif v0.1.0 | ✅ | ✅ | ✅ | ⚠️ Partiel |
 
 ---
 
@@ -67,11 +68,11 @@
 
 ## Résumé
 
-- **Prêts production** : 3 / 10 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
-- **Partiels** : 7 / 10 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`)
-- **Non prêts** : 0 / 10
-- **WIP** : 0 / 10
+- **Prêts production** : 3 / 11 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
+- **Partiels** : 8 / 11 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`, `learning-engine`)
+- **Non prêts** : 0 / 11
+- **WIP** : 0 / 11
 
 ---
 
-*TricorderKit v0.9.5 — 2026-06-01 — 544 tests PASS, 0 FAIL*
+*TricorderKit v0.9.5 — 2026-06-11 — 544 tests PASS, 0 FAIL*
