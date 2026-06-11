@@ -4,7 +4,7 @@
 
 ---
 
-## [Unreleased] — DEC-046 v1.0 « Self-Improving » — Lot D (gouvernance MCP, N3)
+## [Unreleased] — DEC-046 v1.0 « Self-Improving » — Lots D (MCP, N3) + E (reliability N6 + workflows N7)
 
 ### Ajouté
 - **mcp/registry_allowlist.yaml** — allowlist MCP **machine-lisible, deny-by-default** : serveurs + tools + permissions + rate limits, patterns de tools bannis, politique de secrets (références `${VAR}` uniquement, DEC-039). Rend exécutable la politique écrite (`mcp/README_MCP_POLICY.md`).
@@ -12,8 +12,13 @@
 - **CLI** — `tk mcp list | audit | allowlist-check` câblés dans `cli/tk.py`.
 - **tests/test_mcp_gateway.py** — 13 tests (deny-by-default, audit secrets/serveurs, contrat skill_output, codes retour CLI).
 
+### Ajouté (Lot E — N6 + N7)
+- **plugins/scraper-runtime/scripts/source_reliability_engine.py** (N6) — moteur de **fiabilité des sources** : score composite (officialité, fiabilité, fraîcheur, extractabilité, dédup) calculé depuis l'historique des runs, **dry-run strict** (lecture seule, jamais d'écriture vault ; promotion déléguée au writer du projet aval, routage DEC-016, archivage R31). Sortie `skill_output` (status=dry_run). + **8 tests**.
+- **plugins/workflow-engine/workflows/** (N7) — 4 workflows Temporal d'auto-amélioration : `learning_review` (hebdo : compare → leçons → drafts, jamais de promotion), `skill_regression_test` (gate des tests + approbation humaine avant promotion), `source_freshness` (score N6 → re-scrape déporté), `tool_scout` (veille outillage déportée). Exécution collecte/veille **déportée** Antigravity/Hermes via `canal_agents` (DEC-029).
+- **plugins/workflow-engine/activities/self_improving.activities.ts** — activities dédiées (dispatch canal_agents + consolidation CLI), type `SelfImprovingActivities` **isolé du worker en production** ; barrel séparé `workflows/self_improving.index.ts` ; doc d'activation `plugins/workflow-engine/SELF_IMPROVING.md`.
+
 ### Référence
-- DEC-046 — cap v1.0 Self-Improving, chantier N3 (gouvernance MCP). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
+- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N6 (source reliability engine), N7 (workflows d'auto-amélioration). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
 
 ## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
 

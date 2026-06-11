@@ -236,3 +236,24 @@ Vitrine MAJ : **12 plugins** (README arbre/compte + STATUS dashboard/resume). Ga
 A faire : Lots D (gouvernance MCP machine-lisible, N3) + E (workflows Temporal auto-amelioration, N7/N6) ; brancher les profils scraper-runtime au pipeline VPS existant ; eval-lab N5.
 
 *Derniere mise a jour : 2026-06-11 soir — Lot B live (VPS durci + backup prouve) + Lot C scraper-runtime livre (DEC-046).*
+
+
+---
+
+## Phase 4 — Gouvernance MCP (Lot D, N3) + Phase 5 — Reliability + Workflows (Lot E, N6/N7) LIVRES (2026-06-11 soir — DEC-046)
+
+**Lot D — gouvernance MCP machine-lisible (N3)** : `mcp/` (pas un plugin → vitrine reste 12).
+- `mcp/registry_allowlist.yaml` — **deny-by-default** : serveurs (vault-search, graph-server) + tools + permissions + rate limits + patterns de tools bannis ; secrets en references `${VAR}` uniquement (DEC-039).
+- `mcp/scripts/mcp_gateway.py` — `list` / `audit` (`.mcp.json` vs allowlist : serveurs non declares, secrets en clair, tools bannis) / `allowlist-check` ; journal par appel `mcp/logs/mcp_calls.jsonl` (gitignore) ; sortie `skill_output`.
+- `cli/tk.py` : `tk mcp list | audit | allowlist-check`. **13 tests PASS** (`tests/test_mcp_gateway.py`).
+- Audit du `.mcp.json` reel = **OK** (2 serveurs declares, aucun secret en clair).
+
+**Lot E — source reliability engine (N6) + workflows auto-amelioration (N7)** :
+- `plugins/scraper-runtime/scripts/source_reliability_engine.py` — score composite des sources (officialite/fiabilite/fraicheur/extractabilite/dedup) depuis l'historique des runs, **dry-run strict** (lecture seule ; ecriture deleguee au writer aval, routage DEC-016, archivage R31). **8 tests PASS**.
+- `plugins/workflow-engine/workflows/` : `learning_review`, `skill_regression_test` (gate + approbation humaine avant promotion), `source_freshness`, `tool_scout` — execution veille **deportee** Antigravity/Hermes via canal_agents (DEC-029). Activities `self_improving.activities.ts` + barrel `self_improving.index.ts` **isoles du worker en prod** (activation = etape controlee, doc `SELF_IMPROVING.md`). TypeScript : mes 4 fichiers typecheckent propre (`tsc --noEmit`).
+
+Garde-fous respectes : aucun plugin ajoute (vitrine 12 intacte) ; dry-run par defaut ; pas d'auto-modification core/secrets/MCP ; zero nom prive dans le code public (gates frontiere+docs-sync OK) ; collection pytest 617 tests, 0 erreur.
+
+A faire (suite) : enregistrer les workflows N7 dans un worker (etape controlee) + Temporal Schedules ; alimenter le reliability engine depuis les runs reels ; brancher eval-lab N5 ; calibrate-quota-governor 14/06.
+
+*Derniere mise a jour : 2026-06-11 soir — Lots D (gouvernance MCP) + E (reliability N6 + workflows N7) livres (DEC-046).*
