@@ -15,8 +15,8 @@ sont projetés sur l'échelle 0-1 de la carte.
 Sortie : enveloppe skill_output (--format json|md). Dry-run = aucune écriture.
 
 Exemples :
-  python record_experience.py --run run.json --task-type scraping_jp \
-      --project-scope japan-alliance
+  python record_experience.py --run run.json --task-type scraping \
+      --project-scope project-a
   cat run.json | python record_experience.py --run - --task-type veille --dry-run
 """
 from __future__ import annotations
@@ -125,7 +125,7 @@ def main(argv=None) -> int:
     ap.add_argument("--run", default="-", help="Chemin du run JSON ('-' = stdin)")
     ap.add_argument("--task-type", required=True, help="Type de tâche (dimension d'analyse)")
     ap.add_argument("--project-scope", required=True,
-                    choices=["tricorderkit", "mangatracker", "japan-alliance", "agents-hub"])
+                    help="Scope projet (chaîne libre, ex. project-a) — moteur générique")
     ap.add_argument("--out-dir", default=str(DEFAULT_OUT), help="Répertoire des cartes")
     ap.add_argument("--dry-run", action="store_true", help="Simuler sans écrire")
     C.add_format_arg(ap)

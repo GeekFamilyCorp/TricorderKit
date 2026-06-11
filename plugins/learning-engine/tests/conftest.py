@@ -43,7 +43,7 @@ def make_card():
             "experience_card_id": f"exp_2026_06_11_scraping_jp_{idx}",
             "date": date,
             "task_type": task_type,
-            "project_scope": "japan-alliance",
+            "project_scope": "project-a",
             "strategy_used": strategy,
             "run_ids": [f"run_2026-06-11_{idx}"],
             "results": {"items_extracted": 30},

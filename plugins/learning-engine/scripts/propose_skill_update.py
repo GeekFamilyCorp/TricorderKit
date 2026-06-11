@@ -19,7 +19,7 @@ Garde-fous (DEC-046) :
 Sortie : enveloppe skill_output (--format json|md).
 
 Exemple :
-  python propose_skill_update.py --skill-id mangatracker-lookup \
+  python propose_skill_update.py --skill-id demo-skill \
       --lessons-dir runs/learning/lessons --skill-version 1.2.0
 """
 from __future__ import annotations

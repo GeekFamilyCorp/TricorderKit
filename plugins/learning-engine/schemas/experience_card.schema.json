@@ -10,7 +10,7 @@
     "experience_card_id": { "type": "string", "pattern": "^exp_\\d{4}_\\d{2}_\\d{2}_[a-z0-9_]+$" },
     "date": { "type": "string", "format": "date" },
     "task_type": { "type": "string", "minLength": 1 },
-    "project_scope": { "type": "string", "enum": ["tricorderkit", "mangatracker", "japan-alliance", "agents-hub"] },
+    "project_scope": { "type": "string", "minLength": 1, "description": "Scope projet (chaîne libre, définie par l'intégrateur — le moteur reste générique)." },
     "strategy_used": { "type": "string", "minLength": 1 },
     "run_ids": { "type": "array", "items": { "type": "string" } },
     "input_query": { "type": "array", "items": { "type": "string" } },

@@ -55,8 +55,8 @@ plugins/learning-engine/
 
 ## Sorties
 
-Experience cards (YAML/JSON validés), leçons, propositions de skill update, classement de stratégies, mises à jour de fiabilité des sources (vers le registre vault, via dry-run + MangaTracker), rapports de régression. Toute sortie CLI structurée respecte `core/contracts/skill_output.schema.json`.
+Experience cards (YAML/JSON validés), leçons, propositions de skill update, classement de stratégies, mises à jour de fiabilité des sources (vers le registre vault, via dry-run par le projet lié spécialisé), rapports de régression. Toute sortie CLI structurée respecte `core/contracts/skill_output.schema.json`.
 
 ## Routage (DEC-016)
 
-Moteur générique → **TricorderKit**. Stratégies/variants spécifiques JP-manga (ex. `official_sources_first`) → **MangaTracker**. Scores de sources appliqués → vault **Japan-Alliance** (dry-run obligatoire).
+Moteur générique → **TricorderKit** (public, agnostique du domaine). Stratégies/variants spécifiques à un domaine → le projet lié spécialisé. Scores de sources appliqués → le vault de données du projet lié (dry-run obligatoire). `project_scope` est une chaîne libre : le moteur ne code aucun nom de projet aval (DEC-047).
