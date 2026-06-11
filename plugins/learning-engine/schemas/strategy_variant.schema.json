@@ -8,7 +8,7 @@
   "additionalProperties": false,
   "properties": {
     "task_type": { "type": "string", "minLength": 1 },
-    "project_scope": { "type": "string", "enum": ["tricorderkit", "mangatracker", "japan-alliance", "agents-hub"] },
+    "project_scope": { "type": "string", "minLength": 1, "description": "Scope projet (chaîne libre, définie par l'intégrateur — le moteur reste générique)." },
     "variants": {
       "type": "array",
       "minItems": 2,

@@ -13,8 +13,8 @@ def test_proposal_is_valid_and_draft_only(tmp_path, valid_lesson, capsys):
     ldir.mkdir()
     (ldir / f"{valid_lesson['lesson_id']}.json").write_text(
         json.dumps(valid_lesson), encoding="utf-8")
-    drafts = tmp_path / "skills" / "mangatracker-lookup" / "drafts"
-    rc = P.main(["--skill-id", "mangatracker-lookup", "--lessons-dir", str(ldir),
+    drafts = tmp_path / "skills" / "demo-skill" / "drafts"
+    rc = P.main(["--skill-id", "demo-skill", "--lessons-dir", str(ldir),
                  "--drafts-dir", str(drafts), "--format", "json"])
     assert rc == 0
     out = json.loads(capsys.readouterr().out)

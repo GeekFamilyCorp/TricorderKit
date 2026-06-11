@@ -20,7 +20,7 @@ def test_two_strategies_produce_valid_variant(make_card):
         make_card(strategy="mangaupdates_first", relevance=0.55, idx="c"),
         make_card(strategy="mangaupdates_first", relevance=0.50, idx="d"),
     ]
-    variant, stats = CS.build_variant("scraping_jp", cards, "japan-alliance")
+    variant, stats = CS.build_variant("scraping_jp", cards, "project-a")
     assert C.validate(variant, "strategy_variant") == []
     # official doit gagner (meilleur score)
     assert variant["decision"]["winning_variant"] == "official_sources_first"
