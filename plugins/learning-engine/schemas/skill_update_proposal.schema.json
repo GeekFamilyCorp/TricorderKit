@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tricorderkit://learning-engine/skill_update_proposal.schema.json",
+  "title": "SkillUpdateProposal",
+  "description": "Proposition de mise à jour d'un skill — promotion uniquement après les 8 tests §16.4 + validation humaine (DEC-046).",
+  "type": "object",
+  "required": ["proposal_id", "skill_id", "proposed_change", "evidence", "status", "human_review_required", "rollback"],
+  "additionalProperties": false,
+  "properties": {
+    "proposal_id": { "type": "string", "pattern": "^sup_\\d{4}_\\d{2}_\\d{2}_[a-z0-9_]+$" },
+    "date": { "type": "string", "format": "date" },
+    "skill_id": { "type": "string", "minLength": 1 },
+    "skill_current_version": { "type": "string" },
+    "lesson_ids": { "type": "array", "items": { "type": "string" } },
+    "proposed_change": { "type": "string", "minLength": 10 },
+    "draft_path": { "type": "string", "description": "Chemin du draft (jamais le skill actif)." },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["claim"],
+        "additionalProperties": false,
+        "properties": {
+          "claim": { "type": "string" },
+          "metric": { "type": "string" },
+          "old_value": { "type": ["number", "string"] },
+          "new_value": { "type": ["number", "string"] },
+          "source_runs": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+    "tests": {
+      "type": "object",
+      "description": "Les 8 tests minimum avant promotion (§16.4). Tous requis à 'passed' pour status=promoted.",
+      "additionalProperties": false,
+      "properties": {
+        "historical_data": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "fresh_sources": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "non_regression": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "schema_validity": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "token_cost": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "security": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "rollback_tested": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] },
+        "human_validation": { "type": "string", "enum": ["pending", "passed", "failed", "n/a"] }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "required": ["available"],
+      "additionalProperties": false,
+      "properties": {
+        "available": { "type": "boolean" },
+        "procedure": { "type": "string" },
+        "backup_path": { "type": "string" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["observed", "proposed", "draft_created", "test_pending", "test_failed", "test_passed", "human_review_required", "accepted", "promoted", "deprecated", "rolled_back"]
+    },
+    "human_review_required": { "type": "boolean", "default": true },
+    "reviewed_by": { "type": "string" },
+    "reviewed_at": { "type": "string", "format": "date" },
+    "decision_ref": { "type": "string", "description": "Référence DEC-NNN si impact élevé." }
+  }
+}
