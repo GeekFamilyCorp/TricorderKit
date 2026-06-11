@@ -257,3 +257,18 @@ Garde-fous respectes : aucun plugin ajoute (vitrine 12 intacte) ; dry-run par de
 A faire (suite) : enregistrer les workflows N7 dans un worker (etape controlee) + Temporal Schedules ; alimenter le reliability engine depuis les runs reels ; brancher eval-lab N5 ; calibrate-quota-governor 14/06.
 
 *Derniere mise a jour : 2026-06-11 soir — Lots D (gouvernance MCP) + E (reliability N6 + workflows N7) livres (DEC-046).*
+
+
+---
+
+## N5 (eval-lab) + N7 activation LIVRES — cap v1.0 code COMPLET (2026-06-11 nuit — DEC-046)
+
+**N5 — extension eval-lab** : `plugins/eval-lab/evaluators.py` (5 evaluateurs purs : scraping_quality, source_reliability, dedup_quality, rag_retrieval_quality, cost_latency ; grille excellent/good/warn/fail ; `evaluate_all` ne note que les dimensions mesurees) + commande `eval_runner.py evaluate [<type>] --input m.json [--json]` (sortie skill_output). **17 tests PASS**.
+
+**N7 — scaffolding d'activation (isole du worker prod)** : `scripts/start_self_improving_worker.ts` (worker dedie task queue `tricorderkit-self-improving`) + `scripts/register_self_improving_schedules.ts` (**dry-run par defaut** ; learning_review hebdo / source_freshness quotidien / tool_scout hebdo ; skill_regression_test a la demande). `SELF_IMPROVING.md` MAJ. Mes 2 scripts TS typecheckent propre ; dry-run du registre = OK. **Activation = commande explicite uniquement** (garde HIGH, aucune auto-activation).
+
+**Etat cap v1.0 (DEC-046)** : N1(Lot A)/N2(C)/N3(D)/N4(B)/N5/N6(E)/N7(E)+activation = **TOUS livres**. Le code des 7 chantiers est complet. Restent des etapes d'EXPLOITATION (hors code) : lancer le worker self-improving + creer les schedules en reel (DRY_RUN=0) quand decide ; alimenter reliability/evaluateurs depuis les runs reels ; calibrate-quota-governor 14/06.
+
+Vitrine reste **12 plugins** (N5 = extension eval-lab, N7 = scripts workflow-engine ; aucun plugin ajoute). Gates frontiere+docs-sync OK.
+
+*Derniere mise a jour : 2026-06-11 nuit — N5 (eval-lab) + N7 activation livres ; cap v1.0 code complet (DEC-046).*

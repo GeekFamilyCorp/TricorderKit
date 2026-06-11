@@ -21,8 +21,12 @@
 - **plugins/eval-lab/evaluators.py** — 5 évaluateurs de qualité (fonctions pures, zéro dép) : `scraping_quality`, `source_reliability`, `dedup_quality`, `rag_retrieval_quality`, `cost_latency` ; grille de notation (excellent/good/warn/fail), dispatch + agrégat `evaluate_all` (ne note que les dimensions mesurées).
 - **plugins/eval-lab/eval_runner.py** — commande `evaluate [<type>] --input metrics.json [--json]` (sortie skill_output). **17 tests** (`tests/test_evaluators.py`).
 
+### Ajouté (N7 — scaffolding d'activation)
+- **plugins/workflow-engine/scripts/start_self_improving_worker.ts** — worker Temporal **isolé** (task queue dédiée `tricorderkit-self-improving`) enregistrant les 4 workflows N7 + les activities self-improving ; n'affecte pas le worker de production.
+- **plugins/workflow-engine/scripts/register_self_improving_schedules.ts** — enregistrement des Temporal Schedules (learning_review hebdo, source_freshness quotidien, tool_scout hebdo), **dry-run par défaut** (`DRY_RUN=0` pour appliquer) ; `skill_regression_test` reste à la demande (approbation humaine). Doc `SELF_IMPROVING.md` mise à jour. Activation par commande explicite (aucune auto-activation, garde HIGH).
+
 ### Référence
-- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N5 (extension eval-lab), N6 (source reliability engine), N7 (workflows d'auto-amélioration). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
+- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N5 (extension eval-lab), N6 (source reliability engine), N7 (workflows d'auto-amélioration + scaffolding d'activation). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
 
 ## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
 

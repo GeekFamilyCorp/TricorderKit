@@ -34,16 +34,23 @@ Ces workflows ne sont **pas** cables dans le worker de production
 (`workflows/self_improving.index.ts`) et leurs activities aussi
 (`activities/self_improving.activities.ts`, type `SelfImprovingActivities`).
 
-Pour les activer :
+Le scaffolding d'activation est livre, **isole du worker de production** :
 
-1. Enregistrer les activities du module `self_improving.activities.ts` dans le
-   `Worker.create({ activities })` (en plus des activities existantes).
-2. Pointer un second worker (ou etendre `workflowsPath`) vers
-   `self_improving.index.ts`.
-3. Creer les Temporal Schedules (hebdo / quotidien) qui declenchent chaque
-   workflow avec ses inputs.
-4. Definir `CANAL_AGENTS_DIR` vers le repertoire de dispatch reel des executeurs.
+| Etape | Script | Effet |
+|---|---|---|
+| 1. Worker dedie | `scripts/start_self_improving_worker.ts` | worker sur sa PROPRE task queue `tricorderkit-self-improving` (n'affecte pas `tricorderkit-hooks`) ; enregistre les 4 workflows + les activities self-improving |
+| 2. Schedules | `scripts/register_self_improving_schedules.ts` | **dry-run par defaut** ; `DRY_RUN=0` cree les Temporal Schedules (learning_review hebdo, source_freshness quotidien, tool_scout hebdo ; `skill_regression_test` reste a la demande) |
 
-Tant que cette etape n'est pas faite, les definitions restent inertes — par
-conception (la mise en production des promotions de skill est un point de
-controle HIGH).
+```bash
+# 1. Demarrer le worker isole (laisser tourner)
+TEMPORAL_ADDRESS=localhost:7233 CANAL_AGENTS_DIR=<dir> \
+  npx ts-node plugins/workflow-engine/scripts/start_self_improving_worker.ts
+
+# 2. Voir le plan des schedules (dry-run), puis l'appliquer
+npx ts-node plugins/workflow-engine/scripts/register_self_improving_schedules.ts
+DRY_RUN=0 npx ts-node plugins/workflow-engine/scripts/register_self_improving_schedules.ts
+```
+
+Tant que ces deux commandes ne sont pas lancees explicitement, les definitions
+restent inertes — par conception (la mise en production des promotions de skill
+est un point de controle HIGH ; aucune auto-activation).
