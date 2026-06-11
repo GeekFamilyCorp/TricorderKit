@@ -76,4 +76,4 @@
 
 ---
 
-*TricorderKit v1.0.0 — 2026-06-11 — 544 tests PASS, 0 FAIL*
+*TricorderKit v1.0.0 — 2026-06-11 — 634 tests collected (v1.0 additions green ; full suite validated in CI)*
