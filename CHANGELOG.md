@@ -4,6 +4,17 @@
 
 ---
 
+## [Unreleased] — DEC-046 v1.0 « Self-Improving » — Lot D (gouvernance MCP, N3)
+
+### Ajouté
+- **mcp/registry_allowlist.yaml** — allowlist MCP **machine-lisible, deny-by-default** : serveurs + tools + permissions + rate limits, patterns de tools bannis, politique de secrets (références `${VAR}` uniquement, DEC-039). Rend exécutable la politique écrite (`mcp/README_MCP_POLICY.md`).
+- **mcp/scripts/mcp_gateway.py** — moteur de gouvernance : `list` (déclarés + configurés), `audit` (`.mcp.json` confronté à l'allowlist : serveurs non déclarés, secrets en clair, tools bannis), `allowlist-check` (décision autorisé/refusé). Sortie conforme `core/contracts/skill_output.schema.json`, journal par appel `mcp/logs/mcp_calls.jsonl` (gitignoré).
+- **CLI** — `tk mcp list | audit | allowlist-check` câblés dans `cli/tk.py`.
+- **tests/test_mcp_gateway.py** — 13 tests (deny-by-default, audit secrets/serveurs, contrat skill_output, codes retour CLI).
+
+### Référence
+- DEC-046 — cap v1.0 Self-Improving, chantier N3 (gouvernance MCP). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
+
 ## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
 
 ### Ajouté
