@@ -40,9 +40,9 @@
 
 ## Version courante
 
-- **Version** : 0.9.5 — Public-ready
-- **Date** : 2026-06-01
-- **Phase active** : v0.9.5 poussé (graphify RAG local-first DEC-023 + dédup G1) — prochaine étape : verrouiller frontière privé/public (Lot 2) + tag release v0.9.5
+- **Version** : 1.0.0 — Self-Improving (DEC-046)
+- **Date** : 2026-06-11
+- **Phase active** : v1.0 « Self-Improving » — 7 chantiers N1–N7 code-complets et poussés (HEAD `2df1655`) ; prochaine étape : mise en exploitation (worker self-improving + schedules réels, runbook `.planning/RUNBOOK_EXPLOITATION_v1.0_2026-06-11.md`)
 
 ---
 

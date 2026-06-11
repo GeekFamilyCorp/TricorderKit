@@ -4,7 +4,9 @@
 
 ---
 
-## [Unreleased] — DEC-046 v1.0 « Self-Improving » — Lots D (MCP, N3) + E (reliability N6 + workflows N7)
+## [1.0.0] — 11/06/2026 — v1.0 « Self-Improving Scraping & Knowledge OS » (DEC-046)
+
+> Cap v1.0 : les 7 chantiers N1–N7 sont **code-complets**. Boucle d'auto-amélioration (experience → leçons → propositions de skill gardées par tests + revue humaine), gouvernance MCP machine-lisible, runtime de scraping standardisé, moteur de fiabilité des sources, évaluateurs de qualité, workflows Temporal d'auto-amélioration (exécution déportée). Aucun plugin ajouté à la vitrine (12) — N1/N2 = nouveaux plugins déjà comptés ; N3 = `mcp/` ; N5/N7 = extensions.
 
 ### Ajouté
 - **mcp/registry_allowlist.yaml** — allowlist MCP **machine-lisible, deny-by-default** : serveurs + tools + permissions + rate limits, patterns de tools bannis, politique de secrets (références `${VAR}` uniquement, DEC-039). Rend exécutable la politique écrite (`mcp/README_MCP_POLICY.md`).
