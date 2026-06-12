@@ -1,9 +1,9 @@
 name: docs-sync
 
-# Gate docs-sync (DEC-028 / R39) : bloque tout push/PR ou la vitrine
-# (README.md, STATUS.md) a divergé de la réalité du dépôt — version
-# (CHANGELOG canonique), compte de tests, ou liste des plugins (plugins/).
-# Complément documentaire du gate public-boundary.
+# Gate docs-sync (DEC-028 / R39 ; étendu DEC-047 / R41) : bloque tout push/PR
+# où la vitrine (README.md, STATUS.md, ROADMAP.md) a divergé de la réalité du
+# dépôt — version (CHANGELOG canonique), compte de tests, ou liste des plugins
+# (plugins/ suivis par git). Complément documentaire du gate public-boundary.
 
 on:
   push:

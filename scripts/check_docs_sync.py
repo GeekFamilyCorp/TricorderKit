@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 """
-check_docs_sync.py - Gate docs-sync (TricorderKit, DEC-028 / R39)
+check_docs_sync.py - Gate docs-sync (TricorderKit, DEC-028 / R39, etendu DEC-047 / R41)
 
 Etend la philosophie du public-boundary gate a la coherence DOCUMENTAIRE :
-verifie mecaniquement que la vitrine (README.md, STATUS.md) reste alignee
-avec la realite du depot (CHANGELOG.md, arborescence plugins/). Cause racine
-adressee : README/STATUS/CHANGELOG ont deja diverge (version, compte de tests,
-liste de plugins) sans qu'aucun controle ne le detecte avant push.
+verifie mecaniquement que la vitrine (README.md, STATUS.md, ROADMAP.md) reste
+alignee avec la realite du depot (CHANGELOG.md, arborescence plugins/). Cause
+racine adressee : README/STATUS/CHANGELOG/ROADMAP ont deja diverge (version,
+compte de tests, liste de plugins) sans qu'aucun controle ne le detecte avant
+push.
+
+Historique : la v1.0.0 (push 2026-06-11) a aligne README/STATUS/CHANGELOG mais a
+laisse ROADMAP.md en v0.9.5 / 544 tests. Le gate d'origine (DEC-028) ne lisait
+PAS ROADMAP.md -> la derive est passee. DEC-047 etend la couverture a ROADMAP.
 
 Trois familles de verification :
 
-  1. VERSION   - la version affichee dans README (badge + pied de page) et
-                 STATUS (pied) doit egaler la derniere version du CHANGELOG
-                 (source canonique = premier entete "## [X.Y.Z]").
+  1. VERSION   - la version affichee dans README (badge + pied), STATUS (pied)
+                 ET ROADMAP (entete "Version : X" + pied + "Etat actuel (vX)")
+                 doit egaler la derniere version du CHANGELOG (source canonique
+                 = premier entete "## [X.Y.Z]").
   2. TESTS     - le nombre de tests annonce doit etre IDENTIQUE partout ou il
-                 apparait (badge README, mentions "NNN tests", pied STATUS).
+                 apparait comme chiffre courant : badge README, mentions
+                 "NNN tests collected/PASS", pied STATUS, bloc "Etat actuel" de
+                 ROADMAP ("Tests : NNN"). Les mentions historiques versionnees
+                 ("NNN tests green at vX") sont volontairement ignorees.
                  Option --check-tests : confronte aussi a la collecte pytest.
   3. STRUCTURE - les plugins du tableau de bord STATUS et le compte "N plugins"
                  du README doivent correspondre EXACTEMENT aux sous-dossiers
@@ -75,25 +84,44 @@ def canonical_version(changelog: str) -> str | None:
     return m.group(1) if m else None
 
 
-def declared_versions(readme: str, status: str) -> list[tuple[str, str]]:
+def declared_versions(readme: str, status: str, roadmap: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
+    # README badge : version-vX.Y.Z-
     for m in re.finditer(r"version-v?(\d+\.\d+(?:\.\d+)?)-", readme):
         out.append(("README badge", m.group(1)))
-    for label, txt in (("README footer", readme), ("STATUS footer", status)):
+    # Pieds de page "TricorderKit vX.Y.Z" (README, STATUS, ROADMAP)
+    for label, txt in (("README footer", readme),
+                       ("STATUS footer", status),
+                       ("ROADMAP footer", roadmap)):
         for m in re.finditer(r"TricorderKit\s+v(\d+\.\d+(?:\.\d+)?)", txt):
             out.append((label, m.group(1)))
+    # ROADMAP entete "> Version : X.Y.Z" et bloc "Etat actuel (vX.Y.Z"
+    for m in re.finditer(r"Version\s*:\s*v?(\d+\.\d+(?:\.\d+)?)", roadmap):
+        out.append(("ROADMAP header", m.group(1)))
+    for m in re.finditer(r"[EE]tat actuel\s*\(v(\d+\.\d+(?:\.\d+)?)", roadmap):
+        out.append(("ROADMAP etat-actuel", m.group(1)))
     return out
 
 
 # --- 2. TESTS ---------------------------------------------------------------
 
-def declared_test_counts(readme: str, status: str) -> list[tuple[str, int]]:
+def declared_test_counts(readme: str, status: str, roadmap: str) -> list[tuple[str, int]]:
     out: list[tuple[str, int]] = []
+    # README badge : tests-NNN(%20| )PASS
     for m in re.finditer(r"tests-(\d+)(?:%20|\s)?PASS", readme):
         out.append(("README badge", int(m.group(1))))
-    for label, txt in (("README", readme), ("STATUS", status)):
-        for m in re.finditer(r"(\d+)\s+tests?\s+(?:passing|PASS)", txt):
-            out.append((label + " text", int(m.group(1))))
+    # NB: on N'EXTRAIT PAS les "NNN tests PASS/green" en clair : ce sont des
+    # mentions HISTORIQUES versionnees (tableaux de phases, "What's New"). Seuls
+    # les ancrages d'etat COURANT ci-dessous font foi (badge, "collected", bloc
+    # "Etat actuel" du ROADMAP). Cf. faux positif "503 tests PASS" (phase 8).
+    # "NNN tests collected" -> stamp courant (pied STATUS, README, ROADMAP)
+    for label, txt in (("README", readme), ("STATUS", status), ("ROADMAP", roadmap)):
+        for m in re.finditer(r"(\d+)\s+tests?\s+collected\b", txt):
+            out.append((label + " collected", int(m.group(1))))
+    # ROADMAP bloc "Etat actuel" : ligne "Tests : NNN ..."
+    etat = _section(roadmap, "tat actuel")
+    for m in re.finditer(r"Tests\s*:\s*(\d+)\b", etat):
+        out.append(("ROADMAP etat-actuel", int(m.group(1))))
     return out
 
 
@@ -114,6 +142,31 @@ def collected_test_count(root: Path) -> int | None:
 # --- 3. STRUCTURE -----------------------------------------------------------
 
 def actual_plugins(root: Path) -> set[str]:
+    """Plugins reellement PUBLIES = sous-dossiers de plugins/ SUIVIS PAR GIT.
+
+    On prefere `git ls-files` plutot que le listing disque : un plugin WIP non
+    suivi (ex. 'document-ingestion' non commite) ne fait pas partie du push et
+    ne doit donc pas declencher de desync. Cela aligne le verdict local
+    (pre-push) sur ce que la CI verra reellement (checkout = fichiers suivis).
+    Repli sur le listing disque si git est indisponible.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "plugins/"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=30,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            names: set[str] = set()
+            for line in out.stdout.splitlines():
+                parts = line.split("/")
+                if len(parts) >= 2 and parts[0] == PLUGINS_DIR:
+                    names.add(parts[1])
+            names = {n for n in names if n not in _NON_PLUGIN}
+            if names:
+                return names
+    except Exception:
+        pass
     d = root / PLUGINS_DIR
     if not d.is_dir():
         return set()
@@ -170,6 +223,7 @@ def resume_consistency(status: str, n_plugins: int) -> list[str]:
 def run_checks(root: Path, check_tests: bool) -> list[dict]:
     readme = _read(root, "README.md")
     status = _read(root, "STATUS.md")
+    roadmap = _read(root, "ROADMAP.md")
     changelog = _read(root, "CHANGELOG.md")
     findings: list[dict] = []
 
@@ -179,14 +233,14 @@ def run_checks(root: Path, check_tests: bool) -> list[dict]:
         findings.append({"check": "version", "severity": "error",
                          "message": "CHANGELOG.md: aucune entete '## [X.Y.Z]' trouvee."})
     else:
-        for src, ver in declared_versions(readme, status):
+        for src, ver in declared_versions(readme, status, roadmap):
             if ver != canon:
                 findings.append({"check": "version", "severity": "error",
                                  "message": "%s annonce v%s, CHANGELOG canonique = v%s"
                                             % (src, ver, canon)})
 
     # 2. TESTS
-    counts = declared_test_counts(readme, status)
+    counts = declared_test_counts(readme, status, roadmap)
     uniq = sorted({c for _, c in counts})
     if len(uniq) > 1:
         detail = ", ".join("%s=%d" % (s, c) for s, c in counts)
@@ -231,7 +285,7 @@ def run_checks(root: Path, check_tests: bool) -> list[dict]:
 # --- Rapport & CLI ----------------------------------------------------------
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Gate docs-sync : README/STATUS <-> structure/version/tests")
+    ap = argparse.ArgumentParser(description="Gate docs-sync : README/STATUS/ROADMAP <-> structure/version/tests")
     ap.add_argument("--root", default=".", help="Racine du depot")
     ap.add_argument("--json", action="store_true", help="Sortie JSON")
     ap.add_argument("--check-tests", action="store_true",
@@ -247,7 +301,7 @@ def main() -> int:
                          ensure_ascii=False, indent=2))
     else:
         if not errors:
-            print("[OK] Docs-sync gate : README/STATUS alignes avec structure/version/tests.")
+            print("[OK] Docs-sync gate : README/STATUS/ROADMAP alignes avec structure/version/tests.")
             for f in findings:
                 print("  [WARN] (%s) %s" % (f["check"], f["message"]))
         else:
@@ -264,7 +318,7 @@ def main() -> int:
             warns = [f for f in findings if f["severity"] == "warn"]
             for f in warns:
                 print("\n  [WARN] (%s) %s" % (f["check"], f["message"]))
-            print("\n  Corriger la vitrine (README.md / STATUS.md) ou le CHANGELOG, puis relancer.")
+            print("\n  Corriger la vitrine (README.md / STATUS.md / ROADMAP.md) ou le CHANGELOG, puis relancer.")
 
     return 0 if not errors else 1
 
