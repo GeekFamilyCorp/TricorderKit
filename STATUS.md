@@ -1,5 +1,5 @@
 # STATUS.md — TricorderKit v1.0.0
-> Mis à jour : 2026-06-01
+> Mis à jour : 2026-06-11
 > Source : BOOT_SUMMARY.md + scan `plugins/` + audit session
 
 ---
@@ -23,6 +23,8 @@
 | `plugins/memory-boot` | 🔄 Evolving | Boot de session — migration v0.8 complète |
 | `plugins/token-optimizer` | ✅ Stable | Budget guard + router + caveman mode |
 | `plugins/graphify` | 🔄 Evolving | RAG vault local-first — index_vault · hybrid_rag · search_vault · ingest_veille (DEC-023) |
+| `plugins/learning-engine` | 🔄 Evolving | Self-Improving v0.1.0 — experience cards → leçons → propositions de skill gardées (DEC-046) |
+| `plugins/scraper-runtime` | 🔄 Evolving | Profils de scraping + run contract + registre + moteur de fiabilité des sources (DEC-046) |
 | `supabase/` | 🔄 Evolving | Schéma PostgreSQL domain data (7 tables, RLS) |
 
 ---

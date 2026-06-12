@@ -1,6 +1,6 @@
 # ROADMAP — TricorderKit
 
-> Version : 0.9.5 — Mise à jour : 2026-06-01
+> Version : 1.0.0 — Mise à jour : 2026-06-11
 > Ce fichier décrit les phases publiques de TricorderKit.
 > Les détails opérationnels internes sont dans `.planning/ROADMAP_v0.9.md`.
 
@@ -47,11 +47,26 @@
 
 ---
 
+### v1.0 — Self-Improving (DEC-046) ✅
+
+| Phase | Nom | Statut | Date |
+|---|---|---|---|
+| v1.0 | **Self-Improving** — learning-engine (experience cards → leçons → propositions de skill gardées par tests + revue humaine), gouvernance MCP machine-lisible (deny-by-default, `mcp/registry_allowlist.yaml` + `tk mcp audit`), scraper-runtime standardisé, moteur de fiabilité des sources, 5 évaluateurs eval-lab, 4 workflows Temporal d'auto-amélioration (exécution déportée). Chantiers N1–N7 code-complets. | ✅ Complete | 11/06/2026 |
+
+**v1.0 livrables :**
+- `plugins/learning-engine/` — experience cards → leçons → propositions de skill contrôlées (drafts uniquement ; promotion = 8 tests verts **et** revue humaine)
+- `plugins/scraper-runtime/` — profils de scraping + run contract + registre de sources + moteur de fiabilité (dry-run, lecture seule)
+- `mcp/registry_allowlist.yaml` + `mcp/scripts/mcp_gateway.py` — gouvernance MCP machine-lisible, `tk mcp list | audit | allowlist-check`
+- `plugins/eval-lab/evaluators.py` — 5 évaluateurs (scraping, fiabilité sources, dédup, RAG retrieval, coût/latence)
+- `plugins/workflow-engine/workflows/` — 4 workflows d'auto-amélioration (learning_review, skill_regression_test, source_freshness, tool_scout), worker isolé `tricorderkit-self-improving`
+
+---
+
 ### Phases 9–12 — Futures : Extension + Communauté 🔲
 
 | Phase | Nom | Statut | Priorité |
 |---|---|---|---|
-| 9 | VPS deployment — déploiement optionnel (DEC-011 : local-first maintenu) | 🔲 Planned | LOW |
+| 9 | VPS deployment — durcissement live (doctor + sauvegardes Borg + fail2ban) — DEC-011 : local-first maintenu | 🟡 In progress | LOW |
 | 10 | Multi-linked-project — support de plusieurs projets liés simultanés | 🟡 In progress | MEDIUM |
 | 11 | Plugin marketplace — registry public, contribution guidelines | 🔲 Planned | LOW |
 | 12 | Community release — GitHub public, documentation communautaire | 🔲 Planned | LOW |
@@ -64,12 +79,12 @@
 
 | # | Action | Statut |
 |---|---|---|
-| A | Publier la **GitHub Release v0.9.5** (tag `v0.9.5` déjà poussé) | 🔜 À faire |
+| A | Publier la **GitHub Release v1.0.0** (vérifier le tag `v1.0.0`) | 🔜 À faire |
 | B | Arbitrer la **PR #2** (ouverte le 13/05) — rebase / merge / fermeture justifiée | 🔜 À faire |
 | C | Intégrer les **tests graphify** à la suite committée | ✅ Fait (4 unit PASS + 1 integration Qdrant-gated) |
 | D | **Indexer le vault dans Qdrant** (collection dim 768) + exposer `search_vault` en tool MCP (DEC-023) | 🟡 En cours |
 | E | **Phase 10** — support multi-linked-project simultané, testé de bout en bout | 🟡 En cours |
-| F | Étendre le gate vers un **docs-sync** (vérifier mécaniquement la cohérence README ↔ structure) (DEC-027) | 🔜 À faire |
+| F | Gate **docs-sync** — cohérence mécanique README ↔ STATUS ↔ ROADMAP ↔ structure/version/tests | ✅ Fait (DEC-028, étendu au ROADMAP par DEC-047) |
 | G | Évaluer la **sortie du schéma de domaine** (Supabase) hors moteur public | 🔲 À étudier |
 
 ---
@@ -84,17 +99,17 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 
 ---
 
-## État actuel (v0.9.5 — 2026-06-01)
+## État actuel (v1.0.0 — 2026-06-11)
 
 ```
-Tests       : 544 PASS — 0 FAIL — 15 live désélectionnés + 1 skip (Qdrant) — 560 collectés · graphify : 4 tests unit PASS + 1 integration (Qdrant) intégrés au dépôt
-Plugins     : 10 actifs (3 production-ready, 7 evolving, 0 experimental)
+Tests       : 634 tests collected — 633 PASS + 1 skip (live Qdrant) — suite validée en CI
+Plugins     : 12 actifs (3 production-ready, 9 en évolution, 0 experimental)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
-Sécurité    : gate frontière publique appliqué (CI + pre-push, DEC-026) · licence MIT
+Sécurité    : gate frontière publique + gate docs-sync appliqués (CI + pre-push, DEC-026 / DEC-028 / DEC-047) · licence MIT
 Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · claude-code-router
 Infrastructure : Neo4j ✅ · Qdrant ✅ · Temporal ✅ · Langfuse ✅
 ```
 
 ---
 
-*TricorderKit v0.9.5 — GeekFamilyCorp — 2026*
+*TricorderKit v1.0.0 — GeekFamilyCorp — 2026*
