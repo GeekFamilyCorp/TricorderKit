@@ -17,6 +17,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import * as child_process from 'child_process';
 
 // ── Chemins ───────────────────────────────────────────────────────────────────
@@ -126,8 +127,12 @@ export async function proposeSkillUpdate(input: ProposeInput): Promise<any> {
 
 // ── Activity : test de regression skill (gate des 8 tests) ────────────────────
 export async function runSkillRegression(input: RegressionInput): Promise<RegressionResult> {
+  // basetemp HORS du repo (R36) : evite le verrou Windows de .pytest_tmp qui
+  // ferait echouer le gate par erreur d'environnement plutot que par un vrai FAIL.
+  const basetemp = path.join(os.tmpdir(), `tk_gate_${Date.now()}`);
   const r = runPython(['-m', 'pytest', input.tests_path, '-q', '--no-header',
-                       '-p', 'no:cacheprovider']);
+                       '-p', 'no:cacheprovider', '--basetemp', basetemp]);
+  try { fs.rmSync(basetemp, { recursive: true, force: true }); } catch { /* best-effort */ }
   const blob = r.stdout + r.stderr;
   const mp = blob.match(/(\d+)\s+passed/);
   const mf = blob.match(/(\d+)\s+failed/);

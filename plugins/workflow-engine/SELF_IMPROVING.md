@@ -27,6 +27,24 @@ n'ecrivent jamais dans le vault.
 - **Pas d'auto-modification du core** : ces workflows ne touchent ni le core, ni
   les secrets, ni les connecteurs MCP, ni les deploiements.
 
+## Gate de regression (skill_regression_test)
+
+L'activity `runSkillRegression` execute `pytest <tests_path>` et calcule
+`gate_ok = success && failed === 0 && passed >= 8`. Elle force `--basetemp` HORS
+du repo (R36) pour eviter que le verrou Windows de `.pytest_tmp` ne fasse echouer
+le gate par erreur d'environnement plutot que par un vrai FAIL.
+
+**Candidat de reference (verifie 2026-06-11)** :
+
+| Champ | Valeur |
+|---|---|
+| `skill_name` | `learning-engine` |
+| `tests_path` | `plugins/learning-engine/tests` |
+| Resultat | **20 passed / 0 failed** (>= 8) -> `gate_ok = true` avec `--basetemp` hors repo |
+
+Sans approbation humaine (`approve`), le workflow s'arrete sur ce rapport meme
+gate vert : aucune promotion automatique.
+
 ## Activation (etape controlee)
 
 Ces workflows ne sont **pas** cables dans le worker de production
