@@ -1,0 +1,31 @@
+name: document-ingestion
+version: 0.1.0
+status: draft
+decision: DEC-047
+created: 2026-06-12
+description: >
+  Adaptateur d'ingestion documentaire isole. Convertit les documents entrants
+  (PDF, DOCX, XLSX, PPTX, HTML, CSV, JSON, XML, EPUB, ZIP) vers du Markdown
+  normalise avec frontmatter TricorderKit, pour alimenter le vault Obsidian et
+  le RAG local. Cadre generique : definit COMMENT un document est converti,
+  archive et trace ; il n'embarque pas de moteur metier.
+loop: "inbox -> convert -> frontmatter -> archive_original -> report (+ quarantine si echec)"
+provider: markitdown            # microsoft/markitdown, MIT
+contracts:
+  output: core/contracts/skill_output.schema.json
+config:
+  example: config.example.yaml
+entrypoints:
+  cli: scripts/tk_ingest_document.py
+guardrails:
+  preserve_original: true              # l'original n'est JAMAIS supprime
+  overwrite_existing: false            # pas d'ecrasement silencieux
+  restrict_to_input_dir: true
+  allow_remote_urls: false             # pas de fetch distant par defaut
+  quarantine_on_failure: true
+  rollback_env: "TK_MARKITDOWN_ENABLED=false"
+risks:
+  - conversion incomplete (PDF scanne sans OCR, tableaux complexes)
+  - acces involontaire a un chemin hors inbox si entree non controlee
+tests:
+  - tests/test_tk_ingest_document.py

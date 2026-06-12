@@ -272,3 +272,18 @@ A faire (suite) : enregistrer les workflows N7 dans un worker (etape controlee) 
 Vitrine reste **12 plugins** (N5 = extension eval-lab, N7 = scripts workflow-engine ; aucun plugin ajoute). Gates frontiere+docs-sync OK.
 
 *Derniere mise a jour : 2026-06-11 nuit — N5 (eval-lab) + N7 activation livres ; cap v1.0 code complet (DEC-046).*
+
+---
+
+## MarkItDown integre - plugin document-ingestion (2026-06-12 - DEC-048)
+
+Analyse du document `Integration_Headroom_MarkItDown_Supermemory_v1` (verification croisee GitHub + tierce). Decision DEC-048 : **MarkItDown INTEGRE**, **Headroom ECARTE** (doublon token-optimizer : rtk/cli-compress, context-compress, caveman), **Supermemory EN ATTENTE** (doublon Qdrant+Neo4j+Obsidian+graphify ; details techniques du doc errones).
+
+- Paquet installe sur le poste : markitdown 0.1.6 (Python 3.14) + onnxruntime/magika/mammoth/pdfplumber/openpyxl.
+- Nouveau plugin **`plugins/document-ingestion/`** (manifest.yml, config.example.yaml, scripts/tk_ingest_document.py, README.md, tests/) calque sur `scraper-runtime`. Le document proposait `modules/` (inexistant ici) -> ECARTE.
+- Garde-fous : original jamais supprime, pas d'ecrasement, liste blanche d'extensions, URLs distantes off, quarantaine sur echec, rollback `TK_MARKITDOWN_ENABLED=false`. **5/5 tests pytest verts** + conversion reelle validee (frontmatter + tableau ; rapport JSONL).
+- **Vitrine plugins : 12 -> 13** (ajout document-ingestion). `make gate` / check_public_boundary a repasser avant tout push public (DEC-026/R37).
+
+A faire : enregistrer document-ingestion dans la doc vitrine si applicable ; brancher la sortie sur vault_indexer/RAG quand souhaite.
+
+*Derniere mise a jour : 2026-06-12 - MarkItDown integre, plugin document-ingestion (DEC-048).*

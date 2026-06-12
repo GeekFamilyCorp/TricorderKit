@@ -602,3 +602,14 @@
 - **Statut** : **Acceptee - 2026-06-11**.
 
 *Derniere mise a jour : 2026-06-11 - DEC-047 project_scope generique (frontiere publique, deblocage push Lot A)*
+
+## DEC-048 — Integration MarkItDown (plugin document-ingestion) ; Headroom + Supermemory ecartes — 2026-06-12
+- **Contexte** : analyse du document `Integration_Headroom_MarkItDown_Supermemory_v1` (3 briques proposees). Verification croisee realisee (GitHub officiel + couverture tierce).
+- **Decision** :
+  (1) **MarkItDown : INTEGRE** (microsoft/markitdown, MIT, v0.1.6). Seul cas net : comble un vrai trou (conversion universelle PDF/DOCX/XLSX/HTML/EPUB/ZIP -> Markdown pour vault + RAG), mature, faible risque.
+  (2) **Headroom : ECARTE a ce stade** — doublonne le plugin `token-optimizer` existant (cli-compress/rtk, context-compress, caveman) ; projet tres jeune ; risque sur ISBN/dates/noms JP. A reconsiderer seulement via benchmark chiffre vs rtk.
+  (3) **Supermemory : EN ATTENTE** — recouvrement massif avec la stack deja deployee (Qdrant + Neo4j + Obsidian + MCP graphify) ; details techniques du document errones (port 6767/npx/endpoints non confirmes ; realite = binaire auto-contenu). Prerequis : note d'une page « Supermemory vs Qdrant+Neo4j » avant tout prototype.
+- **Realise** : paquet installe sur le poste (Python 3.14, markitdown 0.1.6 + onnxruntime/magika/mammoth/pdfplumber/openpyxl). Adaptateur isole `plugins/document-ingestion/` (manifest.yml, config.example.yaml, scripts/tk_ingest_document.py, README.md, tests/). Garde-fous : original jamais supprime, pas d'ecrasement, liste blanche d'extensions, URLs distantes off, quarantaine sur echec, rollback `TK_MARKITDOWN_ENABLED=false`. **5/5 tests pytest verts** + conversion reelle validee (frontmatter + tableau ; rapport JSONL).
+- **Risk Guard** : LOW (adaptateur isole, coeur TricorderKit non modifie, reversible par env).
+- **Routage (DEC-016)** : plugin generique -> **TricorderKit**. Rien dans le vault.
+- **Statut** : **Acceptee — MarkItDown integre (prototype fonctionnel) ; Headroom ecarte ; Supermemory en attente**.
