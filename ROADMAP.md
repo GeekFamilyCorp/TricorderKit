@@ -103,7 +103,7 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 
 ```
 Tests       : 634 tests collected — 633 PASS + 1 skip (live Qdrant) — suite validée en CI
-Plugins     : 12 actifs (3 production-ready, 9 en évolution, 0 experimental)
+Plugins     : 13 actifs (3 production-ready, 10 en évolution, 0 experimental)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
 Sécurité    : gate frontière publique + gate docs-sync appliqués (CI + pre-push, DEC-026 / DEC-028 / DEC-047) · licence MIT
 Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · claude-code-router

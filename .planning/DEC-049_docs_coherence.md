@@ -1,9 +1,11 @@
-# DEC-047 — Gate docs-sync étendu au ROADMAP (cohérence vitrine indispensable)
+# DEC-049 — Gate docs-sync étendu au ROADMAP (cohérence vitrine indispensable)
 
 > Statut : Adoptée — 2026-06-12
 > Auteur : GeekFamilyCorp (assisté Claude)
 > Lié : DEC-028 (gate docs-sync initial / R39), DEC-026 (gate frontière publique / R37), DEC-016 (routage dépôts)
-> Règle préventive associée : **R41**
+> Règle préventive associée : **R46**
+>
+> NB numérotation : DEC-047 = *project_scope générique learning-engine* et DEC-048 = *plugin document-ingestion (MarkItDown)* étaient déjà attribués (travail parallèle, 2026-06-11/12). Cette décision prend donc **DEC-049** (premier numéro libre) — une première rédaction l'avait étiquetée DEC-047 par erreur (collision corrigée).
 
 ---
 
@@ -33,19 +35,19 @@ anti-recréation §6) :
    ignorés** pour éviter les faux positifs.
 3. **STRUCTURE** — le décompte de plugins se fait sur les sous-dossiers de
    `plugins/` **suivis par git** (`git ls-files`), pas sur le listing disque :
-   un plugin WIP non commité (ex. `document-ingestion`) ne fait pas partie du
-   push et ne doit donc pas bloquer. Le verdict local (pre-push) reflète ainsi
-   ce que verra la CI.
+   un plugin WIP non commité ne fait pas partie du push et ne doit donc pas
+   bloquer. Le verdict local (pre-push) reflète ainsi ce que verra la CI.
 
-## Règle R41 (préventive, indispensable)
+## Règle R46 (préventive, indispensable)
 
 > **Avant tout push public, la vitrine doit être cohérente.** Version, nombre de
 > tests et décompte de plugins doivent être IDENTIQUES dans `README.md`,
 > `STATUS.md`, `ROADMAP.md` et concordants avec `CHANGELOG.md` (source canonique
 > de version) et l'arborescence réelle `plugins/`. Le gate `make docs-sync`
-> (ou `check_docs_sync.py`) est **bloquant** en pre-push et en CI. Un fichier de
-> vitrine modifié sans réaligner les autres est un défaut de cohérence, pas une
-> simple coquille.
+> (ou `check_docs_sync.py`) est **bloquant** en pre-push et en CI. Tout ajout de
+> plugin DOIT s'accompagner de sa déclaration dans le tableau de bord STATUS, du
+> décompte README/ROADMAP et du Résumé STATUS. Un fichier de vitrine modifié
+> sans réaligner les autres est un défaut de cohérence, pas une simple coquille.
 
 Vérification : `python scripts/check_docs_sync.py` (rapide) ou
 `python scripts/check_docs_sync.py --check-tests` (confronte aussi à la collecte
@@ -53,13 +55,16 @@ pytest réelle).
 
 ## Conséquences
 
-- Le pre-push (`.githooks/pre-push`) et la CI exécutent déjà ce script : aucune
-  nouvelle plomberie nécessaire, la couverture ROADMAP est immédiate.
-- État au 2026-06-12 après correction : gate **vert** (v1.0.0 / 634 / 12).
+- Le pre-push (`.githooks/pre-push`) et la CI (`.github/workflows/docs-sync.yml`)
+  exécutent déjà ce script : aucune nouvelle plomberie nécessaire, la couverture
+  ROADMAP est immédiate.
+- Validé en conditions réelles : l'ajout du 13ᵉ plugin `document-ingestion`
+  (DEC-048) sans mise à jour de la vitrine a été **bloqué par ce gate** ; la
+  vitrine a été réalignée (13 plugins) avant le push.
 - Suivi : `BOOT_SUMMARY.md` est auto-généré et reste en v0.9 ; il doit être
   régénéré via le skill `rapport` / `/tk:boot --update-summary` (hors périmètre
   de ce gate, non bloquant pour le public).
 
 ---
 
-*DEC-047 — TricorderKit — 2026-06-12 — à reporter en une ligne dans `.planning/DECISIONS.md`.*
+*DEC-049 — TricorderKit — 2026-06-12.*

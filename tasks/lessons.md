@@ -137,3 +137,27 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 3. `Set-Content -Encoding UTF8` (PS 5.1) ecrit un BOM -> le client MCP ne parse plus sa config au redemarrage et la REINITIALISE (perte de toute la section serveurs). Toujours `[IO.File]::WriteAllText` + `UTF8Encoding($false)`. Generalise la lecon git du 06-01 (commit -F en ASCII) a TOUTE config JSON consommee par une app.
 **Regle preventive :** tester un wrapper MCP en STANDALONE (pipe JSON-RPC initialize, stdin maintenu ouvert via `(type f & ping)`) avant tout redemarrage du client ; ne jamais valider via la session MCP courante (elle reflete l'etat d'avant redemarrage).
 **Statut :** [RESOLU] - patron documente dans RUNBOOK_INFRA.md section 14 (DEC-039).
+
+
+## R43 - Archivage multi-sources : suffixe de provenance obligatoire (2026-06-07)
+**Contexte :** exclusion du lot 2 (webtoons coreens) hors Japan-Alliance. Original (01_En_cours) et copie enrichie (zone de tri R40) portaient le MEME nom de fichier. Un `shutil.move` sequentiel des deux vers le meme dossier d'archive a ecrase l'original par l'enrichie.
+**Consequence :** aucune perte reelle (originaux egalement presents dans `99_Migration_Backups/lot0_2026-06-06`), mais perte de la version originale DANS le dossier d'archive cible.
+**Regle preventive :** tout script d'archivage qui regroupe des fichiers de PLUSIEURS sources (vault + zone de tri, ou plusieurs lots) DOIT suffixer chaque fichier par sa provenance (`_orig`, `_r40`, `_lotN`) OU echouer explicitement sur collision de nom. Jamais d'ecrasement silencieux lors d'un move/copy d'archivage. Documenter la provenance dans un `_README_provenance.md` du dossier d'archive.
+**Statut :** [RESOLU] - provenance documentee, DEC-043.
+
+## R44 - Watcher multi-lots : progres = reset du compteur de tentatives (2026-06-08)
+**Contexte :** une tache Codex multi-lots reste `in_progress` ENTRE les lots. Le watcher comptait une tentative a chaque tick ou `codex_exec` etait occupe par une autre tache, epuisant MAX_ATTEMPTS et marquant la tache `failed` alors qu'elle PRODUISAIT des livrables (faux echec : CREATEURS-MANQUANTS, ENRICH-COQUILLES, DEDUP-ORICON-APPLY, FRONTMATTER-REBUILD le 07/06).
+**Regle preventive :** avant de marquer `failed` sur depassement de tentatives, verifier si un livrable/rapport outbox du task est PLUS RECENT que le dernier lancement -> si oui, le run a produit : remettre le compteur a 0, ne pas echouer. Ne compter une tentative que sur lancement effectif, pas sur tick "occupe".
+**Statut :** [RESOLU] - `inbox_watcher.ps1` patche (garde-fou PROGRES detecte), DEC-043 ; 5 taches reassignees seq 80-84.
+
+## R45 - Encodage Python sous Windows : PYTHONIOENCODING="utf-8" obligatoire pour les emojis (2026-06-10)
+**Contexte :** Exécution de commandes ou scripts Python sous Windows (comme `sync_bus.py read`) traitant du texte riche contenant des emojis (ex: 🟡).
+**Erreur :** `UnicodeEncodeError: 'charmap' codec can't encode character...` car l'interpréteur Python hérite du codage cp1252 par défaut sous Windows lors de l'écriture vers stdout.
+**Regle preventive :** Toujours préfixer ou définir la variable d'environnement `$env:PYTHONIOENCODING="utf-8"` (ou `PYTHONUTF8=1`) lors de l'exécution de commandes Python traitant des caractères non-ASCII ou emojis sur le terminal Windows.
+**Statut :** [RESOLU] - Appliqué lors de la résolution de l'erreur d'encodage du bus multi-agents.
+
+
+## R46 - Coherence de la vitrine avant push (docs-sync etendu au ROADMAP) (2026-06-12)
+**Contexte :** le push v1.0.0 a aligne README/STATUS/CHANGELOG mais laisse ROADMAP.md en v0.9.5 / 544 tests / 10 plugins ; le gate docs-sync (DEC-028) ne lisait pas ROADMAP -> derive non detectee. Meme classe d'erreur : ajout du 13e plugin document-ingestion (DEC-048) sans MAJ de la vitrine.
+**Regle preventive :** avant tout push public, version + nombre de tests + decompte plugins doivent etre IDENTIQUES dans README.md / STATUS.md / ROADMAP.md, concordants avec CHANGELOG.md (version canonique) et l'arborescence plugins/ suivie par git. Tout ajout de plugin = declaration dans le tableau de bord STATUS + decompte README/ROADMAP + bloc Resume. Verifier avec `python scripts/check_docs_sync.py` (bloquant en pre-push + CI).
+**Statut :** [RESOLU] - gate check_docs_sync.py etendu au ROADMAP + comptage git-tracked + exclusion compteurs historiques (DEC-049) ; vert apres realignement 13 plugins.

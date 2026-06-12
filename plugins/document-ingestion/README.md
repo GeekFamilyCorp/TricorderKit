@@ -1,8 +1,8 @@
 # document-ingestion (MarkItDown)
 
 Adaptateur **isolé** de conversion documentaire vers Markdown normalisé, pour
-alimenter le vault Obsidian Japan-Alliance et le RAG local. Brique issue de
-**DEC-047** (Headroom et Supermemory écartés à ce stade).
+alimenter le vault Obsidian d'un projet lié (linked_project) et le RAG local. Brique issue de
+**DEC-048** (Headroom et Supermemory écartés à ce stade).
 
 - **Provider** : [`microsoft/markitdown`](https://github.com/microsoft/markitdown) (MIT, v0.1.6)
 - **Boucle** : `inbox -> convert -> frontmatter -> archive_original -> report` (quarantaine si échec)

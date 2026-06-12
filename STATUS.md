@@ -25,6 +25,7 @@
 | `plugins/graphify` | 🔄 Evolving | RAG vault local-first — index_vault · hybrid_rag · search_vault · ingest_veille (DEC-023) |
 | `plugins/learning-engine` | 🔄 Evolving | Self-Improving v0.1.0 — experience cards → leçons → propositions de skill gardées (DEC-046) |
 | `plugins/scraper-runtime` | 🔄 Evolving | Profils de scraping + run contract + registre + moteur de fiabilité des sources (DEC-046) |
+| `plugins/document-ingestion` | 🔄 Evolving | Adaptateur MarkItDown isolé — conversion documentaire → Markdown pour vault + RAG (DEC-048) |
 | `supabase/` | 🔄 Evolving | Schéma PostgreSQL domain data (7 tables, RLS) |
 
 ---
@@ -45,6 +46,7 @@
 | token-optimizer | ✅ Actif v0.8 | ✅ | ✅ | ✅ | ✅ |
 | learning-engine | ✅ Actif v0.1.0 | ✅ | ✅ | ✅ | ⚠️ Partiel |
 | scraper-runtime | ✅ Actif v0.1.0 | ❌ | ✅ | ✅ | ⚠️ Partiel |
+| document-ingestion | ✅ Actif v0.1.0 | ❌ | ✅ | ✅ | ⚠️ Partiel |
 
 ---
 
@@ -71,10 +73,10 @@
 
 ## Résumé
 
-- **Prêts production** : 3 / 12 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
-- **Partiels** : 9 / 12 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`, `learning-engine`, `scraper-runtime`)
-- **Non prêts** : 0 / 12
-- **WIP** : 0 / 12
+- **Prêts production** : 3 / 13 (`deep-research-core`, `token-optimizer`, `security-audit-cli`)
+- **Partiels** : 10 / 13 (`cli-forge`, `workflow-engine`, `connector-hub`, `eval-lab`, `memory-boot`, `obsidian-agent-layer`, `graphify`, `learning-engine`, `scraper-runtime`, `document-ingestion`)
+- **Non prêts** : 0 / 13
+- **WIP** : 0 / 13
 
 ---
 

@@ -613,3 +613,11 @@
 - **Risk Guard** : LOW (adaptateur isole, coeur TricorderKit non modifie, reversible par env).
 - **Routage (DEC-016)** : plugin generique -> **TricorderKit**. Rien dans le vault.
 - **Statut** : **Acceptee — MarkItDown integre (prototype fonctionnel) ; Headroom ecarte ; Supermemory en attente**.
+
+## DEC-049 - Gate docs-sync etendu au ROADMAP (coherence vitrine indispensable, R46) - 2026-06-12
+- **Probleme** : le push v1.0.0 a aligne README/STATUS/CHANGELOG mais laisse ROADMAP.md en v0.9.5 / 544 tests / 10 plugins ; le gate docs-sync (DEC-028) ne lisait pas ROADMAP -> derive non detectee. L'ajout du 13e plugin document-ingestion (DEC-048) sans MAJ de la vitrine releve de la meme classe d'erreur.
+- **Decision** : etendre scripts/check_docs_sync.py (pas de recreation, regle §6) : (1) ROADMAP inspecte pour version + tests ; (2) compteurs de tests historiques ignores (faux positif "503 tests PASS" phase 8) ; (3) plugins comptes via `git ls-files` (un WIP non pousse ne bloque pas). Detail : .planning/DEC-049_docs_coherence.md.
+- **Regle R46** : avant tout push public, version + nombre de tests + decompte plugins doivent etre IDENTIQUES dans README/STATUS/ROADMAP et concordants avec CHANGELOG (version canonique) et l'arborescence plugins/ ; tout ajout de plugin doit etre declare dans la vitrine (tableau STATUS + decompte README/ROADMAP + Resume). Gate bloquant en pre-push + CI.
+- **Risk Guard** : LOW (controle documentaire, reversible). Gate vert apres realignement vitrine (v1.0.0 / 634 tests / 13 plugins).
+
+*Derniere mise a jour : 2026-06-12 - DEC-049 gate docs-sync etendu au ROADMAP (R46) + vitrine realignee 13 plugins.*

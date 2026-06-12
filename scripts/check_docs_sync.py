@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-check_docs_sync.py - Gate docs-sync (TricorderKit, DEC-028 / R39, etendu DEC-047 / R41)
+check_docs_sync.py - Gate docs-sync (TricorderKit, DEC-028 / R39, etendu DEC-049 / R46)
 
 Etend la philosophie du public-boundary gate a la coherence DOCUMENTAIRE :
 verifie mecaniquement que la vitrine (README.md, STATUS.md, ROADMAP.md) reste
@@ -11,7 +11,7 @@ push.
 
 Historique : la v1.0.0 (push 2026-06-11) a aligne README/STATUS/CHANGELOG mais a
 laisse ROADMAP.md en v0.9.5 / 544 tests. Le gate d'origine (DEC-028) ne lisait
-PAS ROADMAP.md -> la derive est passee. DEC-047 etend la couverture a ROADMAP.
+PAS ROADMAP.md -> la derive est passee. DEC-049 etend la couverture a ROADMAP.
 
 Trois familles de verification :
 

@@ -27,14 +27,14 @@
 - **plugins/workflow-engine/scripts/start_self_improving_worker.ts** — worker Temporal **isolé** (task queue dédiée `tricorderkit-self-improving`) enregistrant les 4 workflows N7 + les activities self-improving ; n'affecte pas le worker de production.
 - **plugins/workflow-engine/scripts/register_self_improving_schedules.ts** — enregistrement des Temporal Schedules (learning_review hebdo, source_freshness quotidien, tool_scout hebdo), **dry-run par défaut** (`DRY_RUN=0` pour appliquer) ; `skill_regression_test` reste à la demande (approbation humaine). Doc `SELF_IMPROVING.md` mise à jour. Activation par commande explicite (aucune auto-activation, garde HIGH).
 
-### Corrigé (2026-06-12 — harmonisation vitrine, DEC-047)
+### Corrigé (2026-06-12 — harmonisation vitrine, DEC-049)
 - **ROADMAP.md** — était resté en **v0.9.5 / 544 tests / 10 plugins** après le cut v1.0 (alors que README/STATUS/CHANGELOG étaient déjà passés à v1.0.0) ; réaligné sur **v1.0.0 / 634 tests collected / 12 plugins**, ajout de la phase v1.0 (Self-Improving), phase 9 alignée sur README (🟡 In progress), item docs-sync marqué fait.
 - **STATUS.md** — date d'en-tête corrigée (2026-06-01 → 2026-06-11) ; ajout des modules `learning-engine` et `scraper-runtime` au tableau « Modules core » (16 → 18 lignes).
-- **scripts/check_docs_sync.py** — gate docs-sync **étendu** (cause racine de la dérive non détectée) : lit désormais **ROADMAP.md** dans les contrôles version ET tests ; compte les plugins **suivis par git** (un WIP non poussé ne bloque plus le push) ; ignore les compteurs de tests *historiques* (faux positif « 503 tests PASS » de la phase 8). Confirmé : pytest collecte 634 tests.
+- **scripts/check_docs_sync.py** — gate docs-sync **étendu** (cause racine de la dérive non détectée) : lit désormais **ROADMAP.md** dans les contrôles version ET tests ; compte les plugins **suivis par git** (un WIP non poussé ne bloque plus le push) ; ignore les compteurs de tests *historiques* (faux positif « 503 tests PASS » de la phase 8). Confirmé : pytest collecte 634 tests. (DEC-049 / R46)
 
 ### Référence
 - DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N5 (extension eval-lab), N6 (source reliability engine), N7 (workflows d'auto-amélioration + scaffolding d'activation). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
-- DEC-047 — gate docs-sync étendu au ROADMAP + comptage plugins git-tracked + exclusion des compteurs historiques (R41). Voir `.planning/DEC-047_docs_coherence.md`.
+- DEC-049 — gate docs-sync étendu au ROADMAP + comptage plugins git-tracked + exclusion des compteurs historiques (R46). Voir `.planning/DEC-049_docs_coherence.md`. (NB : DEC-047 = project_scope générique learning-engine ; DEC-048 = plugin document-ingestion/MarkItDown — numéros déjà attribués.)
 
 ## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
 

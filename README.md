@@ -141,7 +141,7 @@ TricorderKit/
 │   ├── hooks/                ← Pre-Intent / Pre-Execution / Post-Execution hooks
 │   └── contracts/            ← JSON schemas (skill output contract)
 │
-├── plugins/                  ← 12 plugins
+├── plugins/                  ← 13 plugins
 │   ├── cli-forge/            ← deterministic CLI generator (generated/github-goat, …)
 │   ├── workflow-engine/      ← Temporal workflows + activities + worker (+ self-improvement workflows, DEC-046/N7)
 │   ├── deep-research-core/   ← autonomous research pipelines
@@ -153,7 +153,8 @@ TricorderKit/
 │   ├── memory-boot/          ← session boot + rapport skills
 │   ├── token-optimizer/      ← budget guard + model router + caveman
 │   ├── learning-engine/      ← experience cards → lessons → controlled skill updates (DEC-046)
-│   └── scraper-runtime/      ← scraping profiles + run contract + source registry + reliability engine (DEC-046)
+│   ├── scraper-runtime/      ← scraping profiles + run contract + source registry + reliability engine (DEC-046)
+│   └── document-ingestion/   ← isolated MarkItDown adapter — document → Markdown for vault + RAG (DEC-048)
 │
 ├── tools/
 │   ├── obsidian-goat/        ← safe vault ID ops (replace-id R29 / next-id R34)
