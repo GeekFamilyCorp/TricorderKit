@@ -11,7 +11,11 @@ Usage CLI :
   python search_vault.py --query "auteur de Vinland Saga" --top-n 5
 """
 from __future__ import annotations
-import argparse, json, urllib.request
+import argparse, json, sys, urllib.request
+
+# WIN-002 : forcer UTF-8 sur stdout (cp1252 ne supporte pas les emoji/kanji)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 QUERY_PREFIX = "search_query: "
 

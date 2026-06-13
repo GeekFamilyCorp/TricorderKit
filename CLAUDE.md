@@ -53,6 +53,35 @@ TIER 3 — À la demande uniquement (~10 000 tokens)
 
 ---
 
+## Modes de travail intensifs (longues tâches)
+
+> Conventions internes (pas des commandes Cowork natives). Mappent les fonctionnalités Claude Code `code-review ultra` et Dynamic Workflows vers des comportements réellement disponibles ici via l'outil `Task` (sous-agents) et l'effort de raisonnement. Cohérent avec la balise `[THINK]`.
+
+### `[ULTRA]` — Exécution & revue haute intensité
+
+Déclencheur : `[ULTRA]` dans le message (ou « code review ultra », « ultra »).
+
+- Effort de raisonnement poussé au maximum (`[THINK]` implicitement actif).
+- **Passe de vérification adversariale obligatoire** : un sous-agent `Task` dédié critique le livrable (correction, sécurité, perf, cohérence contrats `skill_output.schema.json`, respect frontière publique `make gate`) avant restitution.
+- Sur données métier : double validation croisée des sources (règle Japan-Alliance §2) + classification fiabilité ✅🟡🟠🔴.
+- Réservé aux tâches qui le méritent (archi multi-fichiers, décision DEC-NNN, audit, livrable critique) — pas le remplissage de fiches simples.
+
+### `[WORKFLOW]` — Orchestration multi-agents parallèle
+
+Déclencheur : `[WORKFLOW]` dans le message (ou « workflow »).
+
+- Pour audits, sweeps, recherche fan-out, remplissage massif, dédup vault.
+- Décomposition en sous-tâches indépendantes → plusieurs sous-agents `Task` lancés **en parallèle** (un seul message, plusieurs appels) → consolidation + dédup + QA finale.
+- Restitution : seulement les conclusions consolidées, pas les dumps intermédiaires.
+
+### Garde-fous (non négociables)
+
+- **Token Hygiene** : estimer le coût avant lancement ; segmenter si > 80 % budget (cohérent `token-optimizer`). Le gathering exhaustif reste routé Antigravity/Hermes ; côté Claude = max sur intégration/dédup/QA.
+- **Risk Guard** : MEDIUM → confirmation courte avant de lancer une armée de sous-agents ; HIGH/CRITICAL → plan + validation explicite.
+- Toute écriture externe (vault, base, API) déclenchée par un workflow passe par `--dry-run` au préalable.
+
+---
+
 ## Session Rotation Policy
 
 - Ouvrir un nouveau fil toutes les **15–20 messages**
