@@ -1,4 +1,4 @@
-﻿# DECISIONS.md — TricorderKit v0.7
+# DECISIONS.md — TricorderKit v0.7
 
 > Log des decisions architecturales. Ne jamais supprimer une entree.
 

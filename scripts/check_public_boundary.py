@@ -40,6 +40,22 @@ PERSONAL_PATH_PATTERNS = [
     re.compile(r"/Users/(?!<)[A-Za-z0-9._-]+/"),
 ]
 
+# Donnees sensibles infra : IP tailnet (<TAILNET_CIDR>/10), hostnames VPS, emails reels.
+# Bloquant SAUF fichier whiteliste (.check-anon-ignore) -- ex. la def du gate / docs anonymisation.
+ALLOWED_EMAIL_DOMAINS = {"example.com", "example.org", "example.net"}
+SENSITIVE_PATTERNS = [
+    ("tailnet_ip", re.compile(r"\b100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d{1,3}\.\d{1,3}\b")),
+    ("vps_hostname", re.compile(r"\b[A-Za-z0-9.-]+\.hstgr\.cloud\b", re.IGNORECASE)),
+    ("real_email", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),
+]
+
+# Fichiers qui DEFINISSENT les motifs (les contiennent volontairement) -> exempts du scan sensible.
+SENSITIVE_EXEMPT = {
+    "scripts/check_public_boundary.py",
+    "docs/anonymization.md",
+    "plugins/security-audit-cli/anonymization_checker.py",
+}
+
 IGNORE_FILE = ".check-anon-ignore"
 
 _BINARY_EXT = {
@@ -112,6 +128,24 @@ def scan(root: Path) -> list[dict]:
                             "file": rel, "line": n, "kind": "private_term",
                             "match": term, "content": line.strip()[:120],
                         })
+            # Donnees sensibles infra (IP tailnet, hostname VPS, email reel) :
+            # TOUJOURS bloquant (traverse la whitelist), sauf fichiers de definition.
+            if rel.replace("\\", "/") not in SENSITIVE_EXEMPT:
+                for kind, rx in SENSITIVE_PATTERNS:
+                    m = rx.search(line)
+                    if not m:
+                        continue
+                    val = m.group(0)
+                    if kind == "real_email":
+                        dom = val.rsplit("@", 1)[-1].lower()
+                        if dom in ALLOWED_EMAIL_DOMAINS or any(
+                            dom.endswith("." + d) for d in ALLOWED_EMAIL_DOMAINS
+                        ):
+                            continue
+                    findings.append({
+                        "file": rel, "line": n, "kind": kind,
+                        "match": val[:80], "content": line.strip()[:120],
+                    })
     return findings
 
 
@@ -142,6 +176,11 @@ def main() -> int:
                 print(f"\n  Termes prives hors whitelist ({len(terms)}) :")
                 for f in terms[:20]:
                     print(f"    {f['file']}:{f['line']}  ->  {f['match']}")
+            sens = [f for f in findings if f["kind"] not in ("personal_path", "private_term")]
+            if sens:
+                print(f"\n  Donnees sensibles infra ({len(sens)}) :")
+                for f in sens[:20]:
+                    print(f"    {f['file']}:{f['line']}  ->  {f['match']}  ({f['kind']})")
             print("\n  Corriger, ou whitelister un fichier LEGITIME dans .check-anon-ignore.")
             print("  (Les chemins personnels ne sont jamais whitelistables.)")
 
