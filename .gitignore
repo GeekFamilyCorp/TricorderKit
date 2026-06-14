@@ -130,3 +130,38 @@ docker-compose*.bak*
 /run*_out.txt
 /audit_fiches_raw.csv
 /createurs_manquants.csv
+
+# --- Ajouts 2026-06-13 (scratch / cross-projet hors repo public) ---
+# Runtime VPS / Paperclip (cross-projet : paramiko, logs, etat)
+/Agents-Hub/
+# Veille scratch local
+/veille_v2/
+# Audit cross-projet local (genere ponctuellement)
+/*-Audit-2026-06-06/
+# Scratch divers
+/scratch/
+# Scripts one-off racine (jetables)
+/check_authors.py
+/clean_shogakukan.py
+/digest_ia.py
+/inspect_kw_sg.py
+/test_extract.py
+/verify_db.py
+/verify_noregress.py
+/audit_v2.ps1
+# Sorties / captures scratch racine
+/audit_v2_summary.txt
+/new_block.txt
+/yellow_fiches.txt
+/TricorderKit v0.9.1.png
+/tricorderkit_repo-github.png
+# Session capsules (etat operationnel local)
+/session_capsule.json
+.planning/session_capsule.json
+# Backups dates (suffixe .bak-YYYYMMDD / .bak_YYYYMMDD non couvert par *.bak)
+*.bak-*
+*.bak_*
+# Contenu cross-projet / sensible VPS (ne pas committer au repo public)
+/Fiches_a_completer_et_createurs_manquants_2026-06-03.md
+.planning/PROP_Paperclip_VPS_OrgChart.md
+docs/RUNBOOK_INFRA.md
