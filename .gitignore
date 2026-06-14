@@ -98,8 +98,17 @@ plugins/**/scripts/health_heartbeat.log
 _anon.txt
 _anon.err
 
-# Coordination runtime Claude<->Antigravity (donnees operationnelles, hors public)
-_sync_antigravity/
+# Pont temps-reel Claude<->Antigravity : seul le MECANISME generique est public.
+# Runtime (bus, curseurs, STATUS), journaux operationnels et README operationnel = locaux.
+_sync_antigravity/*
+!_sync_antigravity/scripts
+!_sync_antigravity/commands
+!_sync_antigravity/PROTOCOL_REALTIME.md
+_sync_antigravity/scripts/*
+!_sync_antigravity/scripts/sync_bus.py
+!_sync_antigravity/scripts/health_check.py
+_sync_antigravity/commands/*
+!_sync_antigravity/commands/README.md
 
 # Canal multi-agents : infra runtime locale (chemins machine) - non public (DEC-038)
 canal_agents/
