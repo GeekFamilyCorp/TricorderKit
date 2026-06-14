@@ -1,0 +1,16 @@
+# Config Gitleaks TricorderKit
+# Etend les regles par defaut + allowliste les fichiers .env GITIGNORES
+# (magasin de secrets legitime, jamais commite -> verifie : git ne suit que .env.example).
+# Robuste : allowlist par CHEMIN, donc l'ajout de nouvelles variables ne re-declenche pas l'audit.
+title = "TricorderKit Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fichiers .env gitignores (secrets locaux legitimes, non exposes)"
+paths = [
+  '''(^|/)\.env$''',
+  '''(^|/)\.env\.bak.*''',
+  '''(^|/)\.env\.[^/]*\.local$''',
+]

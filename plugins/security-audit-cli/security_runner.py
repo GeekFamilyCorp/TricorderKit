@@ -74,6 +74,9 @@ def _run_secrets(path: Path, strict: bool = True):
         console.print("[yellow]gitleaks introuvable - skip.[/yellow]")
         return
     cmd = ["gitleaks", "detect", "--source", str(path), "--no-git", "--exit-code", "1"]
+    cfg = path / ".gitleaks.toml"
+    if cfg.exists():
+        cmd += ["--config", str(cfg)]
     code, _, stderr = _run(cmd)
     ok = (code == 0)
     _print_result("Aucun secret detecte" if ok else "Secrets detectes", ok=ok,
@@ -86,7 +89,10 @@ def _run_deps(path: Path, severity: str = "HIGH,CRITICAL", strict: bool = True):
     if not _check_tool("trivy"):
         console.print("[yellow]trivy introuvable - skip.[/yellow]")
         return
-    cmd = ["trivy", "fs", str(path), "--severity", severity, "--format", "table", "--exit-code", "1"]
+    # --scanners vuln : ce check ne porte QUE sur les CVE de dependances (les secrets = job de
+    # Gitleaks). On exclut aussi les copies en quarantaine (vieux code archive, non deploye).
+    cmd = ["trivy", "fs", str(path), "--severity", severity, "--scanners", "vuln",
+           "--format", "table", "--exit-code", "1", "--skip-dirs", "**/.quarantine_*"]
     code, stdout, _ = _run(cmd)
     ok = (code == 0)
     _print_result(f"Aucune CVE {severity}" if ok else f"CVEs {severity} detectees", ok=ok,
@@ -123,6 +129,9 @@ def _run_uuid(path: Path, strict: bool = True):
         except ValueError:
             rel_parts = py_file.parts
         if any(p in EXCLUDED for p in rel_parts):
+            continue
+        # Artefacts livres (outbox) et copies en quarantaine : ce ne sont pas des sources.
+        if any(p == "outbox" or p.startswith(".quarantine") for p in rel_parts):
             continue
         for i, line in enumerate(py_file.read_text(errors="ignore").splitlines(), 1):
             if sha1_pat.search(line):
