@@ -147,34 +147,33 @@ Ou tout gérer via l'UI : `/plugin`.
 
 ---
 
-## 7. Pont temps-réel Claude ⇄ Antigravity
+## 7. Bus multi-agents — canal_agents
 
 Transport **append-only**, lecture par curseur (anti-staleness), **zéro token LLM** : un scheduler ou un run Haiku léger appelle le script, aucun modèle cher ne poll.
 
 ```bash
-# Vérifier la santé du bus + reconstruire un STATUS.json valide si besoin
-python3 _sync_antigravity/scripts/sync_bus.py health --write-status
+# Vérifier la santé du bus
+python3 canal_agents/scripts/sync_bus.py health
 
-# Émettre un heartbeat de présence (côté Claude)
-python3 _sync_antigravity/scripts/sync_bus.py heartbeat claude --state idle
+# Émettre un heartbeat de présence (tout agent du roster : claude/codex/antigravity/qwen)
+python3 canal_agents/scripts/sync_bus.py heartbeat claude --state idle
 
 # Lire les événements non consommés (avance le curseur de l'agent)
-python3 _sync_antigravity/scripts/sync_bus.py read --agent claude
+python3 canal_agents/scripts/sync_bus.py read --agent claude
 ```
 
-Démarrer Antigravity sur ce système : copier-coller le bloc de
-[`_sync_antigravity/PROMPT_INITIAL_Antigravity.md`](_sync_antigravity/PROMPT_INITIAL_Antigravity.md).
-Protocole complet (schémas d'événements, contrat d'offload, verrou vault) :
-[`_sync_antigravity/PROTOCOL_REALTIME.md`](_sync_antigravity/PROTOCOL_REALTIME.md).
+Agents pris en charge : `claude`, `codex`, `antigravity`, `qwen`, … (roster `AGENTS` dans `sync_bus.py`).
+Protocole complet (schémas d'événements, commandes, contrat d'offload, verrou) :
+[`canal_agents/PROTOCOL.md`](canal_agents/PROTOCOL.md).
 
 | Élément | Fichier |
 |---|---|
-| Bus d'événements | `_sync_antigravity/bus/events.jsonl` (append-only) |
-| Curseurs par agent | `_sync_antigravity/bus/cursor.<agent>` |
-| État machine-lisible | `_sync_antigravity/STATUS.json` |
-| File d'offload Claude→AG | `_sync_antigravity/commands/antigravity_inbox/` |
-| Retours AG→Claude | `_sync_antigravity/commands/claude_inbox/` |
-| Capteur de santé | `_sync_antigravity/scripts/health_check.py` |
+| Moteur du bus (publié) | `canal_agents/scripts/sync_bus.py` |
+| Protocole (publié) | `canal_agents/PROTOCOL.md` |
+| Bus d'événements (local) | `canal_agents/bus/events.jsonl` (append-only) |
+| Curseurs par agent (local) | `canal_agents/bus/cursor.<agent>` |
+| État machine-lisible (local) | `canal_agents/STATUS.json` |
+| Inbox par agent (local) | `canal_agents/commands/<agent>_inbox/` |
 
 ---
 
@@ -190,8 +189,8 @@ Attendu : `[OK]` Python, Docker, Neo4j :7474, Qdrant :6333, Langfuse :3001, Temp
 # Plugins chargés
 /plugin
 
-# Bus temps-réel vivant
-python3 _sync_antigravity/scripts/sync_bus.py health
+# Bus multi-agents vivant
+python3 canal_agents/scripts/sync_bus.py health
 ```
 
 ---
@@ -205,7 +204,7 @@ python3 _sync_antigravity/scripts/sync_bus.py health
 [ ] pip install + npm install (graph-server build, workflow-engine)
 [ ] /plugin marketplace add GeekFamilyCorp/TricorderKit
 [ ] /plugin install <plugin>@tricorderkit  (×10 ou via /plugin)
-[ ] sync_bus.py health --write-status  →  bus vivant
+[ ] canal_agents/scripts/sync_bus.py health  →  bus vivant
 [ ] tk doctor  →  tout vert
 ```
 

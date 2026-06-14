@@ -98,20 +98,16 @@ plugins/**/scripts/health_heartbeat.log
 _anon.txt
 _anon.err
 
-# Pont temps-reel Claude<->Antigravity : seul le MECANISME generique est public.
-# Runtime (bus, curseurs, STATUS), journaux operationnels et README operationnel = locaux.
-_sync_antigravity/*
-!_sync_antigravity/scripts
-!_sync_antigravity/commands
-!_sync_antigravity/PROTOCOL_REALTIME.md
-_sync_antigravity/scripts/*
-!_sync_antigravity/scripts/sync_bus.py
-!_sync_antigravity/scripts/health_check.py
-_sync_antigravity/commands/*
-!_sync_antigravity/commands/README.md
+# _sync_antigravity : pont LEGACY DEPRECIE (remplace par canal_agents, bus unifie). Prive en entier.
+_sync_antigravity/
 
-# Canal multi-agents : infra runtime locale (chemins machine) - non public (DEC-038)
-canal_agents/
+# canal_agents : bus multi-agents UNIFIE. Moteur generique PUBLIC (reinstallable) ;
+# runtime + contenu PRIVES (supersede DEC-038 : le canal n'est plus 100% prive).
+canal_agents/*
+!canal_agents/PROTOCOL.md
+!canal_agents/scripts
+canal_agents/scripts/*
+!canal_agents/scripts/sync_bus.py
 _userpath_backup_*.txt
 _find_bus.txt
 
