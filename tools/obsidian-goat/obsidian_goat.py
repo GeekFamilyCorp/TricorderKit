@@ -3,7 +3,6 @@
 obsidian-goat — CLI déterministe Obsidian Vault pour TricorderKit
 Version : 0.2.0 — 2026-05-29
 Output  : JSON par défaut
-Cache   : SQLite local (métadonnées + timestamps)
 
 Commandes disponibles :
   read-note       <path> [--vault <vault>]
@@ -22,17 +21,12 @@ import argparse
 import json
 import os
 import re
-import sqlite3
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 # ── Config ───────────────────────────────────────────────────────────────────
-VERSION   = "0.2.1"
-CACHE_DB  = Path(os.environ.get("OBSIDIAN_GOAT_CACHE", ".cache/obsidian-goat.db"))
-CACHE_TTL = 300  # secondes
+VERSION   = "0.2.2"
 
 # Chemins vaults depuis ENV — configurer dans .env (aucun chemin hardcodé)
 VAULT_PATHS = {
@@ -54,37 +48,6 @@ DEFAULT_REPLACE_EXCLUDES = [
     "99_Migration_Backups", "03_Manifestes_Migration",
     ".git", ".obsidian", ".trash",
 ]
-
-
-# ── Cache SQLite ──────────────────────────────────────────────────────────────
-def init_cache() -> sqlite3.Connection:
-    CACHE_DB.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(CACHE_DB)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS cache (
-            key        TEXT PRIMARY KEY,
-            value      TEXT NOT NULL,
-            expires_at INTEGER NOT NULL
-        )
-    """)
-    conn.commit()
-    return conn
-
-
-def cache_get(conn: sqlite3.Connection, key: str) -> Optional[dict]:
-    row = conn.execute(
-        "SELECT value FROM cache WHERE key=? AND expires_at > ?",
-        (key, int(time.time()))
-    ).fetchone()
-    return json.loads(row[0]) if row else None
-
-
-def cache_set(conn: sqlite3.Connection, key: str, value: dict, ttl: int = CACHE_TTL):
-    conn.execute(
-        "INSERT OR REPLACE INTO cache (key, value, expires_at) VALUES (?, ?, ?)",
-        (key, json.dumps(value), int(time.time()) + ttl)
-    )
-    conn.commit()
 
 
 # ── Utilitaires vault ─────────────────────────────────────────────────────────
@@ -133,15 +96,10 @@ def dry_run_report(command: str, ops: list[str], tokens_estimated: int = 50) -> 
 
 
 # ── Commandes ─────────────────────────────────────────────────────────────────
-def cmd_read_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_read_note(args, dry_run: bool) -> dict:
     """Lit une note depuis le vault."""
     vault_root = resolve_vault(args.vault)
     note_path  = resolve_note_path(vault_root, args.path)
-
-    cache_key = f"read-note:{args.vault}:{args.path}"
-    cached = cache_get(conn, cache_key)
-    if cached and not dry_run:
-        return build_output("success", "read-note", {**cached, "source": "cache"})
 
     if not note_path.exists():
         return build_output("error", "read-note", {
@@ -159,11 +117,10 @@ def cmd_read_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
         "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
         "source":   "disk"
     }
-    cache_set(conn, cache_key, {k: v for k, v in result.items() if k != "source"})
     return build_output("success", "read-note", result)
 
 
-def cmd_write_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_write_note(args, dry_run: bool) -> dict:
     """Écrit ou remplace une note dans le vault."""
     if dry_run:
         return dry_run_report("write-note", [
@@ -182,11 +139,6 @@ def cmd_write_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     note_path.parent.mkdir(parents=True, exist_ok=True)
     note_path.write_text(args.content, encoding="utf-8")
 
-    # Invalider le cache
-    cache_key = f"read-note:{args.vault}:{args.path}"
-    conn.execute("DELETE FROM cache WHERE key=?", (cache_key,))
-    conn.commit()
-
     return build_output("success", "write-note", {
         "path":   args.path,
         "vault":  args.vault,
@@ -195,7 +147,7 @@ def cmd_write_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     })
 
 
-def cmd_update_hot_cache(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_update_hot_cache(args, dry_run: bool) -> dict:
     """Met à jour le HOT_CACHE dans le vault TricorderKit (claude-vault)."""
     if dry_run:
         return dry_run_report("update-hot-cache", [
@@ -214,10 +166,6 @@ def cmd_update_hot_cache(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
 
     hot_cache.write_text(content, encoding="utf-8")
 
-    # Invalider le cache
-    conn.execute("DELETE FROM cache WHERE key LIKE '%HOT_CACHE%'")
-    conn.commit()
-
     return build_output("success", "update-hot-cache", {
         "path":    HOT_CACHE_PATH,
         "vault":   "claude-vault",
@@ -227,7 +175,7 @@ def cmd_update_hot_cache(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     })
 
 
-def cmd_append_log(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_append_log(args, dry_run: bool) -> dict:
     """Ajoute une entrée dans le Daily Log Obsidian."""
     # 1. Déterminer et valider la date EN PREMIER (avant tout appel vault)
     if args.date:
@@ -276,7 +224,7 @@ def cmd_append_log(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     })
 
 
-def cmd_check_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_check_note(args, dry_run: bool) -> dict:
     """Vérifie l'existence d'une note dans le vault (anti-doublon R7)."""
     try:
         vault_root = resolve_vault(args.vault)
@@ -306,15 +254,10 @@ def cmd_check_note(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     return build_output("success", "check-note", result)
 
 
-def cmd_list_notes(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_list_notes(args, dry_run: bool) -> dict:
     """Liste les notes d'un dossier dans le vault."""
     vault_root  = resolve_vault(args.vault)
     folder_path = vault_root / args.folder
-
-    cache_key = f"list-notes:{args.vault}:{args.folder}"
-    cached = cache_get(conn, cache_key)
-    if cached:
-        return build_output("success", "list-notes", {**cached, "source": "cache"})
 
     if not folder_path.exists():
         return build_output("error", "list-notes", {
@@ -339,7 +282,6 @@ def cmd_list_notes(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
         "notes":  notes,
         "source": "disk"
     }
-    cache_set(conn, cache_key, {k: v for k, v in data.items() if k != "source"})
     return build_output("success", "list-notes", data)
 
 
@@ -350,7 +292,7 @@ def _resolve_replace_root(args) -> Path:
     return resolve_vault(args.vault)
 
 
-def cmd_replace_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_replace_id(args, dry_run: bool) -> dict:
     """Remplace un identifiant COMPLET dans tout le vault (garde-fou R29).
 
     Sécurité anti-collision (piège ED040) : le remplacement est BORNÉ au token
@@ -445,7 +387,7 @@ def cmd_replace_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
     return build_output(status, "replace-id", data, dry_run=effective_dry)
 
 
-def cmd_next_id(args, conn: sqlite3.Connection, dry_run: bool) -> dict:
+def cmd_next_id(args, dry_run: bool) -> dict:
     """Trouve le prochain ID libre pour un préfixe (R34) + liste les trous.
 
     Scanne les noms de fichiers ET le contenu, SANS exclure backups/manifestes :
@@ -600,7 +542,6 @@ def main():
         }))
         sys.exit(1)
 
-    conn    = init_cache()
     dry_run = args.dry_run
 
     dispatch = {
@@ -620,7 +561,7 @@ def main():
         sys.exit(1)
 
     try:
-        result = fn(args, conn, dry_run)
+        result = fn(args, dry_run)
         out = format_output(result, args.output)
         sys.stdout.write(out + "\n")
         sys.stdout.flush()
@@ -632,8 +573,6 @@ def main():
         sys.stdout.write(json.dumps({"status": "error", "message": str(e), "recoverable": False}) + "\n")
         sys.stdout.flush()
         sys.exit(1)
-    finally:
-        conn.close()
 
 
 if __name__ == "__main__":

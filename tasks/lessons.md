@@ -99,6 +99,13 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 **Fichiers concernés :** `tools/obsidian-goat/`, `tests/`.
 **Statut :** [RÉSOLU].
 
+## LESSON-013 — 2026-05-30
+**Contexte :** Évaluation du repo `ponytail` (discipline YAGNI). Un audit ponytail mental de `obsidian_goat.py` a révélé le cache SQLite comme sur-ingénierie (cause racine de R36).
+**Erreur :** Tendance à ajouter des couches (cache, options, champs décoratifs) non justifiées par un besoin réel.
+**Règle préventive (R37 — échelle YAGNI) :** Avant d'écrire du code, s'arrêter au premier barreau qui tient : (1) est-ce nécessaire ? non → ne pas l'écrire ; (2) stdlib ? ; (3) fonctionnalité native (plateforme/OS) ? ; (4) dépendance déjà installée ? ; (5) une ligne ? ; (6) sinon, le minimum qui marche. **Paresseux mais pas négligent** : validation aux frontières de confiance, sécurité, perte de données et accessibilité ne sont JAMAIS sur le billot. Marquer toute coupe différée d'un commentaire `ponytail:` + chemin d'upgrade. Source : github.com/DietrichGebert/ponytail (MIT), même famille que `token-optimizer:caveman`.
+**Fichiers concernés :** `AGENTS.md`, tout nouveau code.
+**Statut :** Actif. Dette ouverte (ponytail-debt) : retirer le cache SQLite de `obsidian-goat` (finding #1, supprime ~35 lignes + le mode de panne R36).
+
 
 ## LESSON-013 — 2026-06-01
 **Contexte :** Audit vitrine v0.9.5 — README/STATUS/CHANGELOG divergeaient (version, compte de tests, nombre de plugins) sans détection. DEC-026 (boundary) ne couvre pas la cohérence documentaire.
@@ -161,3 +168,10 @@ git grep -l "ANTHROPIC_API_KEY=" -- ":!.env" ":!.env.example" ":!*.example" ":!*
 **Contexte :** le push v1.0.0 a aligne README/STATUS/CHANGELOG mais laisse ROADMAP.md en v0.9.5 / 544 tests / 10 plugins ; le gate docs-sync (DEC-028) ne lisait pas ROADMAP -> derive non detectee. Meme classe d'erreur : ajout du 13e plugin document-ingestion (DEC-048) sans MAJ de la vitrine.
 **Regle preventive :** avant tout push public, version + nombre de tests + decompte plugins doivent etre IDENTIQUES dans README.md / STATUS.md / ROADMAP.md, concordants avec CHANGELOG.md (version canonique) et l'arborescence plugins/ suivie par git. Tout ajout de plugin = declaration dans le tableau de bord STATUS + decompte README/ROADMAP + bloc Resume. Verifier avec `python scripts/check_docs_sync.py` (bloquant en pre-push + CI).
 **Statut :** [RESOLU] - gate check_docs_sync.py etendu au ROADMAP + comptage git-tracked + exclusion compteurs historiques (DEC-049) ; vert apres realignement 13 plugins.
+
+
+## R44 - Backups/archives HORS du vault (2026-06-13)
+**Contexte :** `99_Migration_Backups` (15 411 notes) + `93_Archives` (1 184) etaient DANS le vault Japan-Alliance -> 79% des notes, index lent et peu fiable (timeout MCP/tags). Sortis vers `%USERPROFILE%\Documents\Backup_vault` le 13/06 -> vault 21 312 -> 4 755 notes, index de nouveau fiable.
+**Regle preventive :** AUCUN script d'apply/migration ne doit ecrire ses backups DANS le vault. Racine backup canonique = `%USERPROFILE%\Documents\Backup_vault\99_Migration_Backups\<contexte>`. Repointe `BACKUP_ROOT` en consequence (ex. fix_p2_stamp_ids_875.py corrige). Le vault ne contient que du contenu canonique.
+**Filet de securite :** ajouter `99_Migration_Backups` et `93_Archives` aux "Excluded files" d'Obsidian (Parametres > Fichiers et liens) si un dossier est recree par erreur.
+**Statut :** [APPLIQUE] - externalisation faite, writer connu repointe.

@@ -52,6 +52,18 @@
 
 > Note : 6 tests graphify (`test_hybrid_rag.py`, `test_hybrid_rag_integration.py`) validés en local, à intégrer à la suite committée (non comptés dans le total 503).
 
+## [0.9.5] — 30/05/2026 — obsidian-goat v0.2.2 : retrait du cache SQLite (ponytail / R37)
+
+### Supprimé
+- **tools/obsidian-goat/obsidian_goat.py** (v0.2.1 → v0.2.2) — suppression de la couche de cache SQLite (`init_cache`/`cache_get`/`cache_set`, `CACHE_DB`/`CACHE_TTL`, `conn` propagé dans chaque commande, invalidations). **640 → 580 lignes (−60)**. Application du finding ponytail #1 (audit YAGNI) : optimisation prématurée pour une CLI lisant de petits fichiers Markdown, et **cause racine du mode de panne R36** (`sqlite disk I/O error` si `OBSIDIAN_GOAT_CACHE` non inscriptible) — désormais éliminé. La variable `OBSIDIAN_GOAT_CACHE` n'a plus d'effet.
+- Imports `sqlite3`, `time`, `Optional` retirés (devenus inutiles).
+
+### Vérifié
+- AST OK, **28/28 tests PASS**, zéro résidu `conn`/`cache`/`sqlite3` (validés sur FS réel).
+
+### Référence
+- R37 (échelle YAGNI, lessons.md LESSON-013) — inspiration : github.com/DietrichGebert/ponytail (MIT).
+
 ## [0.9.4] — 29/05/2026 — obsidian-goat v0.2.1 : `next-id` (allocation d'ID, R34) + rétrospective
 
 ### Ajouté
