@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "vault-search": {
+      "type": "stdio",
+      "command": "C:\\Python314\\python.exe",
+      "args": ["mcp/servers/vault-search/server.py"],
+      "description": "Recherche semantique RAG du vault (Qdrant 'vault' + nomic) — tool search_vault"
+    },
     "graph-server": {
       "type": "stdio",
       "command": "node",
