@@ -621,3 +621,19 @@
 - **Risk Guard** : LOW (controle documentaire, reversible). Gate vert apres realignement vitrine (v1.0.0 / 634 tests / 13 plugins).
 
 *Derniere mise a jour : 2026-06-12 - DEC-049 gate docs-sync etendu au ROADMAP (R46) + vitrine realignee 13 plugins.*
+
+
+## DEC-051 - Adaptation blueprint AI-Ops (00-16) vers l'ecosysteme - 2026-06-19
+- **Contexte** : arborescence AI-Ops complete (16 blocs 00-16) proposee par l'utilisateur. Constat : c'est un blueprint d'INFRASTRUCTURE, pas une structure de vault-memoire. La copier telle quelle dans le vault violerait la regle "le vault stocke de l'intelligence, pas du code".
+- **Decision** : ADAPTER (pas copier) selon le routage DEC-016 + regle "vault = memoire only, extend don't replace". 4 phases sequencees + validees.
+  - Phase 1 (vault memoire) : couche gouvernance/policies/memoire en EXTENSION des dossiers existants (system-prompts, runbooks, entites contacts/preferences, MOC memoire) ; aucun renommage, rien deconnecte.
+  - Phase 2 (TricorderKit public) : docs/architecture.md + gap-analysis. ~75% du blueprint DEJA couvert (graphify=RAG, workflow-engine=Temporal, eval-lab, security-audit-cli, docker-compose, Langfuse, hooks). Aucun composant net-new code.
+  - Phase 3 (projet lie prive) : couche skills/ domaine documentant + mappant le code reel, sans deplacer le miroir de runtime (preserve la reproductibilite).
+  - Phase 4 (VPS/donnees) : aligne, rien a creer (data/models/vector-db/observabilite/securite/backups deja en place).
+- **Net-new ECARTES (roadmap, non engages)** : dashboard UI dedie, audio/multimodal, vLLM, prometheus/grafana/phoenix, orchestrateurs alternatifs (crewai/langgraph/autogen). A coder feature par feature sur GO ; scaffolder vide = pollution (R37/YAGNI).
+- **Regle nouvelle R49** (MASTER_PROTOCOL vault, demande utilisateur) : tout changement (structure, skill, plugin, MCP, config, infra, decision) est consigne IMMEDIATEMENT dans le backup (_RECOVERY_KIT) + trace memoire. Objectif zero perte (cause racine du wipe MCP 2026-06-16).
+- **Risk Guard** : MEDIUM (architectural, reversible). Valide par l'utilisateur (Adapter + tout l'ecosysteme sequence + push sur GO).
+- **Routage (DEC-016)** : memoire -> vault ; generique -> TricorderKit ; domaine/execution -> projet lie ; donnees -> vault/VPS.
+- **Statut** : **Acceptee - phases 1-4 livrees 2026-06-19**.
+
+*Derniere mise a jour : 2026-06-19 - DEC-051 adaptation blueprint AI-Ops (4 phases livrees) + R49 backup systematique.*
