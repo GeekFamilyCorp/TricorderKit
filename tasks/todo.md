@@ -5,6 +5,44 @@
 
 ---
 
+## Plan de session — 2026-06-14 (T-2026-06-14-CODEX-FICHES-QA-FUSION)
+
+### Tâche active
+Passe QA unifiée sur les fiches du projet lié : vérifier, compléter, corriger, contrôler la conformité template et produire le manifeste des gaps sans écriture directe dans le vault.
+
+### Étapes
+- [x] Étape 1 : Identifier le sas, le schéma de référence et les fiches cibles
+- [x] Étape 2 : Exécuter un dry-run déterministe avec contrôles ISBN/template
+- [x] Étape 3 : Générer le rapport unique et déposer le livrable R40
+- [x] Étape 4 : Poster `deliverable_ready`, repasser idle et clôturer la tâche bus
+
+### Preuve de fin attendue
+- [x] Rapport présent dans `canal_agents/commands/claude_inbox/`
+- [x] Copie du livrable déposée en zone R40
+- [x] Dry-run et limites/gaps documentés
+- [x] Event bus de livraison + tâche archivée
+
+---
+
+## Plan de session — 2026-06-13 (T-2026-06-13-CODEX-P2-IDS-875)
+
+### Tâche active
+Stamper les champs `*_id` du lot P2 `UNIQUE_SAFE` depuis le préfixe unique du nom de fichier.
+
+### Étapes
+- [x] Étape 1 : Vérifier le handoff, le CSV de travail et le script existant
+- [x] Étape 2 : Exécuter un dry-run borné avec rapport
+- [x] Étape 3 : Appliquer avec backup R31 si le dry-run est cohérent
+- [x] Étape 4 : Relancer `audit_conformite_v2.py`, noter `PROGRESS.md` et livrer le rapport R40/bus
+
+### Preuve de fin attendue
+- [x] Rapport dry-run/apply présent dans `canal_agents/outbox/codex/`
+- [x] Backup `_audit_p2_ids_*` créé
+- [x] `summary.json` restauré sans régression (`id_manquant=1890`, `prefixe_id_incorrect=0`)
+- [x] Event `deliverable_ready`, event `gap`, heartbeat idle et `done --archive`
+
+---
+
 ## Plan de session — 2026-06-02 (Lot 5 Pilote SO)
 
 ### Tâche active
