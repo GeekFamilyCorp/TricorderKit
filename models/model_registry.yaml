@@ -1,0 +1,24 @@
+# model_registry.yaml — registre des modeles (abstraction Ollama / LiteLLM).
+# Generique, AUCUN secret : les URLs/cles passent par variables d'environnement.
+# Routage par tier coherent avec MODEL_ROUTING_POLICY (Haiku 55 / Sonnet 30 / Opus 15).
+
+gateway:
+  type: litellm
+  base_url_env: LLM_GATEWAY_URL      # ex: http://localhost:4000 (defini hors registre)
+  api_key_env: LLM_GATEWAY_KEY       # reference seulement, jamais la valeur
+
+# Tiers logiques -> modele local (gratuit) ou distant (forfait).
+tiers:
+  T1: { prefer: local,  local: "qwen2.5:3b", remote: "claude-haiku-4-5" }
+  T2: { prefer: remote, local: "qwen3:8b",   remote: "claude-sonnet-4-6" }
+  T3: { prefer: remote, local: null,          remote: "claude-opus-4-8" }
+
+# Modeles locaux disponibles (Ollama). Tenir a jour avec `ollama list`.
+local_models:
+  - { name: "qwen2.5:3b",        role: "routing+light", size_gb: 1.9 }
+  - { name: "llama3.2:3b",       role: "light",          size_gb: 2.0 }
+  - { name: "qwen3:8b",          role: "standard-local", size_gb: 5.2 }
+  - { name: "nomic-embed-text",  role: "embeddings",     size_gb: 0.3 }
+
+# Politique : T1/T2 servis en local quand possible (zero cout), T3 distant.
+# vLLM = optionnel, GPU requis (absent) -> non active.
