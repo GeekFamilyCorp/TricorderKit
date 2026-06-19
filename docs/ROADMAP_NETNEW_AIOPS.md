@@ -19,3 +19,9 @@ La majorité de ces net-new **dupliquent des briques déjà opérationnelles** (
 
 ## Process par feature (quand GO)
 ADR (`engineering:architecture`) → scaffolding plugin (`plugins/<nom>`) → tests → gate R37 + sync README/STATUS (R38) → push sur GO. Consigner dans le kit (R49).
+
+
+## Statut (2026-06-19)
+- **A — models/ registry** : ✅ **DÉMARRÉ** — `models/` (model_registry.yaml + registry.py CLI + README), smoke `list`/`resolve` OK. Sans GPU. (commit `3e83ee1`)
+- **B — Prometheus/Grafana** : ✅ **DÉMARRÉ** (scaffold) — `observability/` (compose.monitoring.yml + prometheus.yml + datasource Grafana + README), loopback + secrets via env. À lancer à la demande. (commit `3e83ee1`)
+- **C dashboard · D audio · E orchestrateurs alt** : restent en roadmap (recoupent l'existant / GPU absent).
