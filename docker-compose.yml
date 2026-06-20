@@ -79,7 +79,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "tctl --address localhost:7233 cluster health 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "tctl --address temporal:7233 cluster health 2>/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10
