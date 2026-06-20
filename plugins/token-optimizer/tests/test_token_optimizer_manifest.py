@@ -12,7 +12,8 @@ MANIFEST_PATH = PLUGIN_DIR / "manifest.yml"
 REPO_ROOT = PLUGIN_DIR.parent.parent
 SCHEMA_PATH = REPO_ROOT / "core" / "contracts" / "skill_output.schema.json"
 
-EXPECTED_SKILLS = ["budget-tracker", "cli-compress", "context-compress",
+EXPECTED_SKILLS = ["budget-tracker", "budget-analyzer", "auto-optimize", "caveman",
+                   "cli-compress", "context-compress",
                    "docs-fresh", "model-router", "task-classifier"]
 EXPECTED_AGENTS = ["haiku-executor", "sonnet-executor", "opus-executor"]
 EXPECTED_TIERS = {"haiku-executor": "T1", "sonnet-executor": "T2", "opus-executor": "T3"}
@@ -52,7 +53,7 @@ class TestManifestStructure:
 class TestSkillsDeclaration:
     def test_skills_present(self, manifest):
         assert "skills" in manifest
-        assert len(manifest["skills"]) == 6, "6 skills attendus"
+        assert len(manifest["skills"]) == 9, "9 skills attendus"
 
     def test_all_expected_skills(self, manifest):
         names = [s["name"] for s in manifest["skills"]]

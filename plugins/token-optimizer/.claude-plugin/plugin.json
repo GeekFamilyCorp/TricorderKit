@@ -1,18 +1,20 @@
 {
   "name": "token-optimizer",
-  "version": "0.2.0",
-  "description": "Optimisation tokens — routing Haiku/Sonnet/Opus, classification T1/T2/T3, compression caveman, budget tracking. Inclut 6 skills + 3 agents.",
+  "version": "0.3.0",
+  "description": "Routeur intelligent Haiku/Sonnet/Opus avec compression de contexte, injection de docs fraiches (Context7), compression CLI (rtk) et suivi de budget mensuel. Inspire de superpowers, Context7, Agent-Skills-for-Context-Engineering et rtk-ai.",
   "author": {
-    "name": "GeekFamilyCorp",
-    "url": "https://github.com/GeekFamilyCorp"
+    "name": "GeekFamilyCorp"
   },
-  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
-  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
   "license": "MIT",
   "keywords": [
-    "tokens",
-    "routing",
-    "budget",
-    "compression"
+    "token-optimization",
+    "model-routing",
+    "context-engineering",
+    "haiku",
+    "sonnet",
+    "opus",
+    "context7",
+    "rtk",
+    "budget-tracking"
   ]
 }

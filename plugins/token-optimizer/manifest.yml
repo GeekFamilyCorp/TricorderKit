@@ -1,12 +1,13 @@
 name: token-optimizer
-version: "0.2.0"
+version: "0.3.0"
 description: >
   Plugin d'optimisation des tokens pour les sessions TricorderKit.
   Routing intelligent (Haiku/Sonnet/Opus), classification des tâches,
-  compression caveman (lite/full/ultra), budget tracking, context compress.
+  compression caveman (lite/full/ultra), budget tracking, context compress,
+  docs frais (Context7) et boucle d'auto-optimisation budgétaire bornée et réversible.
 type: plugin
 tricorderkit_version: ">=0.8"
-updated: "2026-05-18"
+updated: "2026-06-20"
 
 skills:
   - name: budget-tracker
@@ -16,6 +17,36 @@ skills:
       - tokens restants
       - combien de tokens
       - budget tracker
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: budget-analyzer
+    path: skills/budget-analyzer/SKILL.md
+    triggers:
+      - analyse mon budget
+      - ou partent mes tokens
+      - rapport d'optimisation
+      - projection budget
+      - gaspillage tokens
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: auto-optimize
+    path: skills/auto-optimize/SKILL.md
+    triggers:
+      - auto-optimise
+      - applique les economies
+      - active les optimisations
+      - rollback optimisation
+      - etat des optimisations
+    output_schema: core/contracts/skill_output.schema.json
+
+  - name: caveman
+    path: skills/caveman/SKILL.md
+    triggers:
+      - caveman
+      - mode economique
+      - compresse les reponses
+      - laconic
+      - moins de tokens
     output_schema: core/contracts/skill_output.schema.json
 
   - name: cli-compress
@@ -102,6 +133,16 @@ scripts:
     description: Classification T1/T2/T3 des tâches pour routing modèle
     commands: [classify, batch-classify]
 
+  - name: budget_analyzer.py
+    path: scripts/budget_analyzer.py
+    description: Moteur d'analyse budget (tendance, projection, ETA seuils, gaspillage, recommandations)
+    commands: [analyze, json, recommend]
+
+  - name: optimizer.py
+    path: scripts/optimizer.py
+    description: Boucle d'auto-amélioration bornée et réversible (drapeaux auto_state dans budget.json, journal + rollback)
+    commands: [analyze, apply, status, rollback]
+
 config:
   default_tier: T2
   budget_alert_threshold: 0.80
@@ -117,3 +158,9 @@ v0_8_changes:
   - "Déclaration agents Haiku/Sonnet/Opus avec tiers T1/T2/T3"
   - "Déclaration scheduled_tasks daily-budget-morning-check"
   - "Déclaration scripts budget.py + classify.py"
+
+v0_3_0_changes:
+  - "Réconciliation source <- plugin déployé (Lots 1-3 Economizer)"
+  - "Ajout skills auto-optimize, budget-analyzer, caveman (6 -> 9 skills)"
+  - "Ajout scripts budget_analyzer.py + optimizer.py (auto-optimisation bornée réversible)"
+  - "Ajout docs/ (AUTO_BUDGET_PLAN, TEST_L1-L3) et .mcp.json (Context7)"
