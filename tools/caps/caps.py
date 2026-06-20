@@ -88,6 +88,14 @@ def touch(cap: str) -> None:
     save_state(st)
 
 
+def set_pin(cap: str, val: bool) -> None:
+    """Épingle une capacité : le reaper ne l'arrête pas tant qu'elle est pinned
+    (ex. un worker long-running garde Temporal up)."""
+    st = load_state()
+    st.setdefault(cap, {})["pinned"] = bool(val)
+    save_state(st)
+
+
 def minutes_since(iso) -> float:
     if not iso:
         return float("inf")
@@ -300,6 +308,9 @@ def cmd_reap(caps: dict, idle_override, dry: bool) -> int:
             continue
         if not is_healthy(cap):
             continue
+        if st.get(name, {}).get("pinned"):
+            kept.append({"cap": name, "pinned": True})
+            continue
         timeout = idle_override if idle_override is not None else cap.get("idle_timeout_min", 30)
         idle = minutes_since(st.get(name, {}).get("last_used"))
         if idle >= timeout:
@@ -367,6 +378,8 @@ def main() -> int:
     ef = sub.add_parser("ensure-for"); ef.add_argument("intent"); ef.add_argument("--dry-run", action="store_true"); ef.add_argument("--force", action="store_true")
     rs = sub.add_parser("resolve"); rs.add_argument("intent"); rs.add_argument("--json", action="store_true")
     sub.add_parser("touch").add_argument("cap")
+    sub.add_parser("pin").add_argument("cap")
+    sub.add_parser("unpin").add_argument("cap")
     r = sub.add_parser("reap"); r.add_argument("--idle", type=int, default=None); r.add_argument("--dry-run", action="store_true")
     s = sub.add_parser("status"); s.add_argument("--json", action="store_true")
     sub.add_parser("selftest")
@@ -385,6 +398,10 @@ def main() -> int:
         return cmd_resolve(caps, args.intent, args.json)
     if args.cmd == "touch":
         touch(args.cap); print(json.dumps({"ok": True, "touched": args.cap}, ensure_ascii=False)); return 0
+    if args.cmd == "pin":
+        set_pin(args.cap, True); print(json.dumps({"ok": True, "pinned": args.cap}, ensure_ascii=False)); return 0
+    if args.cmd == "unpin":
+        set_pin(args.cap, False); print(json.dumps({"ok": True, "unpinned": args.cap}, ensure_ascii=False)); return 0
     if args.cmd == "reap":
         return cmd_reap(caps, args.idle, args.dry_run)
     if args.cmd == "status":
