@@ -1,0 +1,14 @@
+flowchart TD
+    UI[User Intent] --> MR{Memory Router}
+    MR -->|evergreen| EV[Evergreen Context]
+    MR -->|etat| PS[Project State]
+    MR -->|decision| DEC[Decisions .planning]
+    MR -->|concept| WK[Wiki / Concepts]
+    MR -->|veille| DS[Dynamic Sources]
+    MR -->|semantique| VX[Vector Index / Graph]
+    EV --> OUT[Output Report]
+    PS --> OUT
+    DEC --> OUT
+    WK --> OUT
+    DS --> OUT
+    VX --> OUT

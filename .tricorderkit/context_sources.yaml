@@ -1,0 +1,74 @@
+# context_sources.yaml — Inventaire des sources de contexte (Second Brain Routing Layer v0.1)
+# Chaque source déclare : type, politique de stockage, module propriétaire, rafraîchissement, confidentialité.
+# Anonyme et générique (R37). Sert de contrat lisible pour le routage (memory_router.yaml)
+# et la politique de contexte (docs/08_CONTEXT_POLICY.md).
+version: "0.1"
+
+# type:            evergreen | dynamic | generated | external
+# storage_policy:  store | summarize | pointer_only | do_not_store
+# refresh_policy:  never | on_change | daily | weekly | on_demand
+# privacy_level:   public | internal | private
+
+sources:
+  - id: decisions_log
+    type: evergreen
+    storage_policy: store
+    owner_module: ".planning"
+    refresh_policy: on_change
+    privacy_level: internal
+
+  - id: project_state
+    type: dynamic
+    storage_policy: summarize
+    owner_module: ".planning (STATE/TASKS)"
+    refresh_policy: on_change
+    privacy_level: internal
+
+  - id: hot_cache
+    type: dynamic
+    storage_policy: summarize
+    owner_module: "memory-boot"
+    refresh_policy: on_change
+    privacy_level: private
+
+  - id: concepts_wiki
+    type: evergreen
+    storage_policy: store
+    owner_module: "obsidian-agent-layer"
+    refresh_policy: on_change
+    privacy_level: internal
+
+  - id: domain_vault
+    type: evergreen
+    storage_policy: pointer_only          # contenu métier hors repo public (DEC-016 / R37)
+    owner_module: "external vault"
+    refresh_policy: on_demand
+    privacy_level: private
+
+  - id: vector_index
+    type: generated
+    storage_policy: summarize
+    owner_module: "graphify (Qdrant/Neo4j)"
+    refresh_policy: on_change
+    privacy_level: internal
+
+  - id: veille_buffer
+    type: dynamic
+    storage_policy: summarize
+    owner_module: "scraper-runtime / veille"
+    refresh_policy: daily
+    privacy_level: internal
+
+  - id: web_research
+    type: external
+    storage_policy: summarize             # citer la source, ne pas tout stocker
+    owner_module: "deep-research-core"
+    refresh_policy: on_demand
+    privacy_level: public
+
+  - id: secrets
+    type: external
+    storage_policy: do_not_store          # jamais en clair, jamais en repo
+    owner_module: "credential manager (réf seulement)"
+    refresh_policy: never
+    privacy_level: private

@@ -165,3 +165,7 @@ docker-compose*.bak*
 /Fiches_a_completer_et_createurs_manquants_2026-06-03.md
 .planning/PROP_Paperclip_VPS_OrgChart.md
 docs/RUNBOOK_INFRA.md
+
+# --- Ajout 2026-06-20 (DEC-052) ---
+# Arbor prototype : worktrees Git isoles, jamais committes
+experiments/arbor_adapter/worktrees/

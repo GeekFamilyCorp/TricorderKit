@@ -637,3 +637,18 @@
 - **Statut** : **Acceptee - phases 1-4 livrees 2026-06-19**.
 
 *Derniere mise a jour : 2026-06-19 - DEC-051 adaptation blueprint AI-Ops (4 phases livrees) + R49 backup systematique.*
+
+## DEC-052 - Second Brain Routing Layer (memory-router) + Arbor en prototype isole - 2026-06-20
+- **Contexte** : 2 specs utilisateur. (4.1) "Second Brain Routing Layer" = couche de routage memoire declarative. (4.2) "Reinstall TricorderKit + Arbor" = re-scaffold complet + boucle de recherche cumulative Arbor.
+- **Verdict recoupe contre le repo reel** : (4.2) reinstall ECARTE - le repo est mature (13 plugins, cli/tk.py, docs 00-06, gates) et son arborescence src/tricorderkit idealisee ne correspond pas (plugin-based) ; le blueprint 00-16 est deja adapte (DEC-051). Le skill "grill-me" de (4.1) EXISTE deja sous skills/tk-grill (version superieure, sortie DEC-NNN) -> non duplique (R26).
+- **Decision** :
+  - **(4.1) memory-router** ADOPTE comme couche legere : `.tricorderkit/memory_router.yaml` + `.tricorderkit/context_sources.yaml` + `docs/07_SECOND_BRAIN_ROUTING.md` + `docs/08_CONTEXT_POLICY.md` + `docs/diagrams/memory_map.mmd`. Generique/anonyme (R37), ne duplique pas memory-boot/graphify/obsidian-agent-layer (pointe vers eux).
+  - **(4.1) grill-me** : NON cree (= tk-grill existant).
+  - **(4.2) Arbor** : PROTOTYPER en isolation stricte sous `experiments/arbor_adapter/` (allowed_to_modify_core=false). Worktrees gitignored. Promotion hors prototype = nouveau DEC apres benchmark.
+- **Risk Guard** : LOW (docs + config declarative + experiment isole, tout reversible).
+- **Routage (DEC-016)** : generique -> TricorderKit (public, anonyme).
+- **Dry-run / rollback** : supprimer `.tricorderkit/memory_router.yaml`+`context_sources.yaml`, `docs/07`+`08`+`diagrams/memory_map.mmd`, `experiments/arbor_adapter/` ; garder la trace ici.
+- **Reste a faire** : brancher memory_router au boot (cowork-boot/tk-boot) si valide a l'usage ; lancer un 1er benchmark Arbor controle avant toute promotion.
+- **Statut** : **Acceptee - memory-router + Arbor prototype livres 2026-06-20**.
+
+*Derniere mise a jour : 2026-06-20 - DEC-052 memory-router (4.1) + Arbor prototype isole (4.2) ; grill-me=tk-grill existant (non duplique).*
