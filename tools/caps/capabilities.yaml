@@ -1,0 +1,66 @@
+# capabilities.yaml — registre des capacités (Capability-on-Demand, Phase 1)
+# Générique/anonyme (R37). Piloté par tools/caps/caps.py.
+# kind: always_on | docker_profile | ollama
+# tier: T0 (toujours) | T1 (à la demande) | T2 (fenêtre planifiée)
+version: "0.1"
+budget_mb: 3000          # aligné sur le plafond WSL (.wslconfig). Gouverneur = Phase 2.
+
+capabilities:
+
+  memory:
+    tier: T0
+    kind: always_on
+    desc: "Vault (obsidian), memory-boot, bus canal_agents — toujours disponible, ~0 RAM."
+
+  routing:
+    tier: T0
+    kind: always_on
+    desc: "token-optimizer (model-router, caveman, budget) — ~0 RAM."
+
+  graph:
+    tier: T1
+    kind: docker_profile
+    profile: graph
+    ram_mb: 2300
+    idle_timeout_min: 30
+    priority: 50
+    desc: "Neo4j + Qdrant — RAG, recherche sémantique, index veille."
+    health:
+      - {type: tcp, host: 127.0.0.1, port: 7687}    # Neo4j Bolt
+      - {type: tcp, host: 127.0.0.1, port: 6333}    # Qdrant REST
+    triggers: [semantic_search, index_vault, ingest_veille]
+
+  workflows:
+    tier: T2
+    kind: docker_profile
+    profile: workflows
+    ram_mb: 900
+    idle_timeout_min: 15
+    priority: 30
+    desc: "Temporal (+ db) — self-improving / worker / consumer."
+    health:
+      - {type: tcp, host: 127.0.0.1, port: 7233}    # Temporal frontend
+    triggers: [self_improving, workflow_dispatch]
+
+  observability:
+    tier: T2
+    kind: docker_profile
+    profile: observability
+    ram_mb: 1000
+    idle_timeout_min: 15
+    priority: 10
+    desc: "Langfuse (+ db) — inspection traces/tokens, à la demande."
+    health:
+      - {type: http, url: "http://127.0.0.1:3001"}
+    triggers: [inspect_traces]
+
+  local-llm:
+    tier: T1
+    kind: ollama
+    endpoint: "http://127.0.0.1:11434"
+    models: [qwen2.5:7b-instruct, nomic-embed-text]
+    ram_mb: 2000
+    idle_timeout_min: 20
+    priority: 40
+    desc: "Ollama — embeddings, enrichissement réflexion, routage SLM."
+    triggers: [embeddings, reflection_llm, slm_route]
