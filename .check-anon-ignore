@@ -92,3 +92,7 @@ reports/*
 
 # ── Backups locaux (non revus) ────────────────────────────────────────────────
 *.bak
+
+# Taches Cowork internes (prompts legitimement prives) - DEC 2026-06-21
+cowork-scheduled-tasks/*
+cowork-scheduled-tasks/*/*
