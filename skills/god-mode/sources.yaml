@@ -1,0 +1,69 @@
+# sources.yaml — Base de sources du radar God Mode (veille innovation / SOTA).
+# Tier : primary | adoption | discovery | analytics. Politique : comment l'utiliser + ce qu'on en tire.
+version: "0.1"
+default_priority: [paperswithcode, arxiv, awesome_ml, awesome_datasets, researchrabbit, litmaps, dimensions, scholar, ieee]
+seuil_proposition: 60   # score minimal pour PROPOSER (sinon "a surveiller")
+
+sources:
+  paperswithcode:
+    url: https://paperswithcode.com
+    tier: primary
+    apporte: "SOTA + code lie + benchmarks -> directement adoptable / reproductible"
+    usage: "chercher le leaderboard du sous-domaine (RAG, entity-resolution, etc.) + le repo de la methode"
+
+  arxiv:
+    url: https://arxiv.org
+    tier: primary
+    apporte: "fraicheur (preprints), nouvelles idees avant publication"
+    usage: "requete par mots-cles + tri par date ; recouper l'adoption ailleurs (pas de SOTA sur preprint seul)"
+
+  awesome_ml:
+    url: https://github.com/josephmisiti/awesome-machine-learning
+    tier: adoption
+    apporte: "curation maturite par ecosysteme/langage ; outils etablis"
+    usage: "reperer des libs matures pour un besoin (signal = maintenu + etoiles)"
+
+  awesome_datasets:
+    url: https://github.com/awesomedata/awesome-public-datasets
+    tier: adoption
+    apporte: "jeux de donnees publics (benchmarks, eval)"
+    usage: "trouver un dataset d'evaluation pour eval-lab / valider une amelioration"
+
+  researchrabbit:
+    url: https://www.researchrabbit.ai
+    tier: discovery
+    apporte: "graphe de citations / voisinage d'un papier cle (decouverte)"
+    usage: "partir d'un papier retenu -> explorer 'similar/citing' pour ne rien rater"
+
+  litmaps:
+    url: https://www.litmaps.com
+    tier: discovery
+    apporte: "cartographie de litterature, fils de citations dans le temps"
+    usage: "visualiser l'evolution d'un sujet, reperer les noeuds majeurs"
+
+  dimensions:
+    url: https://www.dimensions.ai
+    tier: analytics
+    apporte: "analytics de recherche (citations, tendances, financements)"
+    usage: "mesurer la portee/tendance d'une approche avant d'investir"
+
+  scholar:
+    url: https://scholar.google.com
+    tier: analytics
+    apporte: "recherche academique large + comptage de citations"
+    usage: "verifier l'impact (citations) et trouver les surveys de reference"
+
+  ieee:
+    url: https://ieeexplore.ieee.org
+    tier: analytics
+    apporte: "publications peer-reviewed (ingenierie, robustesse)"
+    usage: "valider la solidite academique d'une methode sensible (acces parfois restreint)"
+
+# Mapping thematique rapide (cf. SKILL.md §4) -> requetes type
+themes:
+  rag:            ["retrieval augmented generation", "hybrid search reranking", "ColBERT late interaction", "GraphRAG"]
+  entity_resolution: ["entity resolution", "record linkage deep learning", "fuzzy matching benchmark"]
+  scraping:       ["LLM web scraping markdown", "anti-bot crawling", "structured extraction web"]
+  agents:         ["durable agent orchestration", "multi-agent framework", "agent memory"]
+  memory:         ["long-term memory LLM agents", "memory consolidation retrieval", "episodic semantic memory"]
+  eval:           ["RAG evaluation metrics", "LLM-as-judge benchmark", "retrieval evaluation dataset"]
