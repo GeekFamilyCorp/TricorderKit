@@ -1,0 +1,3 @@
+{"question": "Quel moteur de workflows utilise TricorderKit ?", "contexts": ["TricorderKit utilise Temporal pour les workflows durables de plus de 30 secondes.", "Qdrant sert au vector search."], "answer": "TricorderKit utilise Temporal pour les workflows durables."}
+{"question": "A quoi sert Qdrant dans le projet ?", "contexts": ["Qdrant est la base vectorielle utilisee pour le RAG et la recherche semantique.", "Neo4j gere le graphe de connaissances."], "answer": "Qdrant fournit la recherche vectorielle (RAG) du projet."}
+{"question": "Quelle base gere le graphe de connaissances ?", "contexts": ["Le Japon est un archipel d'Asie de l'Est."], "answer": "Neo4j gere le graphe de connaissances."}

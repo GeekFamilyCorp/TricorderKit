@@ -652,3 +652,18 @@
 - **Statut** : **Acceptee - memory-router + Arbor prototype livres 2026-06-20**.
 
 *Derniere mise a jour : 2026-06-20 - DEC-052 memory-router (4.1) + Arbor prototype isole (4.2) ; grill-me=tk-grill existant (non duplique).*
+
+## DEC-053 - Skill god-mode (radar d'innovation) + roadmap PoC d'amelioration - 2026-06-22
+- **Contexte** : fichiers utilisateur 8 (God Mode List : 9 sources de veille) + 9 (methode expert-IA : metacognition/explicabilite). Demande : god-mode = skill d'auto-apprentissage pour ameliorer TricorderKit.
+- **Decision** : creer `skills/god-mode/` (SKILL.md + sources.yaml) = radar : scan sources tierees -> score (40 pertinence + 30 adoption + 20 recence + 10 faisabilite) -> mapping module TK -> PROPOSITION (100%, jamais d'adoption auto). N'duplique pas deep-research-core/learning-engine/tool_scout (les orchestre). Planifie hebdo (tache Cowork `godmode-radar-weekly`, theme tournant -> bus).
+- **1ere passe radar** (4 recherches reelles) -> 4 candidats, roadmap ordonnee en **PoC isoles `experiments/` + DEC** :
+  1. RAGAS dans eval-lab (~82) - eval RAG objective sans ground-truth. **PoC livre** : `experiments/ragas_eval/` (moteur proxy deterministe offline + chemin RAGAS lazy, selftest OK). Debloque la mesure du reste.
+  2. Blocking embeddings dedup (~78) - etage embeddings (Qdrant/nomic) avant RapidFuzz. Scaffold `experiments/dedup_embeddings/`.
+  3. Memoire temporelle Graphiti/Zep (~85) - graphe temporel sur Neo4j existant, vs memvid. Scaffold `experiments/temporal_memory/`.
+  4. GraphRAG (~72) - recuperation entite-relation, mesure via RAGAS. Scaffold `experiments/graphrag/`.
+  - **ECARTE (YAGNI)** : ColBERT/late-interaction (~35) - niche 2026, +1-2 ordres de grandeur stockage pour qualite equivalente au bi+cross-encoder existant.
+- **Risk Guard** : LOW (skill + PoC isoles ; aucune modif du coeur ; promotion = DEC par PoC apres mesure).
+- **Routage (DEC-016)** : generique -> TricorderKit (public, anonyme). Rapport radar = claude-vault (memoire).
+- **Statut** : **Acceptee - skill + radar hebdo + PoC#1 livres 2026-06-22 ; PoC #2-4 scaffoldes (a developper un par un sur GO).**
+
+*Derniere mise a jour : 2026-06-22 - DEC-053 god-mode radar + roadmap PoC (RAGAS livre, dedup/memoire/graphrag scaffoldes ; ColBERT ecarte).*
