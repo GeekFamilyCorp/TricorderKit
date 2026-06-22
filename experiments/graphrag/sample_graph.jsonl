@@ -1,0 +1,23 @@
+# PoC #4 GraphRAG — échantillon générique (aucun contenu métier privé).
+# Entités (chacune porte une passage de texte).
+{"type":"entity","id":"work_aurora","label":"Œuvre Aurora","passage":"Aurora est une œuvre fondatrice d'un univers étendu."}
+{"type":"entity","id":"anime_aurora","label":"Anime Aurora","passage":"Anime Aurora est l'adaptation animée de l'univers Aurora."}
+{"type":"entity","id":"studio_vega","label":"Studio Vega","passage":"Le Studio Vega est spécialisé dans l'animation soignée."}
+{"type":"entity","id":"person_mori","label":"Mori","passage":"Mori dirige plusieurs projets d'animation depuis des années."}
+{"type":"entity","id":"game_aurora","label":"Jeu Aurora","passage":"Jeu Aurora est une déclinaison vidéoludique de l'univers."}
+{"type":"entity","id":"dev_solis","label":"Studio Solis","passage":"Solis est un développeur de jeux indépendant."}
+{"type":"entity","id":"person_hara","label":"Hara","passage":"Hara a fondé un studio de développement de jeux."}
+{"type":"entity","id":"noise_1","label":"Sans rapport 1","passage":"Un sujet totalement distinct, sans lien avec Aurora."}
+{"type":"entity","id":"noise_2","label":"Sans rapport 2","passage":"Une note isolée sur un thème différent."}
+{"type":"entity","id":"noise_3","label":"Sans rapport 3","passage":"Encore un contenu indépendant et hors-sujet."}
+# Arêtes (relations dirigées).
+{"type":"edge","s":"work_aurora","r":"adapted_into_anime","o":"anime_aurora"}
+{"type":"edge","s":"anime_aurora","r":"produced_by","o":"studio_vega"}
+{"type":"edge","s":"studio_vega","r":"founded_by","o":"person_mori"}
+{"type":"edge","s":"work_aurora","r":"adapted_into_game","o":"game_aurora"}
+{"type":"edge","s":"game_aurora","r":"developed_by","o":"dev_solis"}
+{"type":"edge","s":"dev_solis","r":"founded_by","o":"person_hara"}
+# Requêtes relationnelles multi-sauts.
+{"type":"query","question":"Qui dirige le studio qui a produit l'anime Aurora ?","seed":"anime_aurora","answer":"person_mori","hops":2}
+{"type":"query","question":"Qui a fondé le studio qui développe le jeu Aurora ?","seed":"game_aurora","answer":"person_hara","hops":2}
+{"type":"query","question":"Quel studio a produit l'adaptation animée de l'œuvre Aurora ?","seed":"work_aurora","answer":"studio_vega","hops":2}
