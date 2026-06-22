@@ -1,0 +1,42 @@
+# mini-LongMemEval — mémoire-agent générique (aucun contenu métier privé).
+# Scénario : un agent de veille autonome mémorise l'état de sources, de budgets et de tâches
+# qui CHANGENT au fil des jours. On teste "que savait-on à l'instant T ?" (récupération temporelle).
+# --- Épisodes (faits datés) ---
+{"type":"episode","entity":"source_alpha","attribute":"reliability","value":"unverified","valid_from":"2026-01-05","source":"ingest"}
+{"type":"episode","entity":"source_alpha","attribute":"reliability","value":"trusted","valid_from":"2026-02-10","source":"crosscheck"}
+{"type":"episode","entity":"source_alpha","attribute":"reliability","value":"demoted","valid_from":"2026-05-01","source":"freshness-fail"}
+{"type":"episode","entity":"source_beta","attribute":"reliability","value":"unverified","valid_from":"2026-01-20","source":"ingest"}
+{"type":"episode","entity":"source_beta","attribute":"reliability","value":"trusted","valid_from":"2026-03-15","source":"crosscheck"}
+{"type":"episode","entity":"source_gamma","attribute":"reliability","value":"trusted","valid_from":"2026-02-01","source":"seed"}
+{"type":"episode","entity":"agent_scout","attribute":"budget","value":"100","valid_from":"2026-01-01","source":"charter"}
+{"type":"episode","entity":"agent_scout","attribute":"budget","value":"250","valid_from":"2026-03-01","source":"raise"}
+{"type":"episode","entity":"agent_scout","attribute":"budget","value":"180","valid_from":"2026-05-15","source":"trim"}
+{"type":"episode","entity":"agent_editor","attribute":"budget","value":"120","valid_from":"2026-01-01","source":"charter"}
+{"type":"episode","entity":"agent_editor","attribute":"budget","value":"120","valid_from":"2026-04-01","source":"renew"}
+{"type":"episode","entity":"task_ingest","attribute":"owner","value":"agent_scout","valid_from":"2026-01-10","source":"assign"}
+{"type":"episode","entity":"task_ingest","attribute":"owner","value":"agent_editor","valid_from":"2026-04-20","source":"reassign"}
+{"type":"episode","entity":"task_digest","attribute":"owner","value":"agent_editor","valid_from":"2026-02-05","source":"assign"}
+{"type":"episode","entity":"task_digest","attribute":"status","value":"draft","valid_from":"2026-02-05","source":"assign"}
+{"type":"episode","entity":"task_digest","attribute":"status","value":"active","valid_from":"2026-03-20","source":"go"}
+{"type":"episode","entity":"task_digest","attribute":"status","value":"paused","valid_from":"2026-06-01","source":"hold"}
+{"type":"episode","entity":"model_main","attribute":"version","value":"v1","valid_from":"2026-01-01","source":"deploy"}
+{"type":"episode","entity":"model_main","attribute":"version","value":"v2","valid_from":"2026-03-10","source":"deploy"}
+{"type":"episode","entity":"model_main","attribute":"version","value":"v3","valid_from":"2026-05-25","source":"deploy"}
+# --- Requêtes (valeur attendue à une date) ---
+{"type":"query","entity":"source_alpha","attribute":"reliability","as_of":"2026-01-15","expected":"unverified"}
+{"type":"query","entity":"source_alpha","attribute":"reliability","as_of":"2026-03-01","expected":"trusted"}
+{"type":"query","entity":"source_alpha","attribute":"reliability","as_of":"2026-05-10","expected":"demoted"}
+{"type":"query","entity":"source_beta","attribute":"reliability","as_of":"2026-02-01","expected":"unverified"}
+{"type":"query","entity":"source_beta","attribute":"reliability","as_of":"2026-04-01","expected":"trusted"}
+{"type":"query","entity":"source_gamma","attribute":"reliability","as_of":"2026-01-01","expected":null}
+{"type":"query","entity":"agent_scout","attribute":"budget","as_of":"2026-02-15","expected":"100"}
+{"type":"query","entity":"agent_scout","attribute":"budget","as_of":"2026-04-01","expected":"250"}
+{"type":"query","entity":"agent_scout","attribute":"budget","as_of":"2026-06-01","expected":"180"}
+{"type":"query","entity":"task_ingest","attribute":"owner","as_of":"2026-02-01","expected":"agent_scout"}
+{"type":"query","entity":"task_ingest","attribute":"owner","as_of":"2026-05-01","expected":"agent_editor"}
+{"type":"query","entity":"task_digest","attribute":"status","as_of":"2026-03-01","expected":"draft"}
+{"type":"query","entity":"task_digest","attribute":"status","as_of":"2026-04-15","expected":"active"}
+{"type":"query","entity":"task_digest","attribute":"status","as_of":"2026-06-10","expected":"paused"}
+{"type":"query","entity":"model_main","attribute":"version","as_of":"2026-02-01","expected":"v1"}
+{"type":"query","entity":"model_main","attribute":"version","as_of":"2026-04-01","expected":"v2"}
+{"type":"query","entity":"model_main","attribute":"version","as_of":"2026-06-01","expected":"v3"}

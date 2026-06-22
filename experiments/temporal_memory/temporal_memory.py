@@ -117,21 +117,71 @@ class MemoryEngine:
         return "\n".join(self._episodes_raw)
 
 
+class SqliteEngine:
+    """Backend RÉEL persistant (stdlib sqlite3, zéro dépendance). Même API que MemoryEngine.
+
+    Choisi pour la portabilité : tourne à l'identique sur le poste ET sur le VPS
+    (qui utilise déjà SQLite : state.db / paperclip_state.json), sans nouvelle infra.
+    Les dates sont stockées en ISO (YYYY-MM-DD) -> comparaison lexicale = ordre chronologique.
+    """
+
+    def __init__(self, db_path: str = ":memory:"):
+        import sqlite3
+        self.conn = sqlite3.connect(db_path)
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS temporal_facts (
+                entity TEXT, attribute TEXT, value TEXT,
+                valid_from TEXT, valid_to TEXT, source TEXT, recorded_at TEXT
+            )""")
+        self.conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_tf ON temporal_facts(entity, attribute, valid_from)")
+        self.conn.commit()
+
+    def add_episode(self, entity, attribute, value, valid_from, source=""):
+        vf = _parse_day(valid_from).isoformat()
+        # Clôture le fait courant ouvert qui précède : valid_to <- vf.
+        self.conn.execute(
+            "UPDATE temporal_facts SET valid_to=? "
+            "WHERE entity=? AND attribute=? AND valid_to=? AND valid_from<=?",
+            (vf, entity, attribute, INF_DATE, vf))
+        self.conn.execute(
+            "INSERT INTO temporal_facts VALUES (?,?,?,?,?,?,?)",
+            (entity, attribute, str(value), vf, INF_DATE, source, vf))
+        self.conn.commit()
+
+    def as_of(self, entity, attribute, as_of) -> Optional[Fact]:
+        t = _parse_day(as_of).isoformat()
+        row = self.conn.execute(
+            "SELECT entity, attribute, value, valid_from, valid_to, source, recorded_at "
+            "FROM temporal_facts WHERE entity=? AND attribute=? AND valid_from<=? AND valid_to>? "
+            "ORDER BY valid_from DESC LIMIT 1",
+            (entity, attribute, t, t)).fetchone()
+        if not row:
+            return None
+        return Fact(row[0], row[1], row[2], _parse_day(row[3]), _parse_day(row[4]),
+                    row[5] or "", _parse_day(row[6]) if row[6] else None)
+
+    def context_for(self, entity, attribute, as_of) -> str:
+        f = self.as_of(entity, attribute, as_of)
+        return f.text() if f else ""
+
+    def full_context(self) -> str:
+        rows = self.conn.execute(
+            "SELECT valid_from, entity, attribute, value, source FROM temporal_facts "
+            "ORDER BY valid_from").fetchall()
+        return "\n".join(f"[{r[0]}] {r[1]}.{r[2]} := {r[3]} (source: {r[4]})" for r in rows)
+
+
 def build_neo4j_engine():
-    """Optionnel : même API que MemoryEngine via Neo4j. Repli silencieux sur memory."""
-    url = os.environ.get("NEO4J_URL")
-    if not url:
+    """Option FUTURE (non prioritaire) : même API via Neo4j si NEO4J_URL est défini.
+
+    Conservé pour mémoire : sur la cible VPS (Hermes/Paperclip) il n'y a PAS de Neo4j,
+    donc le backend réel recommandé est SqliteEngine. Repli silencieux ici.
+    """
+    if not os.environ.get("NEO4J_URL"):
         return None
-    try:
-        from neo4j import GraphDatabase  # noqa: F401
-    except Exception:
-        print("[temporal_memory] neo4j non installé -> repli moteur 'memory'.", file=sys.stderr)
-        return None
-    # NB : le schéma Cypher (noeud :Fact {valid_from, valid_to, source}) est documenté dans
-    # README.md. Pour ce PoC isolé, on conserve la logique de référence en mémoire ; le
-    # backend Neo4j sera branché lors d'une promotion (DEC), une fois la mesure validée.
-    print("[temporal_memory] NEO4J_URL détecté mais backend non encore câblé "
-          "(PoC isolé) -> repli moteur 'memory'.", file=sys.stderr)
+    print("[temporal_memory] Neo4j non retenu pour la cible VPS -> utiliser --engine sqlite.",
+          file=sys.stderr)
     return None
 
 
@@ -217,19 +267,56 @@ def selftest() -> int:
         print(f"  {flag} {d['q']}: attendu={d['expected']!r} obtenu={d['got']!r}")
     ok_acc = res["temporal_accuracy"] == 1.0
     ok_saving = res["token_saving_ratio"] > 0.0  # le slice temporel doit coûter moins cher
-    if ok_acc and ok_saving:
+
+    # Parité moteur RÉEL : SqliteEngine (en mémoire) doit donner exactement le même résultat.
+    res_sql = run(SqliteEngine(":memory:"), list(_SELFTEST_EPISODES), list(_SELFTEST_QUERIES))
+    ok_parity = (res_sql["temporal_accuracy"] == res["temporal_accuracy"]
+                 and res_sql["correct"] == res["correct"])
+
+    # Persistance : ré-ouvrir un fichier .db et relire un fait passé doit fonctionner.
+    import tempfile
+    import os as _os
+    tmp = _os.path.join(tempfile.gettempdir(), "tk_temporal_selftest.db")
+    if _os.path.exists(tmp):
+        _os.remove(tmp)
+    e1 = SqliteEngine(tmp)
+    for ep in _SELFTEST_EPISODES:
+        e1.add_episode(ep["entity"], ep["attribute"], ep["value"], ep["valid_from"],
+                       ep.get("source", ""))
+    e1.conn.close()
+    e2 = SqliteEngine(tmp)  # ré-ouverture
+    f = e2.as_of("projet_alpha", "lead", "2026-02-01")
+    ok_persist = (f is not None and f.value == "Ada")
+    e2.conn.close()
+    _os.remove(tmp)
+
+    if ok_acc and ok_saving and ok_parity and ok_persist:
         print(f"\n[selftest] OK — exactitude temporelle 100%, "
-              f"économie tokens {res['token_saving_ratio']*100:.0f}% vs full-context.")
+              f"économie tokens {res['token_saving_ratio']*100:.0f}% vs full-context ; "
+              f"parité moteur sqlite OK ; persistance disque OK.")
         return 0
-    print("\n[selftest] ÉCHEC — vérifier la logique bi-temporelle.", file=sys.stderr)
+    print(f"\n[selftest] ÉCHEC — acc={ok_acc} saving={ok_saving} "
+          f"parite_sqlite={ok_parity} persist={ok_persist}.", file=sys.stderr)
     return 1
+
+
+def make_engine(name: str, db_path: str):
+    if name == "sqlite":
+        return SqliteEngine(db_path or ":memory:")
+    if name == "neo4j":
+        eng = build_neo4j_engine()
+        if eng is not None:
+            return eng
+        print("[temporal_memory] repli moteur 'memory'.", file=sys.stderr)
+    return MemoryEngine()
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="PoC #3 mémoire temporelle (god-mode).")
     ap.add_argument("--selftest", action="store_true", help="jeu embarqué + assertions")
     ap.add_argument("--dataset", help="JSONL d'épisodes + requêtes")
-    ap.add_argument("--engine", choices=["memory", "neo4j"], default="memory")
+    ap.add_argument("--engine", choices=["memory", "sqlite", "neo4j"], default="memory")
+    ap.add_argument("--db", default=":memory:", help="chemin .db pour --engine sqlite")
     args = ap.parse_args()
 
     if args.selftest:
@@ -238,12 +325,7 @@ def main() -> int:
         ap.print_help()
         return 2
 
-    engine = None
-    if args.engine == "neo4j":
-        engine = build_neo4j_engine()
-    if engine is None:
-        engine = MemoryEngine()
-
+    engine = make_engine(args.engine, args.db)
     episodes, queries = load_dataset(args.dataset)
     res = run(engine, episodes, queries)
     print(json.dumps(res, ensure_ascii=False, indent=2))

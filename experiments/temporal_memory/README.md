@@ -31,11 +31,25 @@ Entrée JSONL : lignes `{"type":"episode",...}` (fait daté) et `{"type":"query"
 économie tokens **84–88 %** vs baseline full-context (slice temporel pertinent au lieu de tout le journal).
 Valide le principe : récupérer « ce qui était vrai à l'instant T » est à la fois exact et économe.
 
-## Prochaines étapes (vers la promotion)
-1. Jeu mini-LongMemEval réel (20-50 faits évolutifs) → re-mesurer exactitude + tokens.
-2. Câbler le backend Neo4j (schéma `:Fact {valid_from, valid_to, source}`) et comparer à `memvid`.
-3. Brancher un LLM-juge (même convention que `reflection.py`) pour les réponses en langage naturel.
-4. Si concluant → DEC + couche temporelle sur `memory-boot`/`reflection.py`.
+## Promu (backend réel SQLite + mini-LongMemEval) — 2026-06-22
+Backend **RÉEL** ajouté : `SqliteEngine` (stdlib `sqlite3`, persistant, **zéro dépendance**).
+Choisi plutôt que Neo4j pour la **portabilité** : tourne à l'identique sur le poste ET sur le VPS
+(Hermes/Paperclip) qui utilise déjà SQLite — sans nouvelle infra. Neo4j reste une option future.
+
+```
+python temporal_memory.py --selftest                                   # + parité sqlite + persistance
+python temporal_memory.py --dataset mini_longmemeval.jsonl --engine sqlite
+python temporal_memory.py --dataset mini_longmemeval.jsonl --engine sqlite --db memoire.db
+```
+
+**Résultats mini-LongMemEval (17 requêtes, faits évolutifs sources/budgets/tâches/versions)** :
+exactitude temporelle **100 %** (17/17), économie tokens **95,4 %** vs full-context, moteurs
+`memory` et `sqlite` en **parité parfaite**, **persistance disque** validée (ré-ouverture .db).
+
+## Prochaines étapes
+1. Brancher un LLM-juge (même convention que `reflection.py`) pour les réponses en langage naturel.
+2. Dédicace VPS Hermes/Paperclip (SQLite) — cf. proposition `claude-vault/70_ROADMAP/`.
+3. Si concluant → DEC + couche temporelle sur `memory-boot`/`reflection.py`.
 
 ## Garde-fous
 Isolé, benchmarké avant toute intégration. Données d'exemple génériques (aucun contenu métier privé),
