@@ -1,0 +1,20 @@
+# PoC #2 dédup par embeddings — échantillon générique (aucun contenu métier privé).
+# Titres candidats (certains sont des variantes/doublons).
+{"type":"title","id":1,"text":"Galaxy Wanderers"}
+{"type":"title","id":2,"text":"Galaxy Wandrers"}
+{"type":"title","id":3,"text":"Galaxie Wanderers"}
+{"type":"title","id":4,"text":"Iron Blossom"}
+{"type":"title","id":5,"text":"Iron   Blossom!"}
+{"type":"title","id":6,"text":"Silent Harbor"}
+{"type":"title","id":7,"text":"Crimson Vow"}
+{"type":"title","id":8,"text":"Crimsom Vow"}
+{"type":"title","id":9,"text":"Northern Lights Saga"}
+{"type":"title","id":10,"text":"Nothern Lights Saga"}
+{"type":"title","id":11,"text":"Quiet Tide"}
+{"type":"title","id":12,"text":"Echoes of Dawn"}
+# Vérité terrain : paires de doublons connus.
+{"type":"dupe","a":1,"b":2}
+{"type":"dupe","a":1,"b":3}
+{"type":"dupe","a":4,"b":5}
+{"type":"dupe","a":7,"b":8}
+{"type":"dupe","a":9,"b":10}
