@@ -1,0 +1,17 @@
+# PoC #3 mémoire temporelle — échantillon générique (aucun contenu métier privé).
+# Épisodes : faits datés dont la validité change dans le temps.
+{"type":"episode","entity":"service_core","attribute":"owner","value":"equipe_a","valid_from":"2026-01-01","source":"charte_v1"}
+{"type":"episode","entity":"service_core","attribute":"owner","value":"equipe_b","valid_from":"2026-05-01","source":"reorg"}
+{"type":"episode","entity":"service_core","attribute":"version","value":"1.0","valid_from":"2026-01-01","source":"release"}
+{"type":"episode","entity":"service_core","attribute":"version","value":"1.5","valid_from":"2026-03-01","source":"release"}
+{"type":"episode","entity":"service_core","attribute":"version","value":"2.0","valid_from":"2026-06-01","source":"release"}
+{"type":"episode","entity":"pipeline_x","attribute":"state","value":"draft","valid_from":"2026-02-01","source":"plan"}
+{"type":"episode","entity":"pipeline_x","attribute":"state","value":"active","valid_from":"2026-04-15","source":"go"}
+# Requêtes : valeur attendue à une date donnée (test de récupération temporelle).
+{"type":"query","entity":"service_core","attribute":"owner","as_of":"2026-02-15","expected":"equipe_a"}
+{"type":"query","entity":"service_core","attribute":"owner","as_of":"2026-05-10","expected":"equipe_b"}
+{"type":"query","entity":"service_core","attribute":"version","as_of":"2026-03-15","expected":"1.5"}
+{"type":"query","entity":"service_core","attribute":"version","as_of":"2026-06-02","expected":"2.0"}
+{"type":"query","entity":"pipeline_x","attribute":"state","as_of":"2026-03-01","expected":"draft"}
+{"type":"query","entity":"pipeline_x","attribute":"state","as_of":"2026-05-01","expected":"active"}
+{"type":"query","entity":"pipeline_x","attribute":"state","as_of":"2026-01-01","expected":null}
