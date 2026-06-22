@@ -169,3 +169,6 @@ docs/RUNBOOK_INFRA.md
 # --- Ajout 2026-06-20 (DEC-052) ---
 # Arbor prototype : worktrees Git isoles, jamais committes
 experiments/arbor_adapter/worktrees/
+
+# Artefacts d'evaluation RAGAS (regenerables)
+experiments/ragas_eval/ragas_report.json
