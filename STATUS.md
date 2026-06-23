@@ -1,5 +1,5 @@
-# STATUS.md — TricorderKit v1.0.0
-> Mis à jour : 2026-06-11
+# STATUS.md — TricorderKit v1.1.0
+> Mis à jour : 2026-06-23
 > Source : BOOT_SUMMARY.md + scan `plugins/` + audit session
 
 ---
@@ -80,4 +80,6 @@
 
 ---
 
-*TricorderKit v1.0.0 — 2026-06-11 — 634 tests collected (v1.0 additions green ; full suite validated in CI)*
+*TricorderKit v1.1.0 — 2026-06-23 — 634 tests collected (suite validated in CI ; v1.1 = skills/experiments/infra additifs, hors tableau plugins)*
+
+> **Skills & Experiments v1.1 (hors plugins/)** : skills `god-mode`, `code-corrector`, `agent-config-audit` (en plus de l'existant) ; PoC isolés `experiments/` : `ragas_eval`, `temporal_memory`, `dedup_embeddings`, `graphrag`, `openevolve_poc` (promotion sur DEC). Infra : `tools/caps` (capability-on-demand), `models/` registry + observability, memory-router. Le tableau de bord plugins ci-dessus reste à 13 (inchangé).

@@ -4,6 +4,32 @@
 
 ---
 
+## [1.1.0] — 23/06/2026 — v1.1 « Radar d'auto-amélioration, PoC de mesure & durcissement »
+
+> Cap additif (aucune rupture d'API, plugins inchangés à 13). Ajoute un **radar d'innovation** branché
+> sur la boucle self-improving, une **piste de mesure** sous forme de PoC isolés, deux **skills** d'ingénierie,
+> et plusieurs **durcissements d'infrastructure**. Les `experiments/` sont isolés et promus uniquement sur DEC ;
+> les skills sont « proposition d'abord ».
+
+### Ajouté
+- **skills/god-mode** — radar d'innovation/auto-amélioration : sources tiérées → ranking → mapping module → propositions (jamais d'adoption auto). Passe hebdomadaire planifiée. (DEC-053)
+- **skills/code-corrector** — correcteur/durcisseur web discipliné (audit OWASP, plafonds d'affichage levés sans retirer les protections serveur, design préservé), approbation humaine des changements structuraux.
+- **skills/agent-config-audit** — audit lecture-seule de la surface de l'agent (MCP, hooks, permissions, secrets en clair, exposition) → correctifs proposés (inspiré d'AgentShield). Complète code-corrector + le coffre de secrets.
+- **experiments/** (PoC isolés, hors-ligne, selftest) : `ragas_eval` (éval RAG), `temporal_memory` (mémoire bi-temporelle, backend SQLite), `dedup_embeddings` (blocking par embeddings + fuzzy), `graphrag` (récupération entité-relation), `openevolve_poc` (optimiseur piloté par évaluateur, style autoresearch, GPU-free, LLM local).
+- **tools/caps** — capability-on-demand (ensure/reap/status, gouverneur RAM, résolveur d'intention) : démarrage des outils à la demande.
+- **models/** registry (abstraction Ollama/LiteLLM) + **observabilité** Prometheus/Grafana (DEC-051).
+- **memory-router** + prototype Arbor (DEC-052) — couche de routage mémoire.
+
+### Modifié / durci
+- **token-optimizer** : hooks reconçus **portables cmd+sh non bloquants** (bootstrap Python lisant `CLAUDE_PLUGIN_ROOT` via l'environnement, exit 0 garanti) ; Economizer réconcilié (v0.3.0).
+- **docker-compose** : profils (graph/workflows/observability) + `restart:no` + limites mémoire (boot léger, démarrage à la demande) ; healthcheck Temporal corrigé.
+
+### Sécurité
+- **Gate frontière publique (R37)** : aucun terme privé/chemin perso dans la vitrine — appliquée à chaque push.
+- Durcissements côté runtime privé (résilience gateway LLM, secrets hors-fichier) documentés hors repo public.
+
+---
+
 ## [1.0.0] — 11/06/2026 — v1.0 « Self-Improving Scraping & Knowledge OS » (DEC-046)
 
 > Cap v1.0 : les 7 chantiers N1–N7 sont **code-complets**. Boucle d'auto-amélioration (experience → leçons → propositions de skill gardées par tests + revue humaine), gouvernance MCP machine-lisible, runtime de scraping standardisé, moteur de fiabilité des sources, évaluateurs de qualité, workflows Temporal d'auto-amélioration (exécution déportée). Aucun plugin ajouté à la vitrine (12) — N1/N2 = nouveaux plugins déjà comptés ; N3 = `mcp/` ; N5/N7 = extensions.

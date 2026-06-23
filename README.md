@@ -2,7 +2,7 @@
 
 > CLI-first Agentic Knowledge Operating System — local-first
 
-[![Version](https://img.shields.io/badge/version-v1.0.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.1.0-blue)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
 [![Tests](https://img.shields.io/badge/tests-634%20PASS-brightgreen)](.planning/STATE.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
@@ -22,6 +22,8 @@ v0.9 definition : Supabase layer + Langfuse observability + obsidian-agent-layer
 v0.9.5 definition : graphify hybrid RAG (vault local-first, dense search, incremental indexer) + veille ingestion dedup (G1) + obsidian-goat ID safety (replace-id R29 / next-id R34) + security hardening
 v1.0 definition : Self-Improving — learning-engine (experience cards → lessons → guarded skill updates) + machine-readable MCP governance (deny-by-default) + standardized scraper-runtime + source reliability engine + eval-lab quality evaluators + Temporal self-improvement workflows (DEC-046)
 ```
+
+> **What's New (v1.1 — Self-improvement radar, eval PoCs & hardening)** : TricorderKit gains the **god-mode** innovation radar (tiered sources → ranking → module mapping, proposals only) wired into the self-improving loop, with a weekly automated pass. A measurement track lands as isolated, offline-runnable PoCs under `experiments/`: **RAGAS** RAG evaluation, **temporal memory** (bi-temporal, SQLite backend), **embedding-blocking dedup**, **GraphRAG**, and an **OpenEvolve** evaluator-driven optimizer (autoresearch-style, GPU-free, local-LLM). Two new skills: **code-corrector** (disciplined web fix/hardening, human-in-the-loop on structural changes) and **agent-config-audit** (read-only audit of the agent's own MCP / hooks / permissions / secrets surface). Infra hardening: **capability-on-demand** (`tools/caps`), a **models registry** + Prometheus/Grafana observability, a **memory-router** layer, an LLM-gateway resilience config (retry + local fallback), and portable cmd+sh plugin hooks. Experiments stay isolated and are promoted only on decision (DEC); skills are proposal-first.
 
 > **What's New (v1.0 — Self-Improving, DEC-046)** : TricorderKit closes its self-improvement loop. The new **learning-engine** turns runs into experience cards, then lessons, then *guarded* skill-update proposals (drafts only — promotion requires 8 green tests **and** human review). **MCP governance** becomes machine-readable and deny-by-default (`mcp/registry_allowlist.yaml` + `tk mcp audit`). A **scraper-runtime** standardizes scraping profiles and the run contract; a **source reliability engine** scores sources (dry-run, read-only); **eval-lab** gains five quality evaluators (scraping, source reliability, dedup, RAG retrieval, cost/latency); and four **Temporal self-improvement workflows** (learning review, skill regression test, source freshness, tool scout) orchestrate the loop with execution deported to external collectors. All 7 chantiers (N1–N7) are code-complete.
 
@@ -316,5 +318,5 @@ TricorderKit is released under the [MIT License](LICENSE) — © 2026 GeekFamily
 
 ---
 
-*TricorderKit v1.0.0 — GeekFamilyCorp — 2026*  
+*TricorderKit v1.1.0 — GeekFamilyCorp — 2026*  
 *"What a tricorder does for the body, TricorderKit does for knowledge."*

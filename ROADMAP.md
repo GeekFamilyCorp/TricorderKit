@@ -1,6 +1,6 @@
 # ROADMAP — TricorderKit
 
-> Version : 1.0.0 — Mise à jour : 2026-06-11
+> Version : 1.1.0 — Mise à jour : 2026-06-23
 > Ce fichier décrit les phases publiques de TricorderKit.
 > Les détails opérationnels internes sont dans `.planning/ROADMAP_v0.9.md`.
 
@@ -79,7 +79,7 @@
 
 | # | Action | Statut |
 |---|---|---|
-| A | Publier la **GitHub Release v1.0.0** (vérifier le tag `v1.0.0`) | 🔜 À faire |
+| A | Publier la **GitHub Release v1.1.0** (tag `v1.1.0`) | ✅ Fait (2026-06-23) |
 | B | Arbitrer la **PR #2** (ouverte le 13/05) — rebase / merge / fermeture justifiée | 🔜 À faire |
 | C | Intégrer les **tests graphify** à la suite committée | ✅ Fait (4 unit PASS + 1 integration Qdrant-gated) |
 | D | **Indexer le vault dans Qdrant** (collection dim 768) + exposer `search_vault` en tool MCP (DEC-023) | 🟡 En cours |
@@ -99,17 +99,18 @@ TricorderKit respecte trois contraintes non négociables à chaque phase :
 
 ---
 
-## État actuel (v1.0.0 — 2026-06-11)
+## État actuel (v1.1.0 — 2026-06-23)
 
 ```
 Tests       : 634 tests collected — 633 PASS + 1 skip (live Qdrant) — suite validée en CI
 Plugins     : 13 actifs (3 production-ready, 10 en évolution, 0 experimental)
+Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · god-mode · code-corrector · agent-config-audit
+Experiments : ragas_eval · temporal_memory · dedup_embeddings · graphrag · openevolve_poc (isolés, promotion sur DEC)
 CLIs        : github-goat ✅ · obsidian-goat ✅ (replace-id R29 / next-id R34, dry-run)
 Sécurité    : gate frontière publique + gate docs-sync appliqués (CI + pre-push, DEC-026 / DEC-028 / DEC-047) · licence MIT
-Skills      : tk-boot · tk-orchestrator · rtk · docmancer · token-savior · claude-code-router
-Infrastructure : Neo4j ✅ · Qdrant ✅ · Temporal ✅ · Langfuse ✅
+Infrastructure : Neo4j ✅ · Qdrant ✅ · Temporal ✅ · Langfuse ✅ · models/ registry + observability · tools/caps (capability-on-demand)
 ```
 
 ---
 
-*TricorderKit v1.0.0 — GeekFamilyCorp — 2026*
+*TricorderKit v1.1.0 — GeekFamilyCorp — 2026*
