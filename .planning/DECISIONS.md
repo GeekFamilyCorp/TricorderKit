@@ -667,3 +667,16 @@
 - **Statut** : **Acceptee - skill + radar hebdo + PoC#1 livres 2026-06-22 ; PoC #2-4 scaffoldes (a developper un par un sur GO).**
 
 *Derniere mise a jour : 2026-06-22 - DEC-053 god-mode radar + roadmap PoC (RAGAS livre, dedup/memoire/graphrag scaffoldes ; ColBERT ecarte).*
+
+## DEC-054 - Gate docs-sync : detection de derive (fraicheur) - 2026-06-23
+
+Contexte : la vitrine (README/STATUS/ROADMAP/CHANGELOG) est restee figee a v1.0.0 malgre ~200 commits
+(skills/experiments/infra additifs). La gate docs-sync (DEC-028/049) ne verifiait que la COHERENCE
+(version/tests/plugins identiques partout), pas la COMPLETUDE -> derive non detectee.
+
+Decision : etendre check_docs_sync.py avec deux controles de FRAICHEUR en severite WARNING (non bloquants,
+exit 0 conserve) : (1) nombre de commits depuis le tag de la version canonique > seuil (--max-drift, defaut 60)
+-> "vitrine probablement perimee" ; (2) tout sous-dossier de skills/ suivi par git mais absent du texte de la
+vitrine -> "skill present hors vitrine". Non bloquant par design (un WARNING nudge, ne casse pas un push de
+hotfix). A fait ses preuves immediatement : a flague 4 skills hors vitrine (tk-grill, skill-creator,
+skill-manager, consolidate-memory), ajoutes a la vitrine. Cap v1.1.0 publie (Release GitHub) en parallele.
