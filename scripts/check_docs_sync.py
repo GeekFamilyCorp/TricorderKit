@@ -218,9 +218,68 @@ def resume_consistency(status: str, n_plugins: int) -> list[str]:
     return errs
 
 
+# --- 4. FRAICHEUR (anti-derive, WARNING non bloquant, DEC-054) --------------
+
+SKILLS_DIR = "skills"
+DEFAULT_MAX_DRIFT = 60
+
+
+def actual_skills(root: Path) -> set[str]:
+    """Skills publies = sous-dossiers de skills/ suivis par git (repli disque)."""
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "skills/"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=30,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            names = set()
+            for line in out.stdout.splitlines():
+                parts = line.split("/")
+                if len(parts) >= 2 and parts[0] == SKILLS_DIR:
+                    names.add(parts[1])
+            names = {n for n in names if n not in _NON_PLUGIN}
+            if names:
+                return names
+    except Exception:
+        pass
+    d = root / SKILLS_DIR
+    if not d.is_dir():
+        return set()
+    return {p.name for p in d.iterdir() if p.is_dir() and p.name not in _NON_PLUGIN}
+
+
+def skills_not_in_vitrine(root: Path, *texts: str) -> list[str]:
+    """Skills presents sur disque mais JAMAIS cites dans la vitrine -> derive doc."""
+    blob = "\n".join(texts)
+    missing = []
+    for name in sorted(actual_skills(root)):
+        if name not in blob:
+            missing.append(name)
+    return missing
+
+
+def commit_drift(root: Path, canon: str | None) -> int | None:
+    """Nombre de commits entre le tag de la version canonique et HEAD (None si indispo)."""
+    if not canon:
+        return None
+    for tag in ("v" + canon, canon):
+        try:
+            out = subprocess.run(
+                ["git", "-C", str(root), "rev-list", "--count", tag + "..HEAD"],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", timeout=30,
+            )
+            if out.returncode == 0 and out.stdout.strip().isdigit():
+                return int(out.stdout.strip())
+        except Exception:
+            continue
+    return None
+
+
 # --- Orchestration ----------------------------------------------------------
 
-def run_checks(root: Path, check_tests: bool) -> list[dict]:
+def run_checks(root: Path, check_tests: bool, max_drift: int = DEFAULT_MAX_DRIFT) -> list[dict]:
     readme = _read(root, "README.md")
     status = _read(root, "STATUS.md")
     roadmap = _read(root, "ROADMAP.md")
@@ -279,6 +338,18 @@ def run_checks(root: Path, check_tests: bool) -> list[dict]:
         for e in resume_consistency(status, n_real):
             findings.append({"check": "structure", "severity": "error", "message": e})
 
+    # 4. FRAICHEUR (WARNING non bloquant) : detecte la derive de la vitrine.
+    drift = commit_drift(root, canon)
+    if drift is not None and drift > max_drift:
+        findings.append({"check": "freshness", "severity": "warn",
+                         "message": "%d commits depuis v%s : vitrine probablement perimee "
+                                    "(rafraichir README/CHANGELOG ou couper une version)"
+                                    % (drift, canon)})
+    for sk in skills_not_in_vitrine(root, readme, status, roadmap, changelog):
+        findings.append({"check": "freshness", "severity": "warn",
+                         "message": "skill '%s' present dans skills/ mais absent de la vitrine "
+                                    "(README/STATUS/ROADMAP/CHANGELOG)" % sk})
+
     return findings
 
 
@@ -290,10 +361,12 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="Sortie JSON")
     ap.add_argument("--check-tests", action="store_true",
                     help="Confronte le compte de tests a la collecte pytest reelle (lent)")
+    ap.add_argument("--max-drift", type=int, default=DEFAULT_MAX_DRIFT,
+                    help="Seuil de commits depuis la derniere version avant WARNING de fraicheur")
     args = ap.parse_args()
 
     root = Path(args.root).resolve()
-    findings = run_checks(root, args.check_tests)
+    findings = run_checks(root, args.check_tests, args.max_drift)
     errors = [f for f in findings if f["severity"] == "error"]
 
     if args.json:
