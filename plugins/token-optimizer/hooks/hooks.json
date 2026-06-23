@@ -1,3 +1,26 @@
 {
-  "hooks": {}
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"exec(__import__('base64').b64decode('aW1wb3J0IG9zLHN5cyxzdWJwcm9jZXNzLHNodXRpbApyPW9zLmVudmlyb24uZ2V0KCdDTEFVREVfUExVR0lOX1JPT1QnKQp0cnk6CiAgICBzaD1zaHV0aWwud2hpY2goJ2Jhc2gnKQogICAgZj1vcy5wYXRoLmpvaW4ociwnc2NyaXB0cycsJ3J0ay1yZXdyaXRlLnNoJykgaWYgciBlbHNlIE5vbmUKICAgIGlmIHNoIGFuZCBmIGFuZCBvcy5wYXRoLmlzZmlsZShmKToKICAgICAgICBzdWJwcm9jZXNzLnJ1bihbc2gsZl0sdGltZW91dD0yMCkKZXhjZXB0IEV4Y2VwdGlvbjoKICAgIHBhc3MKc3lzLmV4aXQoMCkK').decode())\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"exec(__import__('base64').b64decode('aW1wb3J0IG9zLHN5cyxzdWJwcm9jZXNzCnI9b3MuZW52aXJvbi5nZXQoJ0NMQVVERV9QTFVHSU5fUk9PVCcpCnRyeToKICAgIGlmIHI6CiAgICAgICAgZj1vcy5wYXRoLmpvaW4ociwnc2NyaXB0cycsJ2J1ZGdldC5weScpCiAgICAgICAgaWYgb3MucGF0aC5pc2ZpbGUoZik6CiAgICAgICAgICAgIHN1YnByb2Nlc3MucnVuKFtzeXMuZXhlY3V0YWJsZSxmLCdsb2ctZnJvbS10YXNrJ10sdGltZW91dD0yMCkKZXhjZXB0IEV4Y2VwdGlvbjoKICAgIHBhc3MKc3lzLmV4aXQoMCkK').decode())\""
+          }
+        ]
+      }
+    ]
+  }
 }
