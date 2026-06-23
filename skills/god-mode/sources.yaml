@@ -1,7 +1,7 @@
 # sources.yaml — Base de sources du radar God Mode (veille innovation / SOTA).
 # Tier : primary | adoption | discovery | analytics. Politique : comment l'utiliser + ce qu'on en tire.
-version: "0.1"
-default_priority: [paperswithcode, arxiv, awesome_ml, awesome_datasets, researchrabbit, litmaps, dimensions, scholar, ieee]
+version: "0.2"
+default_priority: [paperswithcode, arxiv, awesome_ml, awesome_datasets, researchrabbit, litmaps, dimensions, scholar, ieee, agent_skills_catalog, claude_skills_catalog, awesome_claude_code, awesome_claude_skills]
 seuil_proposition: 60   # score minimal pour PROPOSER (sinon "a surveiller")
 
 sources:
@@ -59,6 +59,31 @@ sources:
     apporte: "publications peer-reviewed (ingenierie, robustesse)"
     usage: "valider la solidite academique d'une methode sensible (acces parfois restreint)"
 
+  # --- Catalogues de skills/agents (ajout 2026-06-22) : reperer des skills reutilisables ---
+  agent_skills_catalog:
+    url: https://github.com/VoltAgent/awesome-agent-skills
+    tier: adoption
+    apporte: "1000+ skills agent (Claude/Codex/Gemini/Cursor) ; le plus gros catalogue"
+    usage: "chercher un skill mature pour un besoin precis ; signal = maintenu + etoiles. NE PAS dupliquer god-mode/reflection/caps/memory-router"
+
+  claude_skills_catalog:
+    url: https://github.com/alirezarezvani/claude-skills
+    tier: adoption
+    apporte: "337 skills + 30 agents + 70 commandes (eng/recherche/ops/securite)"
+    usage: "piocher un skill cible (eval, code-review, securite) compatible multi-agents"
+
+  awesome_claude_code:
+    url: https://github.com/hesreallyhim/awesome-claude-code
+    tier: adoption
+    apporte: "skills/hooks/slash-commands/orchestrateurs de qualite (curation exigeante)"
+    usage: "reperer hooks/orchestrateurs renforcant gates R37/R38 et la qualite"
+
+  awesome_claude_skills:
+    url: https://github.com/travisvn/awesome-claude-skills
+    tier: discovery
+    apporte: "liste curee de skills + ressources de personnalisation Claude"
+    usage: "decouverte large ; recouper l'adoption avant d'integrer"
+
 # Mapping thematique rapide (cf. SKILL.md §4) -> requetes type
 themes:
   rag:            ["retrieval augmented generation", "hybrid search reranking", "ColBERT late interaction", "GraphRAG"]
@@ -67,3 +92,5 @@ themes:
   agents:         ["durable agent orchestration", "multi-agent framework", "agent memory"]
   memory:         ["long-term memory LLM agents", "memory consolidation retrieval", "episodic semantic memory"]
   eval:           ["RAG evaluation metrics", "LLM-as-judge benchmark", "retrieval evaluation dataset"]
+  skills:         ["agent skill code review", "agent skill security gate", "agent skill RAG eval", "subagent orchestration skill"]
+  evolutionary:   ["evolutionary coding agent", "AlphaEvolve open source", "LLM program optimization evaluator"]
