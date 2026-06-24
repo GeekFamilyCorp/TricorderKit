@@ -680,3 +680,26 @@ exit 0 conserve) : (1) nombre de commits depuis le tag de la version canonique >
 vitrine -> "skill present hors vitrine". Non bloquant par design (un WARNING nudge, ne casse pas un push de
 hotfix). A fait ses preuves immediatement : a flague 4 skills hors vitrine (tk-grill, skill-creator,
 skill-manager, consolidate-memory), ajoutes a la vitrine. Cap v1.1.0 publie (Release GitHub) en parallele.
+
+## DEC-055 - Skills distribues/installes comme PLUGINS dedies - 2026-06-24
+
+Regle (preference Sebastien, NON-NEGOCIABLE) : des qu'on cree un ENSEMBLE de skills, les REUNIR dans un
+PLUGIN dedie (.plugin) plutot que skill par skill. Un .plugin s'installe en un clic (Reglages > Capacites) ;
+un SKILL.md depose dans un repo ne s'auto-installe PAS dans Cowork.
+
+Decoupage public/prive (R37) :
+- skills generiques -> plugin PUBLIC versionne dans TricorderKit ;
+- skills qui nomment la stack (Paperclip / n8n / open-webui / Hermes / VPS...) -> plugin PRIVE (vault ou
+  MangaTracker). NE JAMAIS empaqueter un skill prive dans un plugin destine au repo public.
+
+Outillage : tools/pack_plugin.py (stdlib zipfile -> entrees a separateurs '/', conforme ZIP, cross-plateforme).
+Contexte : Compress-Archive (PowerShell) ecrivait des '\' non conformes -> installeur Cowork en echec ;
+pack_plugin.py corrige ce piege.
+
+Process a chaque nouvel ensemble de skills :
+1) packager via pack_plugin.py (public et/ou prive selon R37) ;
+2) METTRE A JOUR la sauvegarde (repo public pour le plugin public ; MangaTracker/vault pour le prive) ;
+3) PUSH ;
+4) consigner R49.
+
+Premier plugin produit sous cette regle : tricorderkit-skills (8 skills, installe le 2026-06-24).
