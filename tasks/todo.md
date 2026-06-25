@@ -5,6 +5,27 @@
 
 ---
 
+## Plan de session — 2026-06-24 (T-2026-06-23-REPOINT-STAGING)
+
+### Tâche active
+Repointer les producteurs de brouillons du projet lié vers `_STAGING/<domaine>`, déplacer les anciens `_auto_staging` sans perte et livrer un rapport NO-DROP.
+
+### Étapes
+- [x] Étape 1 : Valider statut bus, heartbeat working et chemins sources/cibles
+- [x] Étape 2 : Inventorier les producteurs et compteurs avant migration
+- [x] Étape 3 : Exécuter les dry-runs, patcher les scripts producteurs et vérifier les diffs
+- [x] Étape 4 : Déplacer les fichiers vers `_STAGING/<domaine>` avec backup et contrôles avant/après
+- [x] Étape 5 : Déposer le rapport R40, poster `deliverable_ready`, repasser idle et archiver la tâche
+
+### Preuve de fin attendue
+- [x] Rapport de migration avec compteurs avant/après et table ancien→nouveau
+- [x] `_INDEX.md` mis à jour si présent et concerné
+- [x] Scripts producteurs repointés vers `_STAGING`
+- [x] Aucun fichier perdu selon les compteurs NO-DROP
+- [x] Event bus de livraison + tâche archivée
+
+---
+
 ## Plan de session — 2026-06-14 (T-2026-06-14-CODEX-FICHES-QA-FUSION)
 
 ### Tâche active
