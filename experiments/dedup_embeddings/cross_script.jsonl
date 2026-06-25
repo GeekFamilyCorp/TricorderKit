@@ -1,0 +1,22 @@
+# Jeu cross-script (romaji / kana / kanji / anglais) — teste le rappel SÉMANTIQUE.
+# Le proxy lexical (n-grammes + Levenshtein) ne peut PAS décider ces paires (scripts différents).
+{"type":"title","id":1,"text":"Naruto"}
+{"type":"title","id":2,"text":"ナルト"}
+{"type":"title","id":3,"text":"Attack on Titan"}
+{"type":"title","id":4,"text":"Shingeki no Kyojin"}
+{"type":"title","id":5,"text":"進撃の巨人"}
+{"type":"title","id":6,"text":"Death Note"}
+{"type":"title","id":7,"text":"デスノート"}
+{"type":"title","id":8,"text":"One Piece"}
+{"type":"title","id":9,"text":"One   Piece!"}
+{"type":"title","id":10,"text":"Demon Slayer"}
+{"type":"title","id":11,"text":"Kimetsu no Yaiba"}
+{"type":"title","id":12,"text":"Bleach"}
+{"type":"title","id":13,"text":"Solo Leveling"}
+{"type":"dupe","a":1,"b":2}
+{"type":"dupe","a":3,"b":4}
+{"type":"dupe","a":3,"b":5}
+{"type":"dupe","a":4,"b":5}
+{"type":"dupe","a":6,"b":7}
+{"type":"dupe","a":8,"b":9}
+{"type":"dupe","a":10,"b":11}

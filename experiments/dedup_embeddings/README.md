@@ -33,10 +33,33 @@ python dedup_embeddings.py --dataset sample_titles.jsonl
 par le proxy lexical — c'est exactement le rappel sémantique que le moteur `nomic` doit apporter,
 à mesurer ensuite.
 
-## Prochaines étapes (vers la promotion)
-1. Brancher le moteur `nomic` (Qdrant + `nomic-embed-text`) et re-mesurer le rappel cross-script.
-2. Mesure sur le jeu de doublons réel (cf. radar) avant/après l'étage embeddings.
-3. Si gain net → DEC + intégrer comme option dans la dédup du projet de domaine privé (poste lié).
+## Étape 2 — moteur nomic RÉEL + décision sémantique (mesuré 2026-06-24)
+
+Le moteur `nomic` est désormais **branché pour de vrai** (embeddings Ollama `nomic-embed-text` via
+`EMBED_URL`, défaut `http://localhost:11434`), avec une **décision SÉMANTIQUE** (cosinus ≥ `--sem`) —
+car la décision lexicale (Levenshtein) ne peut PAS trancher un cross-script (scripts différents).
+
+```
+ollama serve            # nomic-embed-text doit être pull
+python dedup_embeddings.py --dataset cross_script.jsonl --engine nomic --topk 6 --block 0.45 --sem 0.6
+```
+
+**Mesure réelle** (jeu `cross_script.jsonl` : romaji / kana / kanji / anglais, 7 doublons) :
+
+| Moteur | rappel | précision | F1 | cross-script récupérés |
+|---|---|---|---|---|
+| proxy **lexical** | 0.14 | 1.00 | 0.25 | 0 (n'en capte aucun) |
+| **nomic** sémantique (sem 0.6) | 0.29 | 0.50 | **0.36** | « Naruto » ↔ 「ナルト」 |
+| nomic sémantique (sem 0.5) | 0.43 | 0.17 | 0.24 | + « Shingeki no Kyojin » ↔ 「進撃の巨人」 |
+
+**Verdict honnête** : nomic apporte un **vrai** signal cross-script que le lexical n'atteint jamais
+(il rapproche romaji↔kana et romaji↔kanji de la même œuvre), MAIS le signal est **faible/bruité** —
+la précision s'effondre dès qu'on baisse le seuil pour capter plus. `sem 0.6` = meilleur point
+(F1 0.36, récupère une vraie paire sans tout casser).
+
+**Prochaine étape** : `nomic-embed-text` est anglophone-centré → pour la prod, évaluer un embedder
+**multilingue/CJK** (ex. `bge-m3`, `multilingual-e5`) qui devrait nettement mieux bridger JP↔romaji.
+Puis mesure sur le jeu de doublons réel avant promotion (DEC) dans la dédup du projet de domaine privé.
 
 ## Garde-fous
 Isolé, mesuré avant promotion. Réutilise l'infra existante (pas de nouvelle dépendance lourde).

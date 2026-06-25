@@ -63,17 +63,56 @@ def cosine(a: list, b: list) -> float:
 
 
 def build_nomic_embedder():
-    """Optionnel : embeddings nomic via EMBED_URL (Ollama/gateway). Repli proxy si indispo."""
-    url = os.environ.get("EMBED_URL")
-    if not url:
-        return None
+    """Vrais embeddings via Ollama (nomic-embed-text). Repli proxy (None) si indisponible.
+
+    EMBED_URL (defaut http://localhost:11434) + EMBED_MODEL (defaut nomic-embed-text).
+    Sonde la connectivite une fois ; renvoie un embedder L2-normalise (meme interface que le proxy).
+    """
+    import urllib.request
+    base = os.environ.get("EMBED_URL", "http://localhost:11434").rstrip("/")
+    model = os.environ.get("EMBED_MODEL", "nomic-embed-text")
+    cache = {}
+
+    def _embed(text):
+        if text in cache:
+            return cache[text]
+        body = json.dumps({"model": model, "prompt": text}).encode("utf-8")
+        req = urllib.request.Request(base + "/api/embeddings", data=body,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            v = json.loads(r.read().decode("utf-8"))["embedding"]
+        norm = math.sqrt(sum(x * x for x in v)) or 1.0
+        v = [x / norm for x in v]
+        cache[text] = v
+        return v
+
     try:
-        import urllib.request  # noqa: F401
-    except Exception:
+        _embed("probe")          # sonde
+    except Exception as exc:
+        print(f"[dedup_embeddings] nomic indisponible ({base}, {model}) -> repli proxy : {exc!r}",
+              file=sys.stderr)
         return None
-    print("[dedup_embeddings] EMBED_URL détecté mais client non câblé dans ce PoC isolé "
-          "-> repli embedding proxy (n-grammes).", file=sys.stderr)
-    return None  # câblage réel = sur promotion (DEC), après validation de la mesure.
+    return _embed
+
+
+# ----------------------------------------------------------------------------- décision sémantique
+def run_semantic(titles, truth, embedder, topk, block_threshold, sem_threshold) -> dict:
+    """Blocking par cosinus PUIS décision SÉMANTIQUE (cosinus >= seuil) — capte le cross-script
+    là où la décision lexicale (Levenshtein) échoue (ex. romaji/kana vs kanji)."""
+    ids = list(titles)
+    vecs = {i: embedder(titles[i]) for i in ids}
+    cand = set()
+    for i in ids:
+        sims = sorted(((cosine(vecs[i], vecs[j]), j) for j in ids if j != i), reverse=True)
+        for sim, j in sims[:topk]:
+            if sim >= block_threshold:
+                cand.add(frozenset((i, j)))
+    predicted = {p for p in cand
+                 if cosine(vecs[tuple(p)[0]], vecs[tuple(p)[1]]) >= sem_threshold}
+    m = score(predicted, truth)
+    m["candidates"] = len(cand)
+    m["_predicted"] = predicted
+    return m
 
 
 # ----------------------------------------------------------------------------- étage fuzzy
@@ -200,6 +239,10 @@ def selftest() -> int:
 
 
 def main() -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # JP/kana dans la sortie (consoles cp1252)
+    except Exception:
+        pass
     ap = argparse.ArgumentParser(description="PoC #2 dédup par embeddings (god-mode).")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--dataset", help="JSONL titres + paires vérité-terrain")
@@ -207,6 +250,7 @@ def main() -> int:
     ap.add_argument("--topk", type=int, default=4)
     ap.add_argument("--block", type=float, default=0.35, help="seuil cosinus blocking")
     ap.add_argument("--fuzzy", type=float, default=0.7, help="seuil ratio fuzzy")
+    ap.add_argument("--sem", type=float, default=0.6, help="seuil cosinus décision sémantique (nomic)")
     args = ap.parse_args()
 
     if args.selftest:
@@ -215,14 +259,44 @@ def main() -> int:
         ap.print_help()
         return 2
 
-    embedder = char_ngram_embedding
+    titles, truth = load_dataset(args.dataset)
+
     if args.engine == "nomic":
         nomic = build_nomic_embedder()
-        if nomic is not None:
-            embedder = nomic
+        if nomic is None:
+            print("[dedup_embeddings] moteur nomic indisponible — lancer Ollama (nomic-embed-text) "
+                  "ou définir EMBED_URL.", file=sys.stderr)
+            return 3
+        # baseline = proxy LEXICAL (char n-grammes + fuzzy), pour mesurer l'apport sémantique.
+        lex = run(titles, truth, char_ngram_embedding, args.topk, 0.2, 0.85)["blocking_embeddings_plus_fuzzy"]
+        # nomic = embeddings réels + décision SÉMANTIQUE (cosinus).
+        sem = run_semantic(titles, truth, nomic, args.topk, max(0.0, args.block - 0.05), args.sem)
+        # Reconstruit l'ensemble prédit du proxy lexical pour le diff (paires gagnées par nomic).
+        ids = list(titles)
+        lex_set = set()
+        vecsp = {i: char_ngram_embedding(titles[i]) for i in ids}
+        candp = set()
+        for i in ids:
+            sims = sorted(((cosine(vecsp[i], vecsp[j]), j) for j in ids if j != i), reverse=True)
+            for s, j in sims[:args.topk]:
+                if s >= 0.2:
+                    candp.add(frozenset((i, j)))
+        for p in candp:
+            a, b = tuple(p)
+            if levenshtein_ratio(titles[a], titles[b]) >= 0.85:
+                lex_set.add(p)
+        gained = [(titles[tuple(p)[0]], titles[tuple(p)[1]])
+                  for p in (sem["_predicted"] & truth) - lex_set]
+        out = {
+            "n_titles": len(titles), "n_truth_dupes": len(truth),
+            "lexical_proxy": {k: lex[k] for k in ("recall", "precision", "f1")},
+            "nomic_semantic": {k: sem[k] for k in ("recall", "precision", "f1", "candidates")},
+            "pairs_recovered_by_nomic_only": gained,
+        }
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0
 
-    titles, truth = load_dataset(args.dataset)
-    res = run(titles, truth, embedder, args.topk, args.block, args.fuzzy)
+    res = run(titles, truth, char_ngram_embedding, args.topk, args.block, args.fuzzy)
     print(json.dumps(res, ensure_ascii=False, indent=2))
     return 0
 
