@@ -46,3 +46,10 @@ reflection **journalise**. C'est « autoresearch » réalisé pour TricorderKit,
 ## Garde-fous
 Isolé, hors-ligne pour le selftest, jamais d'écriture vault, budget d'itérations plafonné,
 données d'exemple génériques (R37). Promotion (intégration dédup réelle) = sur DEC, après mesure.
+
+## Statut rÃ©el (2026-06-24)
+- **openevolve 0.2.27 installÃ©** ; harness prÃªt (`initial_program.py` + `evaluator.py` + `config.yaml`).
+- **Optimiseur dÃ©terministe hors-ligne validÃ©** : trouve dÃ©jÃ  le rÃ©glage optimal (F1 0.909 â†’ **1.0**) â€” cf. `search_baseline.py --selftest`.
+- **Vraie Ã©volution LLM = en attente d'un modÃ¨le de CODE capable.** Le seul modÃ¨le local (`qwen:1.8b`) est trop
+  faible pour rÃ©Ã©crire du code utilement (et l'endpoint Ollama `/v1` est lent Ã  froid). Pour lancer pour de vrai :
+  `ollama pull qwen2.5-coder:7b` puis la commande du `config.yaml`. HonnÃªtetÃ© : pas de faux rÃ©sultat ici.
