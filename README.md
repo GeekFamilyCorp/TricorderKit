@@ -1,322 +1,146 @@
+<div align="center">
+
+<img src="assets/banner.png" alt="TricorderKit — the local-first Agentic Knowledge OS" width="820" />
+
 # TricorderKit
 
-> CLI-first Agentic Knowledge Operating System — local-first
+**The local-first Agentic Knowledge OS** — turn intentions into traceable, auditable, reusable workflows.
+CLI-first · self-improving · measured · runs on your own machine.
 
 [![Version](https://img.shields.io/badge/version-v1.1.0-blue)](CHANGELOG.md)
-[![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](/.planning/STATE.md)
 [![Tests](https://img.shields.io/badge/tests-634%20PASS-brightgreen)](.planning/STATE.md)
-[![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-purple)](docker-compose.yml)
+[![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](STATUS.md)
+[![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Ollama%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-8b5cf6)](docker-compose.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
----
+[Quick start](#-quick-start) • [Architecture](#-architecture) • [Measured results](#-measured-results) • [What's inside](#-whats-inside) • [FAQ](#-faq)
 
-## What is TricorderKit?
-
-TricorderKit is an **Agentic Knowledge OS** — a local-first system that transforms user intentions into traceable, auditable, and reusable workflows.
-
-```
-v0.6 definition : memory + skills + token hygiene + observability
-v0.7 definition : CLI-first Agentic OS + Temporal workflows + skill registry + deep research + Obsidian knowledge layer
-v0.8 definition : linked_project architecture + hook layer + quality loop + CLI tk + audit tools
-v0.9 definition : Supabase layer + Langfuse observability + obsidian-agent-layer + tk doctor + public-ready documentation
-v0.9.5 definition : graphify hybrid RAG (vault local-first, dense search, incremental indexer) + veille ingestion dedup (G1) + obsidian-goat ID safety (replace-id R29 / next-id R34) + security hardening
-v1.0 definition : Self-Improving — learning-engine (experience cards → lessons → guarded skill updates) + machine-readable MCP governance (deny-by-default) + standardized scraper-runtime + source reliability engine + eval-lab quality evaluators + Temporal self-improvement workflows (DEC-046)
-```
-
-> **What's New (v1.1 — Self-improvement radar, eval PoCs & hardening)** : TricorderKit gains the **god-mode** innovation radar (tiered sources → ranking → module mapping, proposals only) wired into the self-improving loop, with a weekly automated pass. A measurement track lands as isolated, offline-runnable PoCs under `experiments/`: **RAGAS** RAG evaluation, **temporal memory** (bi-temporal, SQLite backend), **embedding-blocking dedup**, **GraphRAG**, and an **OpenEvolve** evaluator-driven optimizer (autoresearch-style, GPU-free, local-LLM). Two new skills: **code-corrector** (disciplined web fix/hardening, human-in-the-loop on structural changes) and **agent-config-audit** (read-only audit of the agent's own MCP / hooks / permissions / secrets surface). Infra hardening: **capability-on-demand** (`tools/caps`), a **models registry** + Prometheus/Grafana observability, a **memory-router** layer, an LLM-gateway resilience config (retry + local fallback), and portable cmd+sh plugin hooks. Experiments stay isolated and are promoted only on decision (DEC); skills are proposal-first.
-
-> **What's New (v1.0 — Self-Improving, DEC-046)** : TricorderKit closes its self-improvement loop. The new **learning-engine** turns runs into experience cards, then lessons, then *guarded* skill-update proposals (drafts only — promotion requires 8 green tests **and** human review). **MCP governance** becomes machine-readable and deny-by-default (`mcp/registry_allowlist.yaml` + `tk mcp audit`). A **scraper-runtime** standardizes scraping profiles and the run contract; a **source reliability engine** scores sources (dry-run, read-only); **eval-lab** gains five quality evaluators (scraping, source reliability, dedup, RAG retrieval, cost/latency); and four **Temporal self-improvement workflows** (learning review, skill regression test, source freshness, tool scout) orchestrate the loop with execution deported to external collectors. All 7 chantiers (N1–N7) are code-complete.
-
-> **What's New (v0.9.5)** : the graphify plugin gains a local-first hybrid RAG layer — incremental vault indexer, dense semantic search, a veille-ingestion bridge with G1 deduplication (new vs existing entries gated against the Master Index), and a health heartbeat (DEC-023). The `obsidian-goat` tool now guarantees safe ID operations (`replace-id`, `next-id`).
-
-It takes inspiration from the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
+</div>
 
 ---
 
-## Stack
+## Why TricorderKit?
 
-| Layer | Technology | Purpose |
+Most agent setups are a pile of prompts and scripts that nobody can audit, reproduce, or improve. TricorderKit treats an agent like an **operating system for knowledge work**: every intention becomes a workflow that is **traceable, testable, and reusable** — and the system **measures and improves itself** over time.
+
+|  | Ad-hoc agent setup | **TricorderKit** |
 |---|---|---|
-| Agent | Claude Code (Anthropic) | Main reasoning agent |
-| Knowledge | Obsidian (local vault) | Local-first knowledge base |
-| Connectors | MCP servers | Service integrations |
-| Graph DB | Neo4j 5.18 | Relational knowledge graph |
-| Vector DB | Qdrant v1.8.4 | Semantic search / RAG |
-| Workflows | Temporal 1.23 | Persistent workflow engine |
-| Observability | Langfuse 2 | Token tracing + cost tracking |
-| Infrastructure | Docker Compose | Local infra |
-| CLIs | cli-forge (custom) | Deterministic API wrappers |
+| **Where it runs** | Cloud, your data leaves the machine | **Local-first** — Ollama, Neo4j, Qdrant on your box |
+| **Claims** | "It works on my prompt" | **Measured** — offline benchmarks + 634 tests |
+| **Quality** | Hope | **Gates** — public-boundary + docs-sync, pre-push & CI |
+| **Evolution** | Manual prompt-tweaking | **Self-improving loop** — proposals, gated by tests + human review |
+| **Reproducibility** | "Works on my laptop" | Versioned plugins, runbooks, deterministic selftests |
+
+> Honesty first: every number below comes from the **selftests and offline benchmarks in this repo**. No inflated metrics, no fake stars.
 
 ---
 
-## Quick Start
+## 🚀 Quick start
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/GeekFamilyCorp/TricorderKit.git
 cd TricorderKit
 
-# 2. Copy and fill environment variables
-cp .env.example .env
-
-# 3. Start infrastructure (optional — Phase 3+)
-docker compose up -d
-
-# 4. Boot the agent session
-/tk:boot
-```
-
-> Full setup (prerequisites, `make install`, `tk doctor`) → [INSTALL.md](INSTALL.md). A root `Makefile` wraps common tasks: `make doctor`, `make test`, `make gate`.
-
----
-
-## CLI Usage
-
-TricorderKit ships a unified `tk` CLI plus deterministic domain CLIs generated by the `cli-forge` plugin. They replace raw API calls with structured, cacheable, dry-run-able commands.
-
-### tk — unified entrypoint
-
-```bash
-python cli/tk.py doctor                  # health-check (14 checks)
-python cli/tk.py status --format json    # system state
-python cli/tk.py security audit          # secrets + anonymization + patterns
-python cli/tk.py research run "<query>" --dry-run
-python cli/tk.py project audit <id>      # audit a linked_project
-python cli/tk.py mcp audit               # MCP allowlist governance (deny-by-default, DEC-046/N3)
-python cli/tk.py learning compare-strategies --task-type <type>   # self-improvement loop (DEC-046/N1)
-```
-
-### obsidian-goat — safe vault ID operations (v0.9.5)
-
-```bash
-# Next free ID for a prefix (R34) + collision check
-python tools/obsidian-goat/obsidian_goat.py next-id ST --check ST027
-
-# Rename an ID, bounded to the full token (R29) — dry-run by default, --apply to write
-python tools/obsidian-goat/obsidian_goat.py replace-id ST012 ST200 --apply
-```
-
-### github-goat — generated example CLI (cli-forge)
-
-```bash
-python plugins/cli-forge/generated/github-goat/github_goat.py list-repos <owner>
-python plugins/cli-forge/generated/github-goat/github_goat.py --dry-run list-repos <owner>
-```
-
-> **Windows encoding tip:** Set `PYTHONUTF8=1` before running scripts to handle non-ASCII characters correctly.
-
----
-
-## Agent Commands
-
-Slash commands live in `.claude/commands/` (Claude Code). Current set:
-
-```text
-/boot            → load state + memory + context
-/token-check     → token budget audit
-/vault-analyze   → analyze vault structure
-/vault-audit     → audit vault coherence
-/vault-delta     → vault change delta
-/vault-optimize  → vault token optimization
-/vault-sync      → sync vault routing
-/jp-scraper-scan → run a domain source scan
-/jp-scraper-audit→ audit domain sources
-```
-
-For operational tasks, prefer the `tk` CLI (see **CLI Usage**): `tk doctor`, `tk status`, `tk security audit`, `tk research run`, `tk project audit`, …
-
----
-
-## Repo Structure
-
-```text
-TricorderKit/
-├── README.md · README_FIRST.md · AGENTS.md · CLAUDE.md     ← agent / config docs
-├── CHANGELOG.md · ROADMAP.md · STATUS.md · BOOT_SUMMARY.md · SPACE_CORE.md
-├── INSTALL.md · LICENSE (MIT) · Makefile · docker-compose.yml · .env.example
-│
-├── cli/
-│   └── tk.py                 ← unified CLI (status/doctor/security/research/project/obsidian)
-│
-├── core/
-│   ├── mainbrain/            ← MainBrain v1.5 decision algorithm
-│   ├── hooks/                ← Pre-Intent / Pre-Execution / Post-Execution hooks
-│   └── contracts/            ← JSON schemas (skill output contract)
-│
-├── plugins/                  ← 13 plugins
-│   ├── cli-forge/            ← deterministic CLI generator (generated/github-goat, …)
-│   ├── workflow-engine/      ← Temporal workflows + activities + worker (+ self-improvement workflows, DEC-046/N7)
-│   ├── deep-research-core/   ← autonomous research pipelines
-│   ├── graphify/             ← hybrid RAG (index_vault · hybrid_rag · search_vault · ingest_veille)
-│   ├── connector-hub/        ← service dispatch (Temporal)
-│   ├── eval-lab/             ← quality loop — eval runner + regression checker + 5 quality evaluators (DEC-046/N5)
-│   ├── obsidian-agent-layer/ ← vault router + note builder
-│   ├── security-audit-cli/   ← security runner (audit, secrets, anon-check)
-│   ├── memory-boot/          ← session boot + rapport skills
-│   ├── token-optimizer/      ← budget guard + model router + caveman
-│   ├── learning-engine/      ← experience cards → lessons → controlled skill updates (DEC-046)
-│   ├── scraper-runtime/      ← scraping profiles + run contract + source registry + reliability engine (DEC-046)
-│   └── document-ingestion/   ← isolated MarkItDown adapter — document → Markdown for vault + RAG (DEC-048)
-│
-├── tools/
-│   ├── obsidian-goat/        ← safe vault ID ops (replace-id R29 / next-id R34)
-│   ├── audit/               ← linked_project_audit.py + local_vs_github_audit.py
-│   ├── observability/        ← hook log → Obsidian
-│   └── pipelines/            ← rtk → docmancer pipeline
-│
-├── scripts/
-│   ├── check_public_boundary.py  ← public-boundary leak gate (DEC-026)
-│   ├── validate_repo.py · health_check.py
-│   └── *_audit.ps1 / run_audit.bat  ← scheduled security audit (self-locating)
-│
-├── supabase/                 ← PostgreSQL schema (migrations + seed)
-├── mcp/ · vault/ · examples/ · templates/ · configs/ · docs/ · tasks/ · reports/
-│
-├── .claude/commands/         ← slash commands (boot · vault-* · jp-scraper-*)
-├── .github/workflows/        ← CI (public-boundary gate)
-├── .githooks/pre-push        ← local leak gate (make install-hooks)
-├── .semgrep/                 ← custom security rules
-└── .planning/                ← STATE.md · TASKS.md · DECISIONS.md · RISKS.md · ROADMAP_v0.x.md
-```
-
----
-
-## Health Check
-
-```bash
-# Unified health check (14 checks: Python, Docker, services, .env, dirs, secrets)
+# 1. Health check — what's installed, what's missing
 python cli/tk.py doctor
 
-# Repo structure validation
-python scripts/validate_repo.py
+# 2. Bring up the optional local stack (RAG + workflows + observability)
+docker compose --profile graph up -d        # Neo4j + Qdrant
+#   ... profiles: graph | workflows | observability (start only what you need)
 
-# System health dashboard (services + CLIs + planning)
-python scripts/health_check.py
-
-# Public-boundary leak gate (private terms + personal paths in tracked files)
-python scripts/check_public_boundary.py      # or: make gate
-
-# Run the test suite
-pytest -q
+# 3. Try it
+python cli/tk.py status
+python cli/tk.py research "<topic>"          # autonomous research pipeline
 ```
 
----
-
-## v0.9.5 — What's New vs v0.9
-
-See [CHANGELOG.md](CHANGELOG.md) for the full entries (0.9.2 → 0.9.5). Key additions:
-
-- **graphify hybrid RAG** — `plugins/graphify/scripts/hybrid_rag.py`: local-first vault RAG with an incremental indexer, dense semantic search, a veille-ingestion bridge, and a health heartbeat (DEC-023)
-- **Veille ingestion dedup (G1)** — new fiches are confronted against the Master Index, marked new/existing, with an `n_a_creer` gate to prevent duplicates
-- **obsidian-goat ID safety** — `replace-id` (R29, full-token replacement, anti-collision) and `next-id` (R34, safe ID allocation), dry-run by default
-- **Security & Windows hardening** — anti-prompt-injection `sanitize_input` activity, deterministic Qdrant IDs (`uuid.uuid5`), custom Semgrep rules, UTF-8 enforcement (0.9.2)
-- **544 tests green** at v0.9.5 (0 FAIL)
+No GPU required. The heavy components are **opt-in** (Docker profiles) so a fresh clone boots light.
 
 ---
 
-## v0.9 — What's New vs v0.8
+## 🧭 Architecture
 
-See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
+```mermaid
+flowchart TD
+    U([User intention]) --> MB[MainBrain v1.5<br/>router + guards + budget]
+    MB --> SK[Skills & Plugins<br/>13 plugins]
+    MB --> MEM[Memory<br/>boot · temporal SQLite · daily logs]
+    SK --> RAG[Hybrid RAG · graphify<br/>Qdrant + BM25 + RRF + reranker]
+    SK --> RES[Deep research<br/>web · APIs · sources]
+    RAG --> KB[(Local Knowledge Base<br/>Neo4j + Qdrant)]
+    RES --> KB
+    MB --> SI[Self-Improving loop<br/>learning-engine · god-mode radar]
+    SI -. proposals only .-> SK
+    MB --> EV[eval-lab<br/>RAGAS · dedup · retrieval]
+    SK --> GATE{{Quality gates<br/>public-boundary · docs-sync}}
+    GATE --> GIT[(Git · CI)]
+    LLM[Local LLM · Ollama / LiteLLM gateway] --- MB
+    LLM --- RAG
+```
 
-- **Supabase layer** — PostgreSQL schema for structured domain data (7 tables, RLS, seed data); replaces raw Obsidian-only storage for relational entities
-- **Langfuse observability** — end-to-end token tracing via hooks (pre_intent → trace, pre/post_execution → span); no SDK dependency, REST-direct, Python 3.14 compatible
-- **obsidian-agent-layer** — `obsidian_runner.py` + `tk obsidian` commands; vault router + note builder with 34 tests
-- **security-audit-cli** — `security_runner.py` + `tk security`; secrets scan, anonymization check, dependency audit (16 tests)
-- **tk doctor** — unified health check: 14 checks (Python, Docker, 4 services, `.env`, 4 dirs, modules, linked_projects, secrets); `[OK]` / `[WARN]` / `[FAIL]` output
-- **tk rapport** — CLI status report from `BOOT_SUMMARY.md` + `STATUS.md` → `reports/status/latest_status.md` (JSON flag supported)
-- **Public-ready docs** — `INSTALL.md`, `examples/linked-project-template/`, `docs/linked_projects.md`, `docs/anonymization.md`, `ROADMAP.md`
-- **544 tests green** at v0.9 (up from 174 at v0.9 M1)
-
----
-
-## v0.8 — What's New vs v0.7
-
-See [CHANGELOG.md](CHANGELOG.md) for the full entry. Key additions:
-
-- **linked_project architecture** — TricorderKit is now a generic engine; domain-specific content lives in separate private linked_projects (see `examples/linked-project-template/`)
-- **Hook layer v0.2** — Pre-Intent, Pre-Execution, Post-Execution hooks wired into MainBrain; 25 tests
-- **Quality loop** — eval-lab (eval_runner + baseline_store + regression_checker), security-audit-cli, obsidian-agent-layer
-- **CLI `tk`** — unified entrypoint: `tk status`, `tk health`, `tk skill list`, `tk workflow list`, `tk vault scan`, `tk research run --dry-run`, `tk project *`, `--format json|markdown` everywhere
-- **Audit tools** — `tools/audit/linked_project_audit.py` + `tools/audit/local_vs_github_audit.py`
-- **Template** — `templates/linked_project_template/` reproductible (9 subdirs + configs)
-- **Config layers** — `configs/shared/defaults.yaml` (versioned) + local + vps overrides (gitignored)
-- **GitHub MCP migration** — `@modelcontextprotocol/server-github` → `ghcr.io/github/github-mcp-server` (Docker, official)
-
-## v0.7 — What's New vs v0.6
-
-- **MainBrain v1.4** — Risk Guard, CLI Selector, Token Hygiene Guard, Dry-run mode
-- **cli-forge plugin** — deterministic CLI generator (github-goat example), SQLite cache
-- **workflow-engine plugin** — Temporal persistent workflows with token budget guard
-- **deep-research-core plugin** — autonomous local-first research engine (RSS, web, APIs)
-- **Contract testing** — `skill_output.schema.json` mandatory for all skills
-- **docker-compose.yml** — Neo4j + Qdrant + Temporal + Langfuse local stack
+Everything is **local-first**: the agent (Claude or a local model via the Ollama/LiteLLM gateway), the knowledge base (Neo4j + Qdrant), the memory (SQLite), and the workflow engine (Temporal) all run on your machine.
 
 ---
 
-## Phase Roadmap
+## 📊 Measured results
 
-See [ROADMAP.md](ROADMAP.md) for full details.
+Real numbers from the **offline benchmarks** shipped under [`experiments/`](experiments/) (each has a `--selftest`). Reproduce with `python experiments/<name>/<script>.py --selftest`.
 
-| Phase | Name | Status | Completed |
-|---|---|---|---|
-| 1 | Foundations | ✅ Complete | 10/05/2026 |
-| 2 | CLI-first (cli-forge) | ✅ Complete | 17/05/2026 |
-| 3 | Persistent workflows (Temporal) | ✅ Complete | 15/05/2026 |
-| 4 | Deep Research | ✅ Complete | 16/05/2026 |
-| 5 | Quality loop (eval-lab, security) | ✅ Complete | 16/05/2026 |
-| 6 | Linked project architecture | ✅ Complete | 17/05/2026 |
-| 7 | v0.9 — Orchestration + observability | ✅ Complete | 22/05/2026 |
-| 8 | v0.9 — Public-ready (docs, install, security) | ✅ Complete | 23/05/2026 |
-| 8.5 | v0.9.5 — graphify RAG local-first + obsidian-goat ID safety | ✅ Complete | 01/06/2026 |
-| 8.6 | Security & boundary governance — public-boundary gate (CI + pre-push), frontier cleanup, MIT license | ✅ Complete | 01/06/2026 |
-| **v1.0** | **Self-Improving (DEC-046)** — learning-engine · MCP governance · scraper-runtime · source reliability · eval-lab evaluators · Temporal self-improvement workflows (N1–N7 code-complete) | ✅ Complete | 11/06/2026 |
-| 9 | VPS deployment (hardening live: doctor + Borg backups + fail2ban) | 🟡 In progress | — |
-| 10 | Multi-linked-project support (2 linked projects active) | 🟡 In progress | — |
-| 11 | Plugin marketplace / registry | 🔲 Planned | — |
-| 12 | Community release | 🔲 Planned | — |
+| Capability | Benchmark | Result |
+|---|---|---|
+| **Embedding-blocking dedup** | vs. exhaustive fuzzy, equal quality | **F1 1.0 at −91 % comparisons** |
+| **Temporal memory** (bi-temporal, SQLite) | "what was true at time T" | **100 % accuracy, −95 % tokens** vs full-context |
+| **GraphRAG** | multi-hop relational questions, equal budget | **100 % coverage vs 50–67 %** flat RAG |
+| **Evaluator-driven tuning** (OpenEvolve-style) | auto-tune dedup thresholds | **F1 0.909 → 1.0**, GPU-free, local LLM |
+| **RAG evaluation** (RAGAS) | faithfulness / relevancy / context | objective scoring, LLM-as-judge optional |
+
+Plus **634 tests** in CI and a **god-mode innovation radar** that scans the state of the art weekly and proposes improvements (human-validated, never auto-adopted).
 
 ---
 
-## Contributing
+## 🧩 What's inside
 
-TricorderKit is currently a personal research project, but contributions are welcome if they respect the project’s core principles.
+`plugins/` — **13 plugins**, e.g.: `deep-research-core` (autonomous research), `graphify` (local-first hybrid RAG), `learning-engine` (self-improvement), `token-optimizer` (model routing + budget), `eval-lab` (quality evaluators), `workflow-engine` (Temporal), `security-audit-cli`, `memory-boot`, and more.
 
-If you fork the project, please keep the atomic knowledge rule:
+`skills/` — composable skills incl. **god-mode** (innovation radar), **code-corrector** (web fix/hardening), **agent-config-audit** (audit the agent's own MCP/hooks/permissions/secrets), **doc-to-skill**, **dev-protocol**, **subtitle-fix**.
 
-> **1 idea = 1 node (100–500 tokens)**
+`experiments/` — isolated, offline-runnable PoCs (RAGAS, temporal memory, dedup, GraphRAG, OpenEvolve). Promoted only on decision.
 
-Contributions should remain aligned with TricorderKit’s architecture:
+`cli/tk.py` — one CLI: `status · doctor · skill · workflow · vault · research · project · security · mcp · rapport`.
 
-- local-first by default;
-- CLI-first and agent-friendly;
-- modular, testable and auditable;
-- readable in Markdown / YAML / JSON;
-- respectful of privacy and linked-project boundaries;
-- no unnecessary framework or dependency bloat.
+See [STATUS.md](STATUS.md) for the per-plugin dashboard and [ROADMAP.md](ROADMAP.md) for what's next.
 
-Before opening a pull request, please make sure that your change:
+---
 
-1. solves a clear problem;
-2. does not duplicate an existing module;
-3. includes or updates the relevant documentation;
-4. keeps tests passing;
-5. does not expose private data, secrets or linked-project content.
+## ❓ FAQ
 
-### Support the project
+<details><summary><b>Do I need a GPU or a cloud API?</b></summary>
 
-If you want to support TricorderKit development, documentation, testing and infrastructure costs, you can help here:
+No. TricorderKit is local-first and runs against a local LLM (Ollama via a LiteLLM gateway with retry + local fallback). Cloud models are optional.
+</details>
 
-[Support GeekFamilyCorp on Ko-fi](https://ko-fi.com/geekfamilycorp_france)
+<details><summary><b>Is it tied to a specific domain?</b></summary>
 
-Your support helps fund the open-source research work behind TricorderKit and its related knowledge projects.
+The public engine is generic. It's a CLI-first agentic OS for knowledge work; the knowledge base, sources, and skills are yours to define.
+</details>
+
+<details><summary><b>How does "self-improving" stay safe?</b></summary>
+
+The learning loop only produces **proposals** (drafts). Promotion requires green tests **and** human review. Quality gates (public-boundary + docs-sync) run on every push and in CI.
+</details>
+
+<details><summary><b>Why "TricorderKit"?</b></summary>
+
+After the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
+</details>
 
 ---
 
 ## License
 
-TricorderKit is released under the [MIT License](LICENSE) — © 2026 GeekFamilyCorp.
+MIT — see [LICENSE](LICENSE). Contributions and stars welcome. ⭐
 
----
+<div align="center">
 
-*TricorderKit v1.1.0 — GeekFamilyCorp — 2026*  
-*"What a tricorder does for the body, TricorderKit does for knowledge."*
+*TricorderKit v1.1.0 — GeekFamilyCorp — 2026*
+
+</div>
