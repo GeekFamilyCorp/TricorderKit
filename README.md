@@ -10,6 +10,7 @@ CLI-first · self-improving · measured · runs on your own machine.
 [![Version](https://img.shields.io/badge/version-v1.1.0-blue)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/tests-634%20PASS-brightgreen)](.planning/STATE.md)
 [![Status](https://img.shields.io/badge/phase-public--ready-brightgreen)](STATUS.md)
+[![Guardrails](https://img.shields.io/badge/guardrails-gate--enforced-8b5cf6)](docs/09_GOVERNANCE_GUARDRAILS.md)
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Ollama%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-8b5cf6)](docker-compose.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
