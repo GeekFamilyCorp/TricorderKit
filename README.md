@@ -13,7 +13,7 @@ CLI-first · self-improving · measured · runs on your own machine.
 [![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Ollama%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-8b5cf6)](docker-compose.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-[Quick start](#-quick-start) • [Architecture](#-architecture) • [Measured results](#-measured-results) • [What's inside](#-whats-inside) • [FAQ](#-faq)
+[Quick start](#-quick-start) • [Guardrails](#-governance--guardrails) • [Architecture](#-architecture) • [Measured results](#-measured-results) • [What's inside](#-whats-inside) • [FAQ](#-faq)
 
 </div>
 
@@ -32,6 +32,21 @@ Most agent setups are a pile of prompts and scripts that nobody can audit, repro
 | **Reproducibility** | "Works on my laptop" | Versioned plugins, runbooks, deterministic selftests |
 
 > Honesty first: every number below comes from the **selftests and offline benchmarks in this repo**. No inflated metrics, no fake stars.
+
+---
+
+## 🛡️ Governance & guardrails
+
+Handing an agent real autonomy over your second brain is only safe if it **can't** leak your secrets, act on a malicious web page, publish private notes, or run away on cost. TricorderKit ships a **numbered, versioned rule-set enforced by deterministic gates** — not prose an agent can ignore:
+
+- **Untrusted tool output is data, never instructions** — an embedded "do X" is surfaced, not executed (anti prompt-injection)
+- **Secret scanning on every commit** (gitleaks) — secrets live in a vault, never in the repo
+- **Public / private routing** — a boundary gate blocks private terms & personal paths before any public push
+- **Irreversibility gates** — explicit confirmation before push / send / delete; pre-push shows *exactly* what ships
+- **Cost & loop circuit-breaker** · **zero-loss memory** (boot cache, session logs, immediate backup)
+- **The Rule of Two** — never combine untrusted input + sensitive access + external write unattended
+
+→ Full model: **[docs/09_GOVERNANCE_GUARDRAILS.md](docs/09_GOVERNANCE_GUARDRAILS.md)**
 
 ---
 
