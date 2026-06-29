@@ -138,6 +138,46 @@
         "orchestration",
         "typescript"
       ]
+    },
+    {
+      "name": "document-ingestion",
+      "source": "document-ingestion",
+      "description": "Adaptateur d'ingestion documentaire — convertit PDF/DOCX/XLSX/PPTX/HTML/CSV/JSON/EPUB vers du Markdown normalisé (frontmatter TricorderKit) pour le RAG local. Cadre générique via markitdown (MIT).",
+      "version": "0.1.0",
+      "category": "ingestion",
+      "keywords": [
+        "ingestion",
+        "documents",
+        "markdown",
+        "markitdown",
+        "rag"
+      ]
+    },
+    {
+      "name": "learning-engine",
+      "source": "learning-engine",
+      "description": "Mémoire d'expérience et rétro-amélioration contrôlée — runs → leçons, propositions de mises à jour de skills et classements de stratégies, avec tests et validation humaine avant promotion.",
+      "version": "0.1.0",
+      "category": "self-improvement",
+      "keywords": [
+        "learning",
+        "self-improvement",
+        "experience",
+        "proposals"
+      ]
+    },
+    {
+      "name": "scraper-runtime",
+      "source": "scraper-runtime",
+      "description": "Runtime de scraping standardisé (profils + contrat de run) — cadre générique de structuration/validation d'un run de collecte. Fournit profils, contrat de run et générateur de registre de sources ; exécution déportée.",
+      "version": "0.1.0",
+      "category": "ingestion",
+      "keywords": [
+        "scraping",
+        "runtime",
+        "profiles",
+        "sources"
+      ]
     }
   ]
 }
