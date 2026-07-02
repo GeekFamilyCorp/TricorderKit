@@ -1,0 +1,26 @@
+name: gitleaks
+
+# Scan secrets (DEC-026 / audit 2026-07-02) : bloque tout push/PR introduisant
+# un secret dans l'historique ou l'arbre suivi. Filet SERVEUR, indépendant du
+# poste : complète le hook local .githooks/pre-push (qui peut manquer gitleaks).
+# Config partagée : .gitleaks.toml (allowlist des faux positifs légitimes).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: gitleaks (scan historique complet)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+          GITLEAKS_ENABLE_SUMMARY: "true"

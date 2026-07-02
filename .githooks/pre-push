@@ -34,5 +34,20 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "[pre-push] OK — aucune fuite, vitrine synchronisee."
+echo "[pre-push] Gate gitleaks (secrets)..."
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git -c .gitleaks.toml --redact --no-banner
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "[pre-push] PUSH BLOQUE : gitleaks a detecte un secret potentiel dans l'historique."
+    echo "  -> retirer le secret (git filter-repo), rotater la valeur exposee, puis relancer."
+    echo "  -> faux positif LEGITIME : l'allowlister dans .gitleaks.toml."
+    exit 1
+  fi
+else
+  echo "[pre-push] AVERTISSEMENT : gitleaks introuvable — scan secrets NON execute." >&2
+  echo "  -> installer gitleaks (winget install Gitleaks.Gitleaks) ; la CI reste le filet serveur." >&2
+fi
+
+echo "[pre-push] OK — aucune fuite, vitrine synchronisee, aucun secret."
 exit 0
