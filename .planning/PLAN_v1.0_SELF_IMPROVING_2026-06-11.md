@@ -32,7 +32,7 @@ Deux corrections importantes par rapport aux fichiers sources :
 | `mcp_gateway` (politique) | `mcp/README_MCP_POLICY.md` (hiérarchie CLI→MCP→Claude) | Politique **écrite** mais non machine-lisible : pas d'allowlist YAML, pas de logs par appel → chantier N3 |
 | `source_reliability_engine` (données) | Vault : `Sources_Japonaises_Master_v0.9.md` (~200 sources), `35_Normalized_Registry.md`, hiérarchie de preuve §1 | Le **moteur de scoring automatisé** (mise à jour des scores depuis les runs) est absent → N6 |
 | `tool_scout` (pratique) | Veille Antigravity (DEC-029) + rapports type `Recherche_Outils_*.md` | Non formalisé en workflow + scoring → N7 |
-| VPS | Hostinger __VPS_PUBLIC_IP__ (Docker, Ollama), `RUNBOOK_INFRA.md`, `configs/vps/settings.yaml` | Durcissement absent : doctor/backup/restore, Caddy, ufw, fail2ban, Uptime Kuma → N4 |
+| VPS | Hostinger `__VPS_PUBLIC_IP__` (Docker, Ollama), `RUNBOOK_INFRA.md`, `configs/vps/settings.yaml` | Durcissement absent : doctor/backup/restore, Caddy, ufw, fail2ban, Uptime Kuma → N4 |
 | Mémoires séparées (§13) | Documentaire (vault) ✅ · structurée (Supabase schéma, 29 tests) ✅ · vectorielle (Qdrant) ✅ · procédurale (skills + registry) ✅ | **Mémoire d'expérience** (experience cards) absente → N1 |
 | Data contracts (§21) | `core/contracts/skill_output.schema.json` | Contrats source/item/skill absents → N1/N2 |
 

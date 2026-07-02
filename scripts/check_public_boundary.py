@@ -47,7 +47,45 @@ SENSITIVE_PATTERNS = [
     ("tailnet_ip", re.compile(r"\b100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.\d{1,3}\.\d{1,3}\b")),
     ("vps_hostname", re.compile(r"\b[A-Za-z0-9.-]+\.hstgr\.cloud\b", re.IGNORECASE)),
     ("real_email", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),
+    # IPv4 publique en dur (ex. IP VPS) -> bloquant. Les plages privees/reservees
+    # (RFC1918, loopback, link-local, doc, CGNAT/tailnet, multicast) sont ecartees
+    # par _is_private_or_reserved_ipv4 ci-dessous pour eviter les faux positifs.
+    ("public_ipv4", re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")),
 ]
+
+
+def _is_private_or_reserved_ipv4(val: str) -> bool:
+    """True si l'IPv4 n'est PAS une adresse publique routable (a ignorer)."""
+    parts = val.split(".")
+    if len(parts) != 4:
+        return True
+    try:
+        a, b, c, d = (int(p) for p in parts)
+    except ValueError:
+        return True
+    if any(x < 0 or x > 255 for x in (a, b, c, d)):
+        return True  # pas une IPv4 valide -> ignorer
+    if a == 10:
+        return True                                   # 10/8 prive
+    if a == 172 and 16 <= b <= 31:
+        return True                                   # 172.16/12 prive
+    if a == 192 and b == 168:
+        return True                                   # 192.168/16 prive
+    if a == 127:
+        return True                                   # loopback
+    if a == 169 and b == 254:
+        return True                                   # link-local
+    if a == 100 and 64 <= b <= 127:
+        return True                                   # CGNAT/tailnet (deja couvert)
+    if a == 0 or a >= 224:
+        return True                                   # this-network / multicast / reserve
+    if a == 192 and b == 0 and c == 2:
+        return True                                   # TEST-NET-1 (doc)
+    if a == 198 and b == 51 and c == 100:
+        return True                                   # TEST-NET-2 (doc)
+    if a == 203 and b == 0 and c == 113:
+        return True                                   # TEST-NET-3 (doc)
+    return False
 
 # Fichiers qui DEFINISSENT les motifs (les contiennent volontairement) -> exempts du scan sensible.
 SENSITIVE_EXEMPT = {
@@ -142,6 +180,8 @@ def scan(root: Path) -> list[dict]:
                             dom.endswith("." + d) for d in ALLOWED_EMAIL_DOMAINS
                         ):
                             continue
+                    if kind == "public_ipv4" and _is_private_or_reserved_ipv4(val):
+                        continue
                     findings.append({
                         "file": rel, "line": n, "kind": kind,
                         "match": val[:80], "content": line.strip()[:120],
