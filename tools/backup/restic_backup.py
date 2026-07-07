@@ -43,7 +43,8 @@ def run(restic, env, extra):
 
 def main():
     ap = argparse.ArgumentParser(description="Sauvegarde restic dedupliquee (local ou rclone).")
-    ap.add_argument("action", nargs="?", default="backup", choices=["init", "backup", "snapshots"])
+    ap.add_argument("action", nargs="?", default="backup",
+                    choices=["init", "backup", "snapshots", "forget", "check"])
     ap.add_argument("--source", help="Dossier a sauvegarder (requis pour backup).")
     ap.add_argument("--repo", required=True, help="Depot restic : chemin local ou 'rclone:REMOTE:/chemin'.")
     ap.add_argument("--password-file", help="Fichier contenant le mot de passe du depot.")
@@ -51,6 +52,12 @@ def main():
     ap.add_argument("--rclone-program", help="Chemin de rclone si depot rclone et rclone hors PATH.")
     ap.add_argument("--tag", default="auto", help="Tag du snapshot.")
     ap.add_argument("--exclude", action="append", default=[], help="Motif d'exclusion (repetable).")
+    # Retention (action forget) : conserve N snapshots par fenetre, puis prune l'espace.
+    ap.add_argument("--keep-last", type=int, default=0, help="Garde les N derniers snapshots.")
+    ap.add_argument("--keep-daily", type=int, default=0, help="Garde N snapshots quotidiens.")
+    ap.add_argument("--keep-weekly", type=int, default=0, help="Garde N snapshots hebdomadaires.")
+    ap.add_argument("--keep-monthly", type=int, default=0, help="Garde N snapshots mensuels.")
+    ap.add_argument("--prune", action="store_true", help="Libere l'espace des snapshots oublies (forget).")
     args = ap.parse_args()
 
     env = build_env(args)
@@ -58,6 +65,26 @@ def main():
 
     if args.action == "snapshots":
         r = run(restic, env, ["snapshots"])
+        sys.stdout.write(r.stdout + r.stderr)
+        return r.returncode
+
+    if args.action == "check":
+        r = run(restic, env, ["check"])
+        sys.stdout.write(r.stdout + r.stderr)
+        return r.returncode
+
+    if args.action == "forget":
+        keep = []
+        for name, val in (("last", args.keep_last), ("daily", args.keep_daily),
+                          ("weekly", args.keep_weekly), ("monthly", args.keep_monthly)):
+            if val:
+                keep += ["--keep-" + name, str(val)]
+        if not keep:
+            ap.error("forget requiert au moins un --keep-* (last/daily/weekly/monthly).")
+        extra = ["forget"] + keep
+        if args.prune:
+            extra.append("--prune")
+        r = run(restic, env, extra)
         sys.stdout.write(r.stdout + r.stderr)
         return r.returncode
 
