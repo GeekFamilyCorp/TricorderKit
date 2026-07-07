@@ -13,4 +13,7 @@ paths = [
   '''(^|/)\.env$''',
   '''(^|/)\.env\.bak.*''',
   '''(^|/)\.env\.[^/]*\.local$''',
+  # Fixtures de test = fausses cles/DSN volontaires pour tester le secret_scanner
+  # (faux positifs historiques private-key, deja hors HEAD ; scan auto 2026-07-04).
+  '''(^|/)tests/test_security_audit\.py$''',
 ]
