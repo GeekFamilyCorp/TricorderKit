@@ -4,6 +4,13 @@
 
 ---
 
+## [Unreleased] — 08/07/2026 — Outil : batch runner résilient (AIMD + checkpoint)
+
+### Ajouté
+- **tools/batch/batch_runner.py** — traitement de très gros arbres de fichiers (100k+) sans saturer l'hôte : lots adaptatifs **AIMD** (start 100, +50 au succès rapide, ×0.5 au lent/erreur), **checkpoint JSON résumable** après chaque lot (reprise exacte après crash/arrêt/redémarrage), liste de chemins cachée, poison-pill anti-boucle. Détachable, sans dépendance. Ops CLI intégrées (`audit_ts`/`backfill_ts`) + README documentant le patron.
+
+---
+
 ## [1.1.0] — 23/06/2026 — v1.1 « Radar d'auto-amélioration, PoC de mesure & durcissement »
 
 > Cap additif (aucune rupture d'API, plugins inchangés à 13). Ajoute un **radar d'innovation** branché
