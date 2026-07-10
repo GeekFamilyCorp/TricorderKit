@@ -16,6 +16,15 @@ function Log([string]$m) { "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $m" | Tee-
 
 Log "=== Backup TricorderKit -> $dest ==="
 
+# 0. Garde : si Docker/les conteneurs ne tournent pas, rien a sauvegarder -> skip propre (pas d'echec).
+$dockerOk = $false
+try { docker info *> $null; if ($LASTEXITCODE -eq 0) { $dockerOk = $true } } catch { $dockerOk = $false }
+$containers = if ($dockerOk) { (docker ps --filter "name=tricorder" --format "{{.Names}}") } else { $null }
+if (-not $dockerOk -or -not $containers) {
+  Log "Docker indisponible ou aucun conteneur tricorder-* actif -> backup DB saute (rien a sauvegarder). exit 0"
+  exit 0
+}
+
 # 1. PostgreSQL (dumps via cmd pour redirection en octets bruts - pas de BOM PowerShell)
 foreach ($db in @(@{c="tricorder-temporal-db";u="temporal";n="temporal"}, @{c="tricorder-langfuse-db";u="langfuse";n="langfuse"})) {
   $out = Join-Path $dest "$($db.n).sql"
