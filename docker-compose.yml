@@ -27,15 +27,15 @@ services:
     environment:
       NEO4J_AUTH: "${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:?NEO4J_PASSWORD manquant dans .env}"
       NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
-      NEO4J_dbms_memory_heap_max__size: "1G"
-      NEO4J_dbms_memory_pagecache_size: "512M"
+      NEO4J_dbms_memory_heap_max__size: "512m"
+      NEO4J_dbms_memory_pagecache_size: "256M"
     mem_limit: 2g
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
     restart: "no"
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:?NEO4J_PASSWORD manquant dans .env}", "RETURN 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
