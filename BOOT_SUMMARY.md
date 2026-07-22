@@ -9,9 +9,9 @@
 | Champ | Valeur |
 |---|---|
 | Version | **v1.0.0** (Self-Improving DEC-046 — 7 chantiers N1-N7 code-complete) |
-| Commit HEAD | `94fef64` |
+| Commit HEAD | `37e6fae` |
 | Release | `v1.0.0` = Latest (GitHub) |
-| Dernière session | 2026-06-14 |
+| Dernière session | 2026-07-13 |
 | Tests | **634 collected** (544 green @ v0.9.5 ; ajouts v1.0 verts ; suite validée en CI) |
 | Plugins | **13** |
 | Blockers actifs | Docker Desktop / Temporal **DOWN** en local (port 7233) → worker self-improving + schedules réels bloqués (reboot requis) |
@@ -99,4 +99,4 @@ Prêts production : 3/13 (deep-research-core, token-optimizer, security-audit-cl
 
 ---
 
-*Auto-régénérable — TricorderKit v1.0.0 — HEAD `94fef64` — 2026-06-14 — 634 tests collected, 0 FAIL.*
+*Auto-régénérable — TricorderKit v1.0.0 — HEAD `37e6fae` — 2026-07-13 — 634 tests collected, 0 FAIL.*

@@ -49,4 +49,14 @@ if (-not $SkipNeo4j) {
   docker stop tricorder-neo4j *>>$log
   docker run --rm -v tricorder_neo4j_data:/data -v "${dest}:/backup" alpine tar czf /backup/neo4j.tar.gz -C /data . 2>>$log
   $tarOk = ($LASTEXITCODE -eq 0)
-  docker s
+  docker start tricorder-neo4j *>>$log
+  if ($tarOk) { Log "neo4j tar : OK ($([math]::Round((Get-Item "$dest\neo4j.tar.gz").Length/1MB,1)) Mo) - conteneur relance" } else { Log "neo4j tar : ECHEC - conteneur relance"; $failures++ }
+}
+
+# 4. Retention
+Get-ChildItem $BackupRoot -Directory | Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-$RetentionDays) } | ForEach-Object {
+  Log "retention : suppression $($_.Name)"; Remove-Item $_.FullName -Recurse -Force
+}
+
+Log "=== Termine - $failures echec(s) ==="
+exit $failures
