@@ -176,3 +176,25 @@ experiments/ragas_eval/ragas_report.json
 # Fichiers de travail locaux (Workflow Standard) - hors repo public
 tasks/todo.md
 tasks/lessons.md
+
+# ─── Porteurs de secrets — ajoute le 2026-08-18 apres audit gitleaks ───────
+# Un .gitignore incomplet ne se voit que le jour ou il laisse passer quelque
+# chose. L'audit du 18/08 a trouve 7 valeurs distinctes dans l'historique d'un
+# des depots, dont une CLE ACTIVE de 48 caracteres presente dans 12 fichiers.
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+.env
+.env.*
+!.env.example
+secrets/
+secrets.*
+!secrets.sops.yaml
+*credentials*
+*_token*
+*cookies*
+known_hosts
+id_rsa*
+id_ed25519*
