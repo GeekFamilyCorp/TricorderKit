@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+sync_bus.py v3 - Bus multi-agents TricorderKit (canal_agents)
+
+v3 (2026-09-02, mission maitre P0-Communication) :
+- Roster : + "vps" (agent systeme : planner/collecte). "chatgpt" n'est JAMAIS fabrique localement.
+- Retour au demandeur : claim/done/progress/blocked repondent au `from` de l'assignation
+  (stocke dans le record de tache), plus jamais a "claude" en dur. Inconnu -> "all".
+- Atomicite : verrou fcntl.flock sur bus/.events.lock englobant next_seq + append ;
+  seq attribue A L'ECRITURE (jamais deux fois le meme seq, teste a 8 ecrivains).
+- Curseurs et fichiers de tache ecrits atomiquement (tmp + os.replace).
+- Types ajoutes : ack, progress, blocked, handoff, request (table d'equivalence dans PROTOCOL.md).
+- Champs ajoutes : reply_to (id de l'evenement initiateur), correlation_id (= task).
+- Nouvelles commandes : progress, blocked, ack ; schema : export du roster/types (schema --write).
+
 sync_bus.py v2 - Bus multi-agents TricorderKit (canal_agents)
 =============================================================
 
@@ -24,11 +37,19 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import os
 import sys
 import uuid
 from pathlib import Path
 
-AGENTS = ("claude", "antigravity", "codex", "qwen")
+try:
+    import fcntl  # POSIX (VPS). Sur Windows, repli sans verrou inter-processus.
+except ImportError:  # pragma: no cover
+    fcntl = None
+
+AGENTS = ("claude", "antigravity", "codex", "qwen", "vps")
+INTERACTIVE_AGENTS = ("claude", "antigravity", "codex")   # sessions humaines/LLM externes
+LOCAL_AGENTS = ("qwen", "vps")                             # workers systemd sur le VPS
 DESTINATIONS = AGENTS + ("all",)
 VALID_STATES = ("idle", "working", "blocked", "offline", "error")
 TASK_STATES = ("assigned", "in_progress", "done", "failed")
@@ -36,7 +57,12 @@ EVENT_TYPES = (
     "announce", "heartbeat", "message",
     "task_assign", "task_accept", "task_progress", "task_done", "task_failed",
     "deliverable_ready", "question", "answer", "gap", "lock", "unlock", "alert",
+    "ack", "progress", "blocked", "handoff", "request",
 )
+# Table d'equivalence avec le protocole minimal commun (mission maitre §5)
+PROTOCOL_MAP = {"TASK": "task_assign", "ACK": "ack", "PROGRESS": "task_progress", "RESULT": "task_done",
+                "ERROR": "task_failed", "BLOCKED": "blocked", "REQUEST": "request", "HANDOFF": "handoff",
+                "HEARTBEAT": "heartbeat"}
 
 # Seuils d'alerte (minutes)
 ASSIGN_TIMEOUT_MIN = 15      # tache 'assigned' jamais reclamee
@@ -51,6 +77,8 @@ INBOX = CANAL_ROOT / "inbox"
 OUTBOX = CANAL_ROOT / "outbox"
 ARCHIVE = CANAL_ROOT / "archive"
 LOCKS = CANAL_ROOT / "locks"
+EVENTS_LOCK = BUS_DIR / ".events.lock"
+SCHEMA = BUS_DIR / "events.schema.json"
 STATUS = CANAL_ROOT / "STATUS.json"
 ALERTS_MD = CANAL_ROOT / "ALERTS.md"
 
@@ -97,6 +125,29 @@ def ensure_tree() -> None:
 # --------------------------------------------------------------------------- #
 # Evenements + validation de schema
 # --------------------------------------------------------------------------- #
+def atomic_write_text(path: Path, text: str) -> None:
+    """Ecriture atomique : tmp + os.replace (jamais de fichier a moitie ecrit)."""
+    tmp = path.with_name(path.name + ".tmp." + uuid.uuid4().hex[:6])
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+class _EventsLock:
+    """Verrou inter-processus sur le journal (POSIX flock). Un seul ecrivain a la fois
+    pour la paire (lecture du dernier seq, append)."""
+    def __enter__(self):
+        ensure_tree()
+        self.fh = EVENTS_LOCK.open("a+")
+        if fcntl is not None:
+            fcntl.flock(self.fh.fileno(), fcntl.LOCK_EX)
+        return self
+    def __exit__(self, *exc):
+        if fcntl is not None:
+            fcntl.flock(self.fh.fileno(), fcntl.LOCK_UN)
+        self.fh.close()
+        return False
+
+
 def validate_event(ev: dict):
     """Retourne (True, '') si valide, sinon (False, raison). Reflet de
     events.schema.json (validation stdlib, pas de dependance jsonschema)."""
@@ -132,30 +183,64 @@ def read_events() -> list:
     return out
 
 
-def next_seq() -> int:
+def last_seq() -> int:
+    """Dernier seq du journal (lecture de la queue du fichier, pas du fichier entier)."""
+    if not EVENTS.exists():
+        return 0
     mx = 0
-    for e in read_events():
+    with EVENTS.open("rb") as fh:
+        fh.seek(0, 2)
+        size = fh.tell()
+        fh.seek(max(0, size - 65536))
+        tail = fh.read().decode("utf-8", "replace").splitlines()
+    for line in reversed(tail):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            e = json.loads(line)
+        except json.JSONDecodeError:
+            continue
         if isinstance(e, dict) and isinstance(e.get("seq"), int):
             mx = max(mx, e["seq"])
-    return mx + 1
+    if mx == 0 and size > 65536:  # queue illisible : repli lecture complete
+        for e in read_events():
+            if isinstance(e, dict) and isinstance(e.get("seq"), int):
+                mx = max(mx, e["seq"])
+    return mx
 
 
-def make_event(sender, to, etype, task=None, msg="", payload=None) -> dict:
-    return {
-        "seq": next_seq(), "id": uuid.uuid4().hex[:12], "ts": now_iso(),
+def next_seq() -> int:
+    """Conserve pour compatibilite (dry-run). Le seq REEL est attribue par append_event sous verrou."""
+    return last_seq() + 1
+
+
+def make_event(sender, to, etype, task=None, msg="", payload=None, reply_to=None) -> dict:
+    ev = {
+        "seq": 0, "id": uuid.uuid4().hex[:12], "ts": now_iso(),
         "from": sender, "to": to, "type": etype,
         "task": task, "msg": msg or "", "payload": payload or {},
     }
+    if task:
+        ev["correlation_id"] = task
+    if reply_to:
+        ev["reply_to"] = reply_to
+    return ev
 
 
 def append_event(ev: dict, validate: bool = True) -> dict:
-    if validate:
-        ok, why = validate_event(ev)
-        if not ok:
-            raise ValueError(f"event invalide ({why})")
-    ensure_tree()
-    with EVENTS.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(ev, ensure_ascii=False) + "\n")
+    """Attribue le seq et ecrit, sous verrou inter-processus : deux ecrivains
+    simultanes ne peuvent pas obtenir le meme seq."""
+    with _EventsLock():
+        ev["seq"] = last_seq() + 1
+        if validate:
+            ok, why = validate_event(ev)
+            if not ok:
+                raise ValueError(f"event invalide ({why})")
+        with EVENTS.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(ev, ensure_ascii=False) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
     return ev
 
 
@@ -177,7 +262,7 @@ def get_cursor(agent: str) -> int:
 
 
 def set_cursor(agent: str, seq: int) -> None:
-    cursor_path(agent).write_text(str(seq), encoding="utf-8")
+    atomic_write_text(cursor_path(agent), str(seq))
 
 
 # --------------------------------------------------------------------------- #
@@ -198,8 +283,14 @@ def load_task(agent: str, task: str):
 
 
 def save_task(agent: str, task: str, rec: dict) -> None:
-    task_file(agent, task).write_text(json.dumps(rec, ensure_ascii=False, indent=2),
-                                      encoding="utf-8")
+    atomic_write_text(task_file(agent, task), json.dumps(rec, ensure_ascii=False, indent=2))
+
+
+def requester_of(rec: dict) -> str:
+    """Le demandeur d'une tache = `from` de l'evenement task_assign conserve dans le record.
+    Jamais "claude" en dur : inconnu -> broadcast "all"."""
+    who = (rec or {}).get("requester") or (rec or {}).get("from")
+    return who if who in AGENTS else "all"
 
 
 # --------------------------------------------------------------------------- #
@@ -272,6 +363,8 @@ def cmd_dispatch(args) -> dict:
     record = dict(ev)
     record["status"] = "assigned"
     record["attempts"] = 0
+    record["requester"] = args.sender          # v3 : retour au demandeur
+    record["assign_event_id"] = ev["id"]
     if args.dry_run:
         return {"ok": True, "dry_run": True, "would_append": ev,
                 "would_write": str(task_file(args.to, task_id))}
@@ -303,8 +396,8 @@ def cmd_claim(args) -> dict:
     if args.dry_run:
         return {"ok": True, "dry_run": True, "would_claim": rec}
     save_task(args.agent, args.task, rec)
-    append_event(make_event(args.agent, "claude", "task_accept", task=args.task,
-                            payload={"attempt": rec["attempts"]}))
+    append_event(make_event(args.agent, requester_of(rec), "task_accept", task=args.task,
+                            payload={"attempt": rec["attempts"]}, reply_to=rec.get("assign_event_id")))
     return {"ok": True, "action": "claim", "task": args.task, "attempts": rec["attempts"],
             "status": "in_progress"}
 
@@ -322,13 +415,108 @@ def cmd_done(args) -> dict:
         return {"ok": True, "dry_run": True, "would_finalize": rec}
     save_task(args.agent, args.task, rec)
     etype = "task_done" if status == "done" else "task_failed"
-    append_event(make_event(args.agent, "claude", etype, task=args.task,
-                            msg=args.msg or "", payload={"deliverable": args.deliverable or ""}))
+    append_event(make_event(args.agent, requester_of(rec), etype, task=args.task,
+                            msg=args.msg or "", payload={"deliverable": args.deliverable or "",
+                                                         "error": args.error or ""},
+                            reply_to=rec.get("assign_event_id")))
     if args.archive:
         dest = ARCHIVE / (args.agent + "_" + args.task + ".json")
         task_file(args.agent, args.task).replace(dest)
         rec["_archived_to"] = str(dest)
     return {"ok": True, "action": "done", "task": args.task, "status": status}
+
+
+def cmd_progress(args) -> dict:
+    """PROGRESS : l'executant informe le demandeur (et conserve le pourcentage dans le record)."""
+    rec = load_task(args.agent, args.task)
+    if not rec:
+        return {"ok": False, "error": "tache absente", "task": args.task}
+    rec["progress"] = args.percent
+    rec["progress_at"] = now_iso()
+    if args.dry_run:
+        return {"ok": True, "dry_run": True, "would_update": rec}
+    save_task(args.agent, args.task, rec)
+    ev = append_event(make_event(args.agent, requester_of(rec), "task_progress", task=args.task,
+                                 msg=args.msg or "", payload={"percent": args.percent},
+                                 reply_to=rec.get("assign_event_id")))
+    return {"ok": True, "action": "progress", "task": args.task, "event": ev}
+
+
+def cmd_blocked(args) -> dict:
+    """BLOCKED : l'executant declare un blocage (escalade au demandeur) ; la tache reste in_progress."""
+    rec = load_task(args.agent, args.task)
+    if not rec:
+        return {"ok": False, "error": "tache absente", "task": args.task}
+    rec["blocked_reason"] = args.msg or ""
+    rec["blocked_at"] = now_iso()
+    if args.dry_run:
+        return {"ok": True, "dry_run": True, "would_update": rec}
+    save_task(args.agent, args.task, rec)
+    ev = append_event(make_event(args.agent, requester_of(rec), "blocked", task=args.task,
+                                 msg=args.msg or "", payload={"needs": args.needs or ""},
+                                 reply_to=rec.get("assign_event_id")))
+    return {"ok": True, "action": "blocked", "task": args.task, "event": ev}
+
+
+def cmd_ack(args) -> dict:
+    """ACK : accuse de reception d'un evenement (par id), renvoye a son emetteur."""
+    target = None
+    for e in read_events():
+        if isinstance(e, dict) and e.get("id") == args.event_id:
+            target = e
+            break
+    if not target:
+        return {"ok": False, "error": "evenement inconnu: " + args.event_id}
+    ev = append_event(make_event(args.agent, target.get("from") if target.get("from") in AGENTS else "all",
+                                 "ack", task=target.get("task"), msg=args.msg or "",
+                                 reply_to=args.event_id))
+    return {"ok": True, "action": "ack", "event": ev}
+
+
+def schema_dict() -> dict:
+    """Le schema JSON est GENERE depuis le code : aucun decalage possible."""
+    return {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "canal_agents event (v3)",
+        "description": "Contrat d'un evenement du bus (events.jsonl). Genere par sync_bus.py schema --write ; "
+                       "valide a l'ecriture par validate_event().",
+        "type": "object",
+        "required": ["seq", "id", "ts", "from", "to", "type"],
+        "additionalProperties": True,
+        "properties": {
+            "seq": {"type": "integer", "minimum": 1, "description": "Sequence monotone, attribuee sous verrou"},
+            "id": {"type": "string"},
+            "ts": {"type": "string", "description": "ISO-8601 avec offset"},
+            "from": {"enum": list(AGENTS)},
+            "to": {"enum": list(DESTINATIONS)},
+            "type": {"enum": list(EVENT_TYPES)},
+            "task": {"type": ["string", "null"], "description": "identifiant de tache = correlation_id"},
+            "correlation_id": {"type": ["string", "null"]},
+            "reply_to": {"type": ["string", "null"], "description": "id de l'evenement initiateur"},
+            "msg": {"type": "string"},
+            "payload": {"type": "object"},
+        },
+        "x-agents": {"interactive": list(INTERACTIVE_AGENTS), "local": list(LOCAL_AGENTS),
+                     "broadcast": "all", "never_fabricated": ["chatgpt"]},
+        "x-protocol-map": PROTOCOL_MAP,
+    }
+
+
+def cmd_schema(args) -> dict:
+    sch = schema_dict()
+    if args.write:
+        atomic_write_text(SCHEMA, json.dumps(sch, ensure_ascii=False, indent=2) + "\n")
+        return {"ok": True, "action": "schema", "written": str(SCHEMA)}
+    if args.check:
+        try:
+            cur = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        except Exception as exc:
+            return {"ok": False, "error": "schema illisible: " + str(exc)}
+        same = cur.get("properties", {}).get("from") == sch["properties"]["from"] and \
+            cur.get("properties", {}).get("to") == sch["properties"]["to"] and \
+            cur.get("properties", {}).get("type") == sch["properties"]["type"]
+        return {"ok": same, "action": "schema-check", "coherent": same}
+    return {"ok": True, "action": "schema", "schema": sch}
 
 
 def cmd_task_status(args) -> dict:
@@ -600,7 +788,7 @@ def cmd_health(args) -> dict:
         write_alerts_md(alerts)
         if args.emit and alerts:
             for al in alerts:
-                append_event(make_event("claude", "claude", "alert",
+                append_event(make_event("vps", "all", "alert",
                                         msg=al.get("kind", "alert"), payload=al))
     if rot.get("rotated"):
         result["rotated"] = rot
@@ -665,8 +853,32 @@ def build_parser() -> argparse.ArgumentParser:
     dn.add_argument("--status", default="done", choices=["done", "failed"])
     dn.add_argument("--deliverable", default=None)
     dn.add_argument("--msg", default="")
+    dn.add_argument("--error", default=None)
     dn.add_argument("--archive", action="store_true")
     dn.add_argument("--dry-run", action="store_true")
+
+    pg = sub.add_parser("progress")
+    pg.add_argument("--agent", required=True, choices=AGENTS)
+    pg.add_argument("--task", required=True)
+    pg.add_argument("--percent", type=int, default=0)
+    pg.add_argument("--msg", default="")
+    pg.add_argument("--dry-run", action="store_true")
+
+    bl = sub.add_parser("blocked")
+    bl.add_argument("--agent", required=True, choices=AGENTS)
+    bl.add_argument("--task", required=True)
+    bl.add_argument("--msg", default="")
+    bl.add_argument("--needs", default=None)
+    bl.add_argument("--dry-run", action="store_true")
+
+    ak = sub.add_parser("ack")
+    ak.add_argument("--agent", required=True, choices=AGENTS)
+    ak.add_argument("--event-id", required=True)
+    ak.add_argument("--msg", default="")
+
+    sc = sub.add_parser("schema")
+    sc.add_argument("--write", action="store_true")
+    sc.add_argument("--check", action="store_true")
 
     ts = sub.add_parser("task-status")
     ts.add_argument("--agent", required=True, choices=AGENTS)
@@ -712,6 +924,7 @@ DISPATCH = {
     "claim": cmd_claim, "done": cmd_done, "task-status": cmd_task_status, "tasks": cmd_tasks,
     "lock": cmd_lock, "unlock": cmd_unlock, "read": cmd_read, "inbox": cmd_inbox,
     "health": cmd_health, "status": cmd_status, "rotate": cmd_rotate,
+    "progress": cmd_progress, "blocked": cmd_blocked, "ack": cmd_ack, "schema": cmd_schema,
 }
 
 
