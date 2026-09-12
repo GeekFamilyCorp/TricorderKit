@@ -198,3 +198,9 @@ secrets.*
 known_hosts
 id_rsa*
 id_ed25519*
+
+# 2026-09-12 — scripts jetables de session, jamais destines au depot public (R37).
+# Mesure du 12/09 : 19 fichiers _tmp_*.py presents en non-suivis, 0 contenant un
+# chemin personnel ou une IP VPS. La regle previent l'accident, pas une fuite
+# constatee. Retour arriere : .gitignore.bak_20260912
+_tmp_*.py
