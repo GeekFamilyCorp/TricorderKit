@@ -1,3 +1,5 @@
+
+
 <div align="center">
 
 <img src="assets/banner.png" alt="TricorderKit — the local-first Agentic Knowledge OS" width="820" />
@@ -61,7 +63,7 @@ cd TricorderKit
 python cli/tk.py doctor
 
 # 2. Bring up the optional local stack (RAG + workflows + observability)
-docker compose --profile graph up -d        # Neo4j + Qdrant
+docker compose --profile graph up -d        # Neo4j 7474 · Qdrant 6333
 #   ... profiles: graph | workflows | observability (start only what you need)
 
 # 3. Try it
