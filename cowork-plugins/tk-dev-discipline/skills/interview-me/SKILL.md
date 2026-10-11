@@ -1,7 +1,7 @@
 ---
 name: interview-me
 description: "Extrait ce que l'utilisateur veut réellement par un entretien une-question-à-la-fois (outil AskUserQuestion), jusqu'à ~95 % de confiance sur l'intention, le périmètre, les contraintes, le critère de réussite et le format de livrable, AVANT tout plan, spec ou code. Usage manuel : 'interroge-moi', 'cadre ma demande', 'es-tu sûr d'avoir compris', 'stress-test mon idée', 'pose-moi les bonnes questions', ou quand la demande est sous-spécifiée et qu'on se surprend à combler des trous. Ne pas utiliser quand la demande est déjà claire et détaillée, ni quand la décision est déjà prise et qu'il faut la challenger (→ tk-dev-discipline:doubt-driven-development)."
-license: Proprietary — GeekFamilyCorp, usage privé
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

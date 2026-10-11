@@ -9,7 +9,7 @@ description: >-
   activer pour une coquille triviale corrigée en un coup d'œil, ni pour corriger/durcir une
   application web entière → code-corrector, ni pour ajouter du logging préventif → observability-
   and-instrumentation.
-license: Proprietary
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp
@@ -36,7 +36,7 @@ Règles citées, en une ligne chacune (détail dans `${CLAUDE_PLUGIN_ROOT}/refer
    de bascule.
 5. **Corriger la cause**, pas le symptôme ; vérifier qu'aucune autre branche n'en dépendait.
 6. **Prouver** : rejouer le cas + un cas voisin (régression).
-7. **Capitaliser (R48)** : une entrée dans le log d'erreurs du claude-vault (`40_ERRORS/`) —
+7. **Capitaliser (R48)** : une entrée dans le log d'erreurs du projet (par exemple `40_ERRORS/`) —
    symptôme, cause, correctif, pattern si récurrent.
 
 ## Exemple — timer systemd muet
@@ -67,6 +67,6 @@ Corriger le symptôme et fermer.
 
 ## Changelog
 - **2026-09-07 — 1.1** : R22/R48/R51 définies en une ligne ; chemins vault remplacés par
-  « log d'erreurs du claude-vault (`40_ERRORS/`) » ; noms de scripts privés retirés ; exemple timer
+  « log d'erreurs du projet » ; noms de scripts privés retirés ; exemple timer
   systemd ajouté ; frontmatter normalisé.
 - **2026-07 — 1.0** : version initiale.

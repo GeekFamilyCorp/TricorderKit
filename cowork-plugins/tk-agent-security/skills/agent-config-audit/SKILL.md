@@ -10,7 +10,7 @@ description: >-
   modifie jamais lui-même permissions, contrôles d'accès ou secrets. Ne pas utiliser pour auditer le
   code d'une application web (OWASP) → code-corrector, ni pour inventorier/comparer des skills →
   tk-knowledge:skill-manager.
-license: Proprietary
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

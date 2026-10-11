@@ -10,7 +10,7 @@ description: >-
   un logger JSON stdlib prêt à copier (scripts/structlog_snippet.py). Ne pas activer pour un simple
   print de debug ponctuel, ni pour trouver la cause d'une panne déjà visible → debugging-and-error-
   recovery.
-license: Proprietary
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

@@ -10,7 +10,7 @@ description: >-
   adverse", "stress-test", "avant de pousser/purger/écrire en masse". Ne pas utiliser pour cadrer
   une demande floue AVANT qu'une décision existe → tk-dev-discipline:interview-me, ni pour dérouler
   tout un développement → dev-protocol (qui appelle ce skill en porte finale).
-license: Proprietary
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

@@ -8,8 +8,8 @@ description: >-
   cette page en compétence", "capitaliser ce contenu". Pipeline : ingestion (pdf/docx via les skills
   pdf et docx) → extraction d'intention → brouillon → détection de doublon → PROPOSITION, jamais
   d'installation automatique. Ne pas utiliser pour un simple résumé, ni pour polir/évaluer un skill
-  déjà rédigé → skill-creator, ni pour chercher un skill existant à installer → gfc-ops:capability-scout.
-license: Proprietary
+  déjà rédigé → skill-creator, ni pour chercher un skill existant à installer (recherche à part, hors de ce skill).
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

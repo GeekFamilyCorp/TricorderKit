@@ -1,5 +1,5 @@
 #!/bin/sh
-# inventory.sh — inventaire multi-racines des SKILL.md (skill-manager, gfc-ops)
+# inventory.sh — inventaire multi-racines des SKILL.md (skill-manager)
 # POSIX sh. Lecture seule. Aucun chemin en dur : les racines derivent de $HOME
 # (ou de la variable SKILL_ROOTS), les anciennes surfaces sont tentees en repli.
 #

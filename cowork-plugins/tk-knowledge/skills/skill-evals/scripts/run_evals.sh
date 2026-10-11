@@ -5,7 +5,7 @@
 #   sh run_evals.sh <dossier-du-skill> [--evals <dossier-evals>] [--model <alias|id>]
 #                   [--workspace <dir>] [--known-skills a,b] [--ignore-refs a,b] [--static-only]
 #
-#   <dossier-du-skill>  dossier contenant SKILL.md (ex. …/tricorderkit-skills/skills/god-mode)
+#   <dossier-du-skill>  dossier contenant SKILL.md (ex. …/tricorderkit-skills/skills/code-corrector)
 #   --evals             dossier contenant evals.json / triggers.json
 #                       (défaut : <ce skill>/evals/<name> puis <dossier-du-skill>/evals)
 #   --model             modèle passé à run_eval.py (défaut : celui de la session, cf. claude -p)

@@ -1,7 +1,7 @@
 ---
 name: skill-manager
 description: "Gestionnaire centralisé des skills et plugins Claude Cowork installés : inventaire multi-racines (skills autonomes, plugins, anciennes surfaces), health check à 8 critères appuyé sur quick_validate.py, détection de conflits et redondances, comparaison, archivage, changelog. S'active quand l'utilisateur parle de 'mes skills', 'inventaire skills', 'audit skills', 'health check', 'conflit skills', 'compare skill A et B', 'que fait le skill X', 'archive le skill', 'changelog skill', 'optimise mon écosystème'. Ne pas utiliser pour : créer ou améliorer un skill avec evals (→ skill-creator), détecter un skill MANQUANT pour une tâche (→ capability-scout), une veille état-de-l'art (→ god-mode)."
-license: Proprietary — GeekFamilyCorp, usage privé
+license: MIT
 metadata:
   version: "3.1"
   author: GeekFamilyCorp
@@ -17,8 +17,10 @@ Inventorier, classifier, auditer, comparer, archiver, documenter les skills et p
 - `skill-creator` (Anthropic) = création et amélioration avec evals → lui déléguer toute demande de création/refonte profonde.
 - `capability-scout` = détecter ce qui MANQUE pour une tâche → hors scope ici.
 - `god-mode` = veille état-de-l'art → hors scope ici.
+- `capability-scout`, `god-mode` et `memory-boot` ne sont pas publiés dans ce dépôt : ce sont des
+  exemples de skills voisins, à remplacer par les vôtres.
 
-**Limite d'écriture (PATTERN-EDIT-DUALFS-001)** : les SKILL.md vus par la session (racines `synced/*`, `/mnt/skills`, `/sessions/*`) sont un **cache lecture seule** ; les éditer ne met pas à jour le skill installé. Source de vérité = vault `claude-vault/00_SYSTEM/00_Skills/<skill>/SKILL.md`. Toute amélioration se livre **en fichier** (`.skill`/`.plugin` repaquetés, puis Réglages > Fonctionnalités), jamais en hot-patch silencieux. Voir `${CLAUDE_PLUGIN_ROOT}/references/regles.md` (R34, R35/R59, R60).
+**Limite d'écriture (PATTERN-EDIT-DUALFS-001)** : les SKILL.md vus par la session (racines `synced/*`, `/mnt/skills`, `/sessions/*`) sont un **cache lecture seule** ; les éditer ne met pas à jour le skill installé. Source de vérité = votre dépôt ou vos notes (`<skills>/<skill>/SKILL.md`). Toute amélioration se livre **en fichier** (`.skill`/`.plugin` repaquetés, puis Réglages > Fonctionnalités), jamais en hot-patch silencieux. Voir `${CLAUDE_PLUGIN_ROOT}/references/regles.md` (R34, R35/R59, R60).
 
 ## Protocole 0 — Résolution multi-racines (toujours en premier)
 Aucun chemin n'est codé en dur : les racines dérivent de `$HOME` et sont tentées dans l'ordre.
@@ -85,7 +87,7 @@ Outil : `quick_validate.py`, qui vit dans `skills/skill-creator/scripts/quick_va
 
 ## Exemples
 - « Liste mes skills » → Protocole 0 + rapport standard.
-- « Health check du plugin gfc-ops » → `inventory.sh` sur la racine plugins + `quick_validate.py` sur chaque dossier + table /8.
+- « Health check du plugin tk-knowledge » → `inventory.sh` sur la racine plugins + `quick_validate.py` sur chaque dossier + table /8.
 - « Y a-t-il des conflits entre file-organizer et le skill de rangement du vault ? » → comparaison + recommandation.
 - « Archive le skill fiche-validator » → protocole 5, proposé puis appliqué sur GO (R53).
 - « Il me manque un skill pour X » → renvoyer à `capability-scout`.

@@ -12,7 +12,7 @@ description: >-
   seulement après approbation explicite. Ne pas utiliser pour un débogage ponctuel d'un script ou
   d'un timer → debugging-and-error-recovery, ni pour auditer la configuration de l'agent (MCP,
   hooks, permissions) → agent-config-audit.
-license: Proprietary
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp
@@ -58,7 +58,7 @@ En cas de doute sur la catégorie : STRUCTURAL. Ne jamais affaiblir un contrôle
 | Mode | Quand | Ce qui change |
 |---|---|---|
 | **Générique** (défaut) | code d'un tiers, projet public, application inconnue | rien de nommé ; rapport standard |
-| **Privé** | l'utilisateur vise un composant de sa propre stack (graphe, vecteurs, workflows, gateway, agent de veille, VPS) | lire ``references/stack-privee.md` du plugin PRIVÉ gfc-ops (absent du dépôt public, R37)` : protocole PROD, composants à conserver, inventaire à revérifier |
+| **Privé** | l'utilisateur vise un composant de sa propre stack (graphe, vecteurs, workflows, gateway, agent de veille, VPS) | lire votre fiche de stack (`references/stack-privee.md`, à écrire vous-même : elle n'est pas fournie) : protocole PROD, composants à conserver, inventaire à revérifier |
 
 Le mode privé ajoute en tête du rapport : composant visé, environnement (poste / VPS), mode
 (lecture seule / modification approuvée). Ce fichier de référence ne franchit jamais la frontière du
@@ -94,7 +94,7 @@ du rapport avec diff, risque et rollback ; en attente d'accord.**
 
 **Mode privé.**
 Entrée : « le dashboard de la gateway tronque la liste des runs à 100 ».
-Lecture de ``references/stack-privee.md` du plugin PRIVÉ gfc-ops (absent du dépôt public, R37)` → environnement poste, service en marche → mode lecture seule
+Lecture de votre fiche de stack (`references/stack-privee.md`, à écrire vous-même : elle n'est pas fournie) → environnement poste, service en marche → mode lecture seule
 d'abord. Diagnostic : cap UI côté template. Correctif : pagination côté client, aucun paramètre serveur
 touché (le throttle reste). Rapport en-tête : composant = agent-gateway, env = poste, mode = modif
 locale approuvée.
@@ -113,6 +113,6 @@ locale approuvée.
 
 ## Changelog
 - **2026-09-07 — 1.1** : absorbe `code-corrector-local` (archivé) ; checklist OWASP déplacée en
-  `references/owasp.md` ; mode privé + protocole PROD en ``references/stack-privee.md` du plugin PRIVÉ gfc-ops (absent du dépôt public, R37)` (PRIVÉ, R37) ;
+  `references/owasp.md` ; mode privé + protocole PROD sortis dans une fiche de stack non publiée ;
   renvois fantômes supprimés ; frontmatter normalisé ; trois exemples ajoutés.
 - **2026-06 — 1.0** : version initiale.

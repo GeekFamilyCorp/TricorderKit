@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Fais un health check du plugin gfc-ops : score /8 par skill, critères KO, action.",
+      "prompt": "Fais un health check du plugin tk-knowledge : score /8 par skill, critères KO, action.",
       "expected_output": "[TRIGGER] Protocole 0 (inventory.sh) → quick_validate.py sur chaque dossier → table skill | score /8 | critères KO | action.",
       "files": [],
       "expectations": [
@@ -29,7 +29,7 @@
     {
       "id": 3,
       "prompt": "Il me manque un skill pour convertir des sous-titres srt en vtt, qu'est-ce qui m'aiderait ?",
-      "expected_output": "[NO-TRIGGER → gfc-ops:capability-scout] Détection d'un manque pour une tâche → hors scope skill-manager.",
+      "expected_output": "[NO-TRIGGER → recherche de skill, hors périmètre] Détection d'un manque pour une tâche → hors scope skill-manager.",
       "files": [],
       "expectations": [
         "[DET must_contain] capability-scout",

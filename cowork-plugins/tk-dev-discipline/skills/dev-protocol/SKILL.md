@@ -10,7 +10,7 @@ description: >-
   à tk-dev-discipline:interview-me ; la porte finale délègue à doubt-driven-development. Ne pas
   utiliser pour un correctif trivial en une étape et un seul fichier (faire direct), ni pour
   corriger/durcir une app existante sans nouvelle fonctionnalité → code-corrector.
-license: Proprietary
+license: MIT
 metadata:
   version: "2.0"
   author: GeekFamilyCorp

@@ -1,7 +1,7 @@
 ---
 name: head-agent
 description: "Orchestrateur multi-agents pour les LIVRABLES NON-CODE : recherche + synthèse, rapports, audits, veilles, dossiers structurés. Découpe une tâche trop large ou hétérogène en sous-tâches déléguées à des sous-agents via l'outil Agent, choisit le mode (séquentiel ou parallèle), vérifie puis assemble. Usage manuel : 'orchestre', 'coordonne plusieurs agents', 'head agent', 'délègue', 'recherche + synthèse en parallèle', 'gros livrable structuré', 'audit avec sous-agents'. Ne pas utiliser pour : une tâche simple traitable en un passage (surcoût), du CODE (→ tk-dev-discipline:dev-protocol)."
-license: Proprietary — GeekFamilyCorp, usage privé
+license: MIT
 metadata:
   version: "1.1"
   author: GeekFamilyCorp

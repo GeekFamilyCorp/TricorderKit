@@ -1,6 +1,6 @@
 [
   {
-    "query": "Fais un health check du plugin gfc-ops : score /8 par skill, critères KO, action",
+    "query": "Fais un health check du plugin tk-knowledge : score /8 par skill, critères KO, action",
     "should_trigger": true,
     "kind": "trigger"
   },
@@ -23,7 +23,7 @@
     "query": "Il me manque un skill pour convertir des sous-titres srt en vtt, qu'est-ce qui m'aiderait ?",
     "should_trigger": false,
     "kind": "no-trigger",
-    "expected_skill": "gfc-ops:capability-scout"
+    "expected_skill": "hors-perimetre"
   },
   {
     "query": "crée un skill à partir de ce README de Scrapling et fais-lui des evals",
@@ -35,7 +35,7 @@
     "query": "quoi de neuf en context engineering pour améliorer nos skills ?",
     "should_trigger": false,
     "kind": "no-trigger",
-    "expected_skill": "gfc-ops:god-mode"
+    "expected_skill": "hors-perimetre"
   },
   {
     "query": "écris les evals de code-corrector et lance-les avant que je le repackage",

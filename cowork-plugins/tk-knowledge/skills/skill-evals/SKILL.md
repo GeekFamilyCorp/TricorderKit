@@ -1,7 +1,7 @@
 ---
 name: skill-evals
 description: "Écrit, exécute et consigne les jeux d'evals des skills critiques de l'utilisateur (déclenchement, non-déclenchement, qualité, régression, token-hygiene) au format natif de skill-creator (evals.json + triggers.json), avec contrôles déterministes hors LLM (check_static.py : frontmatter, description ≤ 1024, chemins en dur, IP, nom de modèle versionné, renvois → skill fantômes, changelog) AVANT tout juge LLM. À utiliser quand l'utilisateur dit « écris/lance les evals de X », « teste ce skill avant de le repackager », « est-ce que X se déclenche encore », « régression sur un skill », « vérifie qu'il n'y a pas de chemin en dur », ou avant toute réécriture ou repackaging d'un skill (R59). Ne pas utiliser pour : créer ou réécrire un skill → skill-creator (création) ; inventaire, health check ou conflits de skills → tk-knowledge:skill-manager (inventaire)."
-license: Proprietary — GeekFamilyCorp, usage privé
+license: MIT
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent
 metadata:
   version: "1.0"
@@ -108,7 +108,7 @@ noms exacts, le viewer en dépend — puis `summary.pass_rate`, `execution_metri
 1. **Projet** : `claude/veilles/JOURNAL_skill-evals.md` — une ligne datée par run :
    `date | skill | version | check_static OK/KO | triggers n/N | qualité pass_rate | verdict | lien workspace`,
    et une ligne au `claude/veilles/REGISTRE.md` à la création du journal.
-2. **Vault** : `claude-vault/00_SYSTEM/00_Skills/<skill>/EVALS.md` — dernière ligne de base et
+2. **Vault** : `<vos-notes>/skills/<skill>/EVALS.md` — dernière ligne de base et
    verdict ; le skill n'est « testé » que si c'est écrit et daté (R79).
 3. Les workspaces (`<skill>-workspace/evals-<date>/`) restent hors du dépôt public (R37).
 
