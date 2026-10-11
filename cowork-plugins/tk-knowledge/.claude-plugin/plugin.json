@@ -1,0 +1,13 @@
+{
+  "name": "tk-knowledge",
+  "version": "1.0.0",
+  "description": "Méta-compétences TricorderKit : gestion et audit de l'écosystème de skills (skill-manager), evals de skills (skill-evals), transformation de documentation en skill (doc-to-skill), orchestration de livrables non-code (head-agent).",
+  "author": {
+    "name": "GeekFamilyCorp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tricorderkit",
+    "tk"
+  ]
+}

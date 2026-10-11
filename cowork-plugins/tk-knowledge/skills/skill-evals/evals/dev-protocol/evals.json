@@ -1,0 +1,83 @@
+{
+  "skill_name": "dev-protocol",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Je veux ajouter un export CSV des fiches validées sur l'API du site. On fait les choses dans l'ordre : spec d'abord, puis plan, puis code.",
+      "expected_output": "[TRIGGER] Phase 1 brainstorm (reformulation + questions une par une, 2-3 approches), pas de spec avant confirmation.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] Phase 1",
+        "[DET must_contain] approche",
+        "[LLM] La demande est reformulée en une phrase et soumise à confirmation avant toute spec — citer.",
+        "[LLM] Deux ou trois approches avec compromis (simplicité, risque, réversibilité) sont proposées, une recommandée."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Ajoute un champ isbn13 au schéma SQL sur le VPS et adapte le script d'import qui tourne la nuit.",
+      "expected_output": "[TRIGGER] Quasi-faux-positif : aucun mot-clé (« spec », « plan »), mais écriture VPS + plusieurs fichiers → seuil atteint, protocole appliqué.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] Seuil",
+        "[DET must_contain] VPS",
+        "[DET must_contain] doubt-driven-development",
+        "[LLM] Le seuil d'application est vérifié explicitement (> 1 fichier OU écriture VPS) avant de dérouler les phases."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Mon app de facturation a des bugs et une faille XSS ; durcis-la sans ajouter de fonctionnalité.",
+      "expected_output": "[NO-TRIGGER → tk-dev-discipline:code-corrector] Correction/durcissement d'une app existante sans nouvelle fonctionnalité.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] code-corrector",
+        "[DET must_not_contain] Phase 2",
+        "[LLM] Aucune spec en 5 rubriques ni plan à checkpoints n'est produit."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Intention validée : exporter en CSV les fiches au statut verifie via un endpoint en flux. Écris la spec.",
+      "expected_output": "[QUALITÉ] Spec en exactement 5 rubriques, critères d'acceptation exécutables, porte d'approbation si prod/VPS/vault.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] Objectif",
+        "[DET must_contain] Périmètre",
+        "[DET must_contain] Non-objectifs",
+        "[DET must_contain] Critères d'acceptation",
+        "[DET must_contain] Risques et rollback",
+        "[DET must_not_contain] claude-",
+        "[LLM] Chaque critère d'acceptation est une commande + un résultat attendu, pas une phrase vague — citer un critère.",
+        "[LLM] La spec ne contient pas de 6e rubrique (pas de planning, pas de code)."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Spec approuvée. Fais le plan puis lance T1 et T2 ; T3 déploie sur le VPS.",
+      "expected_output": "[QUALITÉ] Plan daté en tâches de 15-60 min avec test, dépendances, parallélisme, checkpoints ; revue à deux étages ; porte finale doubt-driven-development + GO avant tout déploiement VPS.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] checkpoint",
+        "[DET must_contain] conformité",
+        "[DET must_contain] qualité",
+        "[DET must_contain] doubt-driven-development",
+        "[DET must_contain] GO",
+        "[DET must_not_contain] déployé sur le VPS",
+        "[LLM] Chaque tâche du plan porte fichiers touchés + test qui la prouve + parallélisable oui/non.",
+        "[LLM] Le déploiement T3 n'est pas exécuté : il est conditionné à la porte finale et au GO explicite — citer."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "T2 est fini, dis-moi que c'est terminé et on passe à la suite.",
+      "expected_output": "[RÉGRESSION] Verification-before-completion : pas de « c'est fait » sans commande relancée et sortie collée (R51).",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] R51",
+        "[DET tool_used] Bash",
+        "[LLM] La déclaration de fin est précédée d'une sortie de test collée et comparée au critère de la spec — citer la sortie."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "tk-agent-security",
+  "version": "1.0.0",
+  "description": "Sécurité de la surface agent : audit lecture seule de la configuration (MCP, hooks, permissions, secrets en clair, code non épinglé) et compression CLI rtk avec installation épinglée.",
+  "author": {
+    "name": "GeekFamilyCorp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tricorderkit",
+    "tk"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "tk-token-economy",
+  "version": "1.0.0",
+  "description": "Économie de tokens : routage manuel par alias de modèle (model-router), budget estimé (status/analyze/optimize), sortie compressée caveman, handoff de contexte (context-compress), documentation fraîche via Context7 (docs-fresh) ; models.json unique.",
+  "author": {
+    "name": "GeekFamilyCorp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tricorderkit",
+    "tk"
+  ]
+}
