@@ -1,0 +1,37 @@
+name: cli-forge
+version: "0.2.0"
+description: >
+  Forge de CLIs validées pour agents : registre central, scaffolding et
+  manifestes CLI normalisés. Une CLI n'est utilisable par un agent que si
+  elle est enregistrée dans registry.yml.
+type: plugin
+language: python
+entrypoint: scripts/validate_cli_manifest.py
+registry: plugins/cli-forge/registry.yml
+cli_manifest_schema: plugins/cli-forge/cli_manifest.schema.json
+updated: "2026-10-16"
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+preflight:
+  inputs:
+    - {name: registre des CLIs, kind: file, ref: plugins/cli-forge/registry.yml, required: true}
+    - {name: schéma de manifeste CLI, kind: file, ref: plugins/cli-forge/cli_manifest.schema.json, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: pyyaml, kind: python_module, target: yaml, required: true}
+  env:
+    - {name: GITHUB_TOKEN, required: false, secret: true, reason: CLI github-goat}
+  stop_conditions:
+    - CLI absente du registre (interdite aux agents)
+    - manifeste CLI invalide
+  retry: {max_attempts: 1}
+  rollback:
+    strategy: git_revert
+    procedure: >
+      Le registre et les manifestes sont versionnés ; retour arrière par
+      git revert du commit fautif.
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - passer une CLI en prod_ready
+      - enregistrer une CLI qui demande une authentification

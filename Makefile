@@ -94,9 +94,9 @@ docs-sync:
 	$(PYTHON) scripts/check_docs_sync.py
 
 # Contrat d'entrée des plugins (core/contracts/skill_preflight.schema.json)
-# Mode avertissement : un contrat INVALIDE échoue, un contrat ABSENT est signalé.
+# Mode strict : un contrat absent ou invalide fait échouer le contrôle.
 preflight:
-	$(PYTHON) scripts/check_preflight_contract.py
+	$(PYTHON) scripts/check_preflight_contract.py --strict
 
 # Aggregate: every gate that must be green before a public push (R37 + R39)
 gates: gate docs-sync preflight

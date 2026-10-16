@@ -9,5 +9,12 @@ set "TEMPORAL_ADDRESS=localhost:7233"
 set "TEMPORAL_NAMESPACE=default"
 set "TEMPORAL_TASK_QUEUE=tricorderkit-hooks"
 set "OBSIDIAN_VAULT_PATH=%USERPROFILE%\Documents\obsidian\linked-project"
+REM Contrat preflight : monter la capacite workflows (Temporal) AVANT le worker.
+REM Sans cela, a l'ouverture de session, le worker meurt si Temporal n'est pas pret.
+python "%~dp0..\..\..\tools\caps\caps.py" ensure workflows
+if errorlevel 1 (
+  echo [start_worker] Temporal indisponible ^(Docker Desktop demarre ?^) - worker non lance
+  exit /b 1
+)
 powershell -NoProfile -WindowStyle Hidden -Command "Start-Process -FilePath '%~dp0..\node_modules\.bin\ts-node.cmd' -ArgumentList 'scripts/start_worker.ts' -WorkingDirectory '%~dp0..' -WindowStyle Hidden"
 exit /b 0

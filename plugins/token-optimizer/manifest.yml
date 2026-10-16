@@ -164,3 +164,25 @@ v0_3_0_changes:
   - "Ajout skills auto-optimize, budget-analyzer, caveman (6 -> 9 skills)"
   - "Ajout scripts budget_analyzer.py + optimizer.py (auto-optimisation bornée réversible)"
   - "Ajout docs/ (AUTO_BUDGET_PLAN, TEST_L1-L3) et .mcp.json (Context7)"
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: base budget, kind: file, ref: .cache/token-optimizer/budget.db, required: false, reason: créée au premier passage}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+  env: []
+  stop_conditions:
+    - optimisation qui dégrade les évaluations
+    - seuil d'alerte budget (80 %) atteint
+  retry: {max_attempts: 1}
+  rollback:
+    strategy: compensation
+    procedure: >
+      python plugins/token-optimizer/scripts/optimizer.py rollback rétablit les
+      drapeaux auto_state précédents à partir du journal.
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - appliquer une optimisation (commande apply)

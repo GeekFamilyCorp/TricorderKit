@@ -63,3 +63,32 @@ linked_to:
   - plugins/cli-forge/generated/github-goat/
   - plugins/deep-research-core/
   - plugins/workflow-engine/workflows/source_watch.workflow.ts
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: sources du projet lié, kind: file, ref: configs/local/linked_projects.yaml, required: true}
+    - {name: sources core, kind: file, ref: plugins/deep-research-core/sources/trusted_sources.yml, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true, reason: ">= 3.11"}
+    - {name: pyyaml, kind: python_module, target: yaml, required: true}
+    - {name: requests, kind: python_module, target: requests, required: false, reason: commande status uniquement}
+    - {name: temporal, kind: tcp, target: "localhost:7233", required: false, reason: dispatch vers source_watch.workflow ; capacité workflows (caps)}
+  env:
+    - {name: TEMPORAL_ADDRESS, required: false, secret: false, default: "localhost:7233"}
+    - {name: OBSIDIAN_VAULT_PATH, required: false, secret: false}
+  stop_conditions:
+    - fichier de sources absent ou illisible
+    - dispatch demandé sans passage --dry-run préalable
+    - sous-CLI d'ingestion en échec
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: manual
+    procedure: >
+      list et status sont en lecture seule. dispatch délègue l'écriture aux sous-CLIs :
+      leur propre retour arrière s'applique ; relancer en --dry-run pour comparer.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - dispatch --all sans --dry-run

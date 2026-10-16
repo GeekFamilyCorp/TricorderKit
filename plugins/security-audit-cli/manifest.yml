@@ -80,3 +80,26 @@ security:
     HIGH: 1
     MEDIUM: 0
     LOW: 0
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: motifs de secrets, kind: file, ref: plugins/security-audit-cli/patterns/secrets.yml, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: pip-audit, kind: command, target: pip-audit --version, required: false, reason: repli sur safety}
+  env: []
+  stop_conditions:
+    - résultat CRITICAL (bloque le push, code de sortie 2)
+    - secret détecté (signalé sans jamais afficher sa valeur)
+  retry: {max_attempts: 1}
+  rollback:
+    strategy: none_read_only
+    procedure: >
+      Audit en lecture seule : aucun fichier modifié, seulement des rapports
+      dans reports/security/.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - toute correction automatique d'un fichier signalé

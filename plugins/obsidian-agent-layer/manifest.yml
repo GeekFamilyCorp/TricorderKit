@@ -53,3 +53,28 @@ obsidian:
   sync:
     qdrant_enabled: false      # Phase 6 — non connecté en Phase 5
     sqlite_log: data/obsidian-agent-layer/sync_log.sqlite
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: note ou gabarit cible, kind: arg, ref: path, required: true}
+  dependencies:
+    - {name: obsidian-claude-vault, kind: mcp, target: obsidian-claude-vault, required: true}
+    - {name: vault du projet lié, kind: mcp, target: linked-project-vault, required: false}
+  env: []
+  stop_conditions:
+    - plus de 10 notes écrites sans dry-run préalable
+    - plus de 50 opérations MCP dans la session
+    - champs obligatoires du gabarit manquants
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: backup_restore
+    procedure: >
+      archive_on_overwrite : la version précédente est conservée dans _archive/.
+      Retour arrière : restaurer cette version.
+  escalation:
+    risk_level: HIGH
+    ask_before:
+      - toute écriture dans le vault du projet lié
+      - écrire plus de 10 notes

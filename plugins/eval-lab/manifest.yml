@@ -31,3 +31,28 @@ eval:
     LOW: 0
   auto_update_baseline: false
   skills_registry: plugins/cli-forge/registry.yml
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: contrat de sortie, kind: file, ref: core/contracts/skill_output.schema.json, required: true}
+    - {name: registre des CLIs, kind: file, ref: plugins/cli-forge/registry.yml, required: true}
+    - {name: jeux de test, kind: dir, ref: plugins/eval-lab/fixtures, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+  env: []
+  stop_conditions:
+    - schéma de sortie introuvable
+    - résultat CRITICAL (code de sortie 2)
+  retry: {max_attempts: 1}
+  rollback:
+    strategy: none_read_only
+    procedure: >
+      Évaluation et rapports uniquement. auto_update_baseline est false :
+      la référence n'est jamais réécrite automatiquement.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - mettre à jour la baseline

@@ -29,3 +29,31 @@ risks:
   - acces involontaire a un chemin hors inbox si entree non controlee
 tests:
   - tests/test_tk_ingest_document.py
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: configuration (input_dir), kind: file, ref: plugins/document-ingestion/config.example.yaml, required: true}
+    - {name: document à convertir, kind: arg, ref: input, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: markitdown, kind: python_module, target: markitdown, required: true}
+  env:
+    - {name: TK_MARKITDOWN_ENABLED, required: false, secret: false, reason: "false coupe le convertisseur (retour arrière)"}
+  stop_conditions:
+    - chemin d'entrée hors input_dir
+    - URL distante en entrée (allow_remote_urls false)
+    - fichier cible déjà présent (pas d'écrasement)
+    - conversion en échec (passage en quarantaine)
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: env_flag
+    procedure: >
+      TK_MARKITDOWN_ENABLED=false désactive le convertisseur. Les originaux sont
+      toujours conservés (preserve_original) et rien n'est écrasé.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - activer allow_remote_urls
+      - changer input_dir

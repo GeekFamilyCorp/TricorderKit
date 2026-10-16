@@ -49,12 +49,23 @@ preflight:
       required: false
       secret: false
       default: tricorderkit-hooks
+    - name: SELF_IMPROVING_TASK_QUEUE
+      required: false
+      secret: false
+      default: tricorderkit-self-improving
+    - name: DRY_RUN
+      required: false
+      secret: false
+      reason: "1 = aucune écriture réelle (worker self-improving)"
+    - name: TEMPORAL_DISPATCH_LIVE
+      required: false
+      secret: false
     - name: OBSIDIAN_VAULT_PATH
       required: false
       secret: false
       reason: destination des rapports ; à défaut .cache/reports
   stop_conditions:
-    - serveur Temporal injoignable au démarrage du worker
+    - "serveur Temporal injoignable au démarrage du worker (monter d'abord la capacité via caps ensure workflows)"
     - activité épuisant son nombre maximal de réessais
     - entrée jugée dangereuse par sanitizeInput (ApplicationFailure non-retryable, mise en quarantaine)
     - budget de tokens du workflow dépassé

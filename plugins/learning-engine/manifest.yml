@@ -26,3 +26,29 @@ guardrails:
   core_self_modification: forbidden
   promotion_requires_tests: 8
   scraped_content_is_untrusted: true
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: schémas d'expérience, kind: dir, ref: plugins/learning-engine/schemas, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+    - {name: temporal, kind: tcp, target: "localhost:7233", required: false, reason: boucle via workflow-engine (learning_review)}
+  env: []
+  stop_conditions:
+    - proposition sans les 8 tests requis
+    - tentative de modifier le core (interdit)
+    - contenu collecté non validé utilisé comme instruction
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: git_revert
+    procedure: >
+      Aucune promotion sans revue humaine. Une promotion = un commit ;
+      retour arrière par git revert de ce commit.
+  escalation:
+    risk_level: HIGH
+    ask_before:
+      - promouvoir une proposition de mise à jour de skill
+      - modifier un skill existant

@@ -48,3 +48,25 @@ v0_8_changes:
   - "Ajout config block avec chemins explicites"
   - "Ajout dependencies MCP déclarées"
   - "Alerte HOT_CACHE stale > 7j documentée"
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: hot cache, kind: file, ref: 00_SYSTEM/05_Hot_Cache/HOT_CACHE.md, required: true, reason: chemin relatif au vault}
+  dependencies:
+    - {name: obsidian-claude-vault, kind: mcp, target: obsidian-claude-vault, required: true, reason: lecture HOT_CACHE et écriture Daily Log}
+  env: []
+  stop_conditions:
+    - serveur MCP du vault injoignable (Obsidian fermé)
+    - HOT_CACHE absent
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: manual
+    procedure: >
+      Seule écriture : un ajout en fin de Daily Log (mode append).
+      Retour arrière : retirer le bloc ajouté.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - réécrire le HOT_CACHE au lieu d'y ajouter

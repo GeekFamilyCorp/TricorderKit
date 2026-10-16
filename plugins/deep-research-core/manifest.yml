@@ -54,3 +54,34 @@ token_budget:
 
 status: scaffold_ready
 phase: 4
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: sources de confiance, kind: file, ref: plugins/deep-research-core/sources/trusted_sources.yml, required: true}
+    - {name: sources bloquées, kind: file, ref: plugins/deep-research-core/sources/blocked_sources.yml, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true, reason: ">= 3.11"}
+    - {name: requests, kind: python_module, target: requests, required: true}
+    - {name: pyyaml, kind: python_module, target: yaml, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+    - {name: qdrant, kind: tcp, target: "localhost:6333", required: false, reason: mode dégradé si absent ; capacité graph (caps)}
+  env:
+    - {name: GITHUB_PERSONAL_ACCESS_TOKEN, required: false, secret: true, reason: sources GitHub authentifiées}
+    - {name: OBSIDIAN_VAULT_PATH, required: false, secret: false, reason: sortie obsidian_notes}
+  stop_conditions:
+    - budget de 20000 tokens par recherche dépassé (pause_and_notify)
+    - source présente dans blocked_sources
+    - aucune source joignable
+  retry: {max_attempts: 3}
+  rollback:
+    strategy: manual
+    procedure: >
+      Les sorties sont de nouveaux rapports ; aucune donnée existante n'est modifiée.
+      Retour arrière : archiver le rapport produit (NO-DROP).
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - écrire des notes dans un vault Obsidian
+      - dépasser le seuil warn_at de 15000 tokens

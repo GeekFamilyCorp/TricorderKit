@@ -21,3 +21,33 @@ guardrails:
   execution_offloaded: "VPS/Hermes (DEC-029) — pas de moteur de scraping cote Claude"
   source_registry_generated: true   # jamais ecrit a la main
   dry_run_before_external_write: true
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: profil de collecte, kind: file, ref: plugins/scraper-runtime/profiles/static_html.yaml, required: true}
+    - {name: contrat de run, kind: file, ref: plugins/scraper-runtime/schemas/run_contract.schema.json, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+  env: []
+  stop_conditions:
+    - run non conforme au contrat de run
+    - écriture externe sans dry-run préalable
+    - source absente du registre généré
+    - collecte interdite par robots.txt
+  retry:
+    max_attempts: 3
+    non_retryable:
+      - interdiction robots.txt
+  rollback:
+    strategy: manual
+    procedure: >
+      La collecte réelle est déportée. Chaque run produit de nouveaux fichiers
+      raw/normalized ; retour arrière : archiver les fichiers du run.
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - écriture externe (vault, base, API)
+      - ajout manuel au registre de sources
