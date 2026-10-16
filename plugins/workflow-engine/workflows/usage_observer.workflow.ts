@@ -45,6 +45,8 @@ const { readHookLogs, writeUsageStats, aggregateStats } = proxyActivities<{
   writeUsageStats(stats: UsageStats[]): Promise<void>;
 }>({
   startToCloseTimeout: '5 minutes',
+  // Réessai borné (contrat preflight) — le défaut Temporal est illimité
+  retry: { maximumAttempts: 3, initialInterval: '10 seconds', backoffCoefficient: 2 },
 });
 
 const DEFAULT_INTERVAL    = '6h';

@@ -1,0 +1,77 @@
+name: workflow-engine
+version: "0.1.0"
+description: >
+  Orchestration Temporal (TypeScript) : workflows skill_eval, source_watch,
+  usage_observer, learning_review, skill_regression_test, source_freshness,
+  tool_scout, et leurs activities. Queue : tricorderkit-hooks.
+type: plugin
+service: tricorderkit-core
+language: typescript
+entrypoint: scripts/start_worker.ts
+tricorderkit_version: ">=0.9"
+updated: "2026-10-16"
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json
+# Vérifié par : python scripts/check_preflight_contract.py (make preflight)
+preflight:
+  inputs:
+    - name: workflows compilables
+      kind: dir
+      ref: plugins/workflow-engine/workflows
+      required: true
+      reason: chargés par le worker via workflowsPath
+  dependencies:
+    - name: temporal
+      kind: tcp
+      target: localhost:7233
+      required: true
+      reason: le worker se connecte au serveur Temporal au démarrage
+    - name: node
+      kind: command
+      target: node --version
+      required: true
+      reason: "engines.node >= 20 (package.json)"
+    - name: temporal-sdk
+      kind: node_module
+      target: "@temporalio/worker"
+      required: true
+      reason: installé par npm install dans plugins/workflow-engine
+  env:
+    - name: TEMPORAL_ADDRESS
+      required: false
+      secret: false
+      default: localhost:7233
+    - name: TEMPORAL_NAMESPACE
+      required: false
+      secret: false
+      default: default
+    - name: TEMPORAL_TASK_QUEUE
+      required: false
+      secret: false
+      default: tricorderkit-hooks
+    - name: OBSIDIAN_VAULT_PATH
+      required: false
+      secret: false
+      reason: destination des rapports ; à défaut .cache/reports
+  stop_conditions:
+    - serveur Temporal injoignable au démarrage du worker
+    - activité épuisant son nombre maximal de réessais
+    - entrée jugée dangereuse par sanitizeInput (ApplicationFailure non-retryable, mise en quarantaine)
+    - budget de tokens du workflow dépassé
+    - signal TERMINATE reçu
+  retry:
+    max_attempts: 3
+    non_retryable:
+      - ApplicationFailure.nonRetryable (sanitize_input)
+  rollback:
+    strategy: git_revert
+    procedure: >
+      Les workflows écrivent des rapports et statistiques, pas de données métier.
+      Retour arrière du code : git revert du commit fautif puis redémarrage du worker.
+      Les exécutions en cours se terminent ou s'annulent depuis l'UI Temporal.
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - enregistrer ou modifier un planning Temporal (register_self_improving_schedules.ts)
+      - changer la task queue ou le namespace d'un worker en service
+      - toute écriture hors .cache/ et reports/

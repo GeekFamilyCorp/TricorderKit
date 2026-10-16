@@ -4,6 +4,19 @@
 
 ---
 
+## [Unreleased] - 16/10/2026 - Contrat d'entrée des plugins (preflight)
+
+### Ajouté
+- **core/contracts/skill_preflight.schema.json** - contrat statique du bloc `preflight:` d'un manifest.yml : entrées, dépendances, variables (secret = présence seule, jamais de défaut), conditions d'arrêt, réessai borné (1-10), retour arrière, escalade (Risk Guard).
+- **scripts/check_preflight_contract.py** + cible `make preflight` (ajoutée à `make gates`) - mode avertissement : un contrat invalide échoue, un contrat absent est signalé ; `--strict` pour exiger. Refuse les chemins personnels (R37). Ne lit aucune valeur d'environnement.
+- **plugins/workflow-engine/manifest.yml** - premier manifest du plugin, pilote du contrat.
+- **tests/test_check_preflight_contract.py** - 9 tests.
+
+### Corrigé
+- **workflow-engine** - `skill_eval` et `usage_observer` n'avaient aucune politique de réessai (défaut Temporal : illimité). Bornés à 3 tentatives.
+
+---
+
 ## [Unreleased] — 08/07/2026 — Outil : batch runner résilient (AIMD + checkpoint)
 
 ### Ajouté

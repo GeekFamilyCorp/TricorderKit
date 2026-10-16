@@ -47,6 +47,8 @@ const { runCliContracts, runEvalLabScenarios, writeEvalResults } = proxyActiviti
   writeEvalResults(summary: EvalSummary): Promise<void>;
 }>({
   startToCloseTimeout: '10 minutes',
+  // Réessai borné (contrat preflight) — le défaut Temporal est illimité
+  retry: { maximumAttempts: 3, initialInterval: '10 seconds', backoffCoefficient: 2 },
 });
 
 const DEFAULT_TOKEN_BUDGET  = 5_000;
