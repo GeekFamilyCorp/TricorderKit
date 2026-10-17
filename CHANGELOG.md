@@ -7,6 +7,7 @@
 ## [Unreleased] - 16/10/2026 - Contrat d'entrée des plugins (preflight)
 
 ### Ajouté
+- **docs/10_REMOTE_SERVICES.md** + **examples/remote-services/** - guide pour héberger Temporal, Neo4j et Qdrant sur une autre machine (réseau privé, ports liés à l'IP privée car Docker contourne UFW, migration des données, variables du poste, tâches Windows, retour arrière) ; lien depuis le README.
 - **core/contracts/skill_preflight.schema.json** - contrat statique du bloc `preflight:` d'un manifest.yml : entrées, dépendances, variables (secret = présence seule, jamais de défaut), conditions d'arrêt, réessai borné (1-10), retour arrière, escalade (Risk Guard).
 - **scripts/check_preflight_contract.py** + cible `make preflight` (ajoutée à `make gates`) - mode avertissement : un contrat invalide échoue, un contrat absent est signalé ; `--strict` pour exiger. Refuse les chemins personnels (R37). Ne lit aucune valeur d'environnement.
 - **plugins/workflow-engine/manifest.yml** - premier manifest du plugin, pilote du contrat.

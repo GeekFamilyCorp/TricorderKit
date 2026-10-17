@@ -1,0 +1,90 @@
+# examples/remote-services/docker-compose.yml
+# TricorderKit heavy services on an always-on machine (home server, NAS, VPS).
+# Guide: docs/10_REMOTE_SERVICES.md
+#
+# SECURITY: Docker bypasses host firewalls (UFW...) for published ports.
+# Every port is therefore bound to BIND_IP = the server's PRIVATE-network IP
+# (Tailscale, WireGuard, LAN). Never use 0.0.0.0 here.
+name: tricorder-stack
+
+services:
+  temporal-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: "${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD in .env}"
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal_db:/var/lib/postgresql/data
+    mem_limit: 512m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  temporal:
+    image: temporalio/auto-setup:1.23
+    ports:
+      - "${BIND_IP:?set BIND_IP in .env}:7233:7233"
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: "${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD in .env}"
+      POSTGRES_SEEDS: temporal-db
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    mem_limit: 768m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "tctl --address temporal:7233 cluster health 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  neo4j:
+    image: neo4j:5.18
+    ports:
+      - "${BIND_IP:?set BIND_IP in .env}:7474:7474"
+      - "${BIND_IP:?set BIND_IP in .env}:7687:7687"
+    environment:
+      # Used only on a FRESH data volume. A migrated volume keeps its own password.
+      NEO4J_AUTH: "neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}"
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_dbms_memory_heap_max__size: "512m"
+      NEO4J_dbms_memory_pagecache_size: "256M"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    mem_limit: 2g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  qdrant:
+    image: qdrant/qdrant:v1.8.4
+    ports:
+      - "${BIND_IP:?set BIND_IP in .env}:6333:6333"
+      - "${BIND_IP:?set BIND_IP in .env}:6334:6334"
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+      # Optional: require a key (clients must send the same one).
+      # QDRANT__SERVICE__API_KEY: "${QDRANT_API_KEY}"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    mem_limit: 1g
+    restart: unless-stopped
+
+volumes:
+  temporal_db:
+  neo4j_data:
+  neo4j_logs:
+  qdrant_data:

@@ -71,6 +71,8 @@ python cli/tk.py research "<topic>"          # autonomous research pipeline
 
 No GPU required. The heavy components are **opt-in** (Docker profiles) so a fresh clone boots light.
 
+Want Neo4j, Qdrant and Temporal on an always-on machine (home server, NAS, VPS) while your vault stays local? See **[docs/10_REMOTE_SERVICES.md](docs/10_REMOTE_SERVICES.md)** — environment variables only, one-step rollback.
+
 ---
 
 ## 🧭 Architecture
