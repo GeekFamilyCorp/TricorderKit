@@ -28,6 +28,7 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -128,6 +129,25 @@ def probe_http(url: str, timeout: float = 3.0) -> bool:
         return False
 
 
+def remote_targets(cap: dict) -> list:
+    """Cibles distantes d'une capacité, déclarées par variables d'environnement (`remote_env`).
+
+    Si TOUTES les variables listées sont définies et pointent hors de cette machine,
+    la capacité est servie ailleurs (ex. VPS) : on la sonde là-bas et on ne démarre
+    jamais rien en local. Sinon, liste vide = comportement local habituel.
+    """
+    out = []
+    for name in cap.get("remote_env") or []:
+        val = os.environ.get(name, "").strip()
+        if not val:
+            return []
+        u = urllib.parse.urlsplit(val if "://" in val else "tcp://" + val)
+        if not u.hostname or not u.port or u.hostname in ("localhost", "127.0.0.1", "::1"):
+            return []
+        out.append((u.hostname, u.port))
+    return out
+
+
 def is_healthy(cap: dict) -> bool:
     kind = cap.get("kind")
     if kind == "always_on":
@@ -135,6 +155,9 @@ def is_healthy(cap: dict) -> bool:
     if kind == "ollama":
         return probe_http(cap.get("endpoint", "http://127.0.0.1:11434") + "/api/tags")
     if kind == "docker_profile":
+        remote = remote_targets(cap)
+        if remote:
+            return all(probe_tcp(h, p) for h, p in remote)
         checks = cap.get("health", [])
         if not checks:
             return False
@@ -189,6 +212,8 @@ def active_ram(caps: dict, exclude: str = None) -> int:
     for n, c in caps.items():
         if n == exclude or c.get("tier") == "T0" or c.get("kind") == "always_on":
             continue
+        if remote_targets(c):   # servie ailleurs : ne consomme pas la RAM d'ici
+            continue
         if is_healthy(c):
             total += int(c.get("ram_mb", 0))
     return total
@@ -209,7 +234,7 @@ def governor_make_room(caps: dict, target_name: str, budget: int, dry: bool) -> 
     for n, c in caps.items():
         if c.get("tier") == "T0" or c.get("kind") == "always_on" or n == target_name:
             continue
-        if not is_healthy(c):
+        if remote_targets(c) or not is_healthy(c):   # jamais préempter un service distant
             continue
         if int(c.get("priority", 0)) >= tprio:
             continue
@@ -243,6 +268,9 @@ def ensure(caps: dict, name: str, budget: int, dry: bool, force: bool) -> dict:
     if is_healthy(cap):
         touch(name)
         return {"ok": True, "cap": name, "state": "already_healthy"}
+    if remote_targets(cap):
+        return {"ok": False, "cap": name, "error": "service distant injoignable (aucun démarrage local)",
+                "remote": ["%s:%s" % t for t in remote_targets(cap)]}
     # Gouverneur RAM
     gov = governor_make_room(caps, name, budget, dry)
     if gov.get("action") == "preempt" and not gov.get("fits") and not force:
@@ -328,9 +356,11 @@ def cmd_status(caps: dict, as_json: bool, budget: int) -> int:
     rows = []
     for name, cap in caps.items():
         healthy = is_healthy(cap)
+        remote = ["%s:%s" % x for x in remote_targets(cap)]
         last = st.get(name, {}).get("last_used")
         rows.append({"cap": name, "tier": cap.get("tier"), "kind": cap.get("kind"),
-                     "healthy": healthy, "ram_mb": cap.get("ram_mb", 0),
+                     "healthy": healthy, "ram_mb": 0 if remote else cap.get("ram_mb", 0),
+                     "remote": remote,
                      "priority": cap.get("priority"), "last_used": last,
                      "idle_min": round(minutes_since(last), 1) if last else None})
     aram = sum(r["ram_mb"] for r in rows if r["healthy"])
@@ -343,12 +373,23 @@ def cmd_status(caps: dict, as_json: bool, budget: int) -> int:
         for r in rows:
             flag = "● UP " if r["healthy"] else "○ down"
             idle = f"idle {r['idle_min']}min" if r["idle_min"] is not None else ""
-            print(f"  {flag} [{r['tier']}] {r['cap']:<14} {r['ram_mb']:>5} Mo  {idle}")
+            where = "  distant (" + ", ".join(r["remote"]) + ")" if r["remote"] else ""
+            print(f"  {flag} [{r['tier']}] {r['cap']:<14} {r['ram_mb']:>5} Mo  {idle}{where}")
     return 0
 
 
 # --------------------------------------------------------------------------- #
 def selftest() -> int:
+    # Isole le test du mode distant : on teste le comportement LOCAL, puis le distant à part.
+    remote_vars = ("NEO4J_URI", "QDRANT_URL", "TEMPORAL_ADDRESS")
+    saved = {k: os.environ.pop(k) for k in remote_vars if k in os.environ}
+    try:
+        return _selftest()
+    finally:
+        os.environ.update(saved)
+
+
+def _selftest() -> int:
     cfg = load_config()
     caps = cfg["capabilities"]
     budget = int(cfg.get("budget_mb", 3000))
@@ -367,7 +408,16 @@ def selftest() -> int:
     assert gov["budget_mb"] == 10
     # state round-trip
     touch("graph"); assert "last_used" in load_state().get("graph", {})
-    print("[selftest] OK — config, repo, resolve(triggers), ensure(always_on+dry), gouverneur, state.")
+    # mode distant : adresse locale = ignorée ; adresse distante injoignable = refus, jamais de démarrage local
+    os.environ["NEO4J_URI"] = "bolt://localhost:7687"; os.environ["QDRANT_URL"] = "http://localhost:6333"
+    assert remote_targets(caps["graph"]) == []
+    os.environ["NEO4J_URI"] = "bolt://192.0.2.1:7687"; os.environ["QDRANT_URL"] = "http://192.0.2.1:6333"
+    assert remote_targets(caps["graph"]) == [("192.0.2.1", 7687), ("192.0.2.1", 6333)]
+    assert active_ram({"graph": caps["graph"]}) == 0
+    r = ensure(caps, "graph", budget, dry=True, force=False)
+    assert not r["ok"] and "distant" in r["error"], r
+    del os.environ["NEO4J_URI"], os.environ["QDRANT_URL"]
+    print("[selftest] OK — config, repo, resolve(triggers), ensure(always_on+dry), gouverneur, state, distant.")
     return 0
 
 

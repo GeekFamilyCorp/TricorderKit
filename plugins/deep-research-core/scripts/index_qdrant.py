@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import json
 import logging
+import os
 import sys
 import uuid
 from datetime import datetime, timezone
@@ -43,7 +44,7 @@ log = logging.getLogger("index_qdrant")
 
 # -- Constantes --------------------------------------------------------------
 DEFAULT_COLLECTION = "manga_knowledge"
-DEFAULT_QDRANT_URL = "http://localhost:6333"
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 VECTOR_SIZE = 384           # Compatible all-MiniLM-L6-v2 et hash fallback
 DEFAULT_BATCH_SIZE = 64
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"

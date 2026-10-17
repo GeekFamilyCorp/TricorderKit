@@ -14,6 +14,7 @@
 - **Contrats des 12 autres plugins** - les 13 plugins déclarent désormais leur contrat ; `plugins/cli-forge/manifest.yml` créé (absent). `make preflight` passe en `--strict`.
 
 ### Corrigé
+- **Services distants** - `tools/caps` : clé `remote_env` (capacités `graph` et `workflows`) ; si les variables (`NEO4J_URI`, `QDRANT_URL`, `TEMPORAL_ADDRESS`) pointent hors de la machine, `caps` sonde le service distant, ne démarre jamais rien en local, ne le compte pas dans la RAM et ne le préempte pas ; autotest étendu. `search_vault.py` et `index_qdrant.py` lisent `QDRANT_URL`.
 - **workflow-engine** - `run_worker_loop.cmd` : worker au premier plan avec relance, pour les tâches planifiées (le Planificateur arrêtait le worker lancé en détaché, une seconde après le démarrage). `start_worker.cmd` accepte un Temporal distant via `TEMPORAL_ADDRESS`.
 - **pytest.ini** - suppression de `--basetemp=.pytest_tmp` (R36) : le dossier verrouillé sous Windows faisait échouer tous les tests utilisant `tmp_path`. pytest utilise le dossier temporaire système.
 - **workflow-engine/scripts/start_worker.cmd** - monte la capacité `workflows` (caps) avant le worker ; sinon, à l'ouverture de session, le worker mourait si Temporal n'était pas prêt.

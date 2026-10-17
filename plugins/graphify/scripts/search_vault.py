@@ -11,13 +11,15 @@ Usage CLI :
   python search_vault.py --query "auteur de Vinland Saga" --top-n 5
 """
 from __future__ import annotations
-import argparse, json, sys, urllib.request
+import argparse, json, os, sys, urllib.request
 
 # WIN-002 : forcer UTF-8 sur stdout (cp1252 ne supporte pas les emoji/kanji)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 QUERY_PREFIX = "search_query: "
+# Qdrant : variable QDRANT_URL si definie (ex. serveur distant), sinon local.
+QDRANT_DEFAULT = os.environ.get("QDRANT_URL", "http://localhost:6333")
 
 
 def _embed(text, ollama, model, keep_alive="30m"):
@@ -37,7 +39,7 @@ def _post(url, body, timeout=30):
 
 
 def search_vault(query, top_n=5, collection="vault",
-                 qdrant="http://localhost:6333", ollama="http://localhost:11434",
+                 qdrant=QDRANT_DEFAULT, ollama="http://localhost:11434",
                  model="nomic-embed-text"):
     """Renvoie [{score, title, path, kind, text, ...}] pour les Top-N plus proches."""
     vec = _embed(QUERY_PREFIX + str(query), ollama, model)
@@ -65,7 +67,7 @@ def main():
     ap.add_argument("--query", required=True)
     ap.add_argument("--top-n", type=int, default=5)
     ap.add_argument("--collection", default="vault")
-    ap.add_argument("--qdrant", default="http://localhost:6333")
+    ap.add_argument("--qdrant", default=QDRANT_DEFAULT)
     ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--model", default="nomic-embed-text")
     args = ap.parse_args()
