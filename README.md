@@ -1,26 +1,57 @@
 
 <div align="center">
 
-<img src="assets/banner.png" alt="TricorderKit — the local-first Agentic Knowledge OS" width="820" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/hero-light.svg">
+  <img src="assets/hero-dark.svg" alt="TricorderKit — the local-first second brain for your AI agents" width="880">
+</picture>
 
 # TricorderKit
 
-**The local-first Agentic Knowledge OS** — turn intentions into traceable, auditable, reusable workflows.
-CLI-first · self-improving · measured · runs on your own machine.
+**The local-first second brain for your AI agents** — measured, self-improving,
+and gated so it can't leak what you keep private.
 
-[![Version](https://img.shields.io/badge/version-v1.2.0-blue)](CHANGELOG.md)
 [![tests](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/tests.yml/badge.svg)](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/tests.yml)
 [![gitleaks](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/gitleaks.yml)
 [![public-boundary](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/public-boundary.yml/badge.svg)](https://github.com/GeekFamilyCorp/TricorderKit/actions/workflows/public-boundary.yml)
-[![Guardrails](https://img.shields.io/badge/guardrails-gate--enforced-8b5cf6)](docs/09_GOVERNANCE_GUARDRAILS.md)
-[![Claude plugins](https://img.shields.io/badge/Claude%20plugins-13%20%2B%205-d97757)](#-use-it-inside-claude)
-[![Stack](https://img.shields.io/badge/stack-Claude%20%2B%20Ollama%20%2B%20Temporal%20%2B%20Neo4j%20%2B%20Qdrant-8b5cf6)](docker-compose.yml)
+[![Version](https://img.shields.io/badge/version-v1.2.0-blue)](CHANGELOG.md)
+[![Claude plugins](https://img.shields.io/badge/Claude%20plugins-13%20%2B%205-d97757)](#-install-in-one-line)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/GeekFamilyCorp/TricorderKit?style=social)](https://github.com/GeekFamilyCorp/TricorderKit/stargazers)
 
-[What's new](#-whats-new) • [Quick start](#-quick-start) • [Use it inside Claude](#-use-it-inside-claude) • [Guardrails](#%EF%B8%8F-governance--guardrails) • [Architecture](#-architecture) • [Measured results](#-measured-results) • [What's inside](#-whats-inside) • [Docs index](#-documentation-index) • [FAQ](#-faq)
+<table>
+<tr>
+<td align="center" width="25%"><h3>100 % vs 33–50 %</h3>multi-hop answers found<br>GraphRAG vs flat RAG · <a href="experiments/graphrag/">reproduce</a></td>
+<td align="center" width="25%"><h3>−84 % tokens</h3>to answer "what was true at T"<br>temporal memory · <a href="experiments/temporal_memory/">reproduce</a></td>
+<td align="center" width="25%"><h3>−82 % comparisons</h3>to find duplicates, same F1<br>embedding dedup · <a href="experiments/dedup_embeddings/">reproduce</a></td>
+<td align="center" width="25%"><h3>4 gates</h3>on every push, local + CI<br>secrets · names · docs · contracts</td>
+</tr>
+</table>
+
+**[Install](#-install-in-one-line) · [See it work](#-see-the-guardrails-work) · [Field notes](#-field-notes-from-a-real-project) · [Measured](#-measured-results) · [Architecture](#-architecture) · [Inside](#-whats-inside) · [Docs](#-documentation-index) · [FAQ](#-faq)**
 
 </div>
+
+---
+
+## ⚡ Install in one line
+
+Inside **Claude Code**:
+
+```text
+/plugin marketplace add GeekFamilyCorp/TricorderKit
+```
+
+then pick what you need, e.g. `/plugin install graphify@tricorderkit` (hybrid RAG) — 13 engine plugins are listed in the marketplace. No Docker needed for the [five method plugins](#-use-it-inside-claude); the full local engine is one `git clone` away ([Quick start](#-quick-start)).
+
+---
+
+## 🎬 See the guardrails work
+
+<img src="assets/demo-gates.svg" alt="Real output: the pre-push gate blocks a private name, then lets the neutral version through" width="880">
+
+> **Real output** of the repo's own pre-push hook (its messages are in French, the author's working language). `TK_PRIVATE_TERMS` lists names that must never go public: the hook blocks them before the push and, because CI logs are public, reports a digest — never the name. The same checks run again in CI.
 
 ---
 
@@ -54,6 +85,16 @@ Since v1.1.0 (June 2026), ordered by how much each area moved. Full details in t
 | **Security** | gitleaks enforced in the pre-push hook **and** in CI; the boundary gate now matches private terms by **SHA-256 digest** (never stored in clear), across spellings and in **file paths**, with no folder-wide whitelist; it also catches public IPv4 addresses; hardened `.gitignore` (keys, tokens, cookies, vaults) | [`.githooks/pre-push`](.githooks/pre-push) · [`.github/workflows/`](.github/workflows/) |
 | **Multi-agent channel** | `canal_agents` v3: replies routed back to the requester, sequence numbers under a file lock, generated schema, reproducible tests | [`canal_agents/`](canal_agents/) |
 | **Marketplace** | `document-ingestion`, `learning-engine` and `scraper-runtime` exposed — **13 plugins** in the Claude Code marketplace | [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) |
+
+---
+
+## 🧪 Field notes from a real project
+
+TricorderKit is not a demo. Its author uses it every day to run a private knowledge-base project: the public engine stays generic, the domain lives in a private [linked project](docs/linked_projects.md).
+
+- **Six months of daily use** (since April 2026): several Claude sessions working in parallel, coordinated through a file- and git-based message protocol — the pattern packaged here as [`canal_agents/`](canal_agents/).
+- **The anti-leak gate comes from a real incident.** In October 2026, content from that private project slipped into this public repository through a whitelist that exempted whole folders. We fixed the cause — private terms are now matched by digest in content *and* file paths, with no folder-wide whitelist — neutralised the engine, and restarted the public history from a clean commit. The demo above is that fix.
+- **Gates find bugs in the gates.** Preparing that demo showed the pre-push hook was not marked executable, so Linux and macOS silently skipped it. Fixed: the hook is now executable and `make install-hooks` sets the bit.
 
 ---
 
@@ -127,25 +168,11 @@ Install one: `cd cowork-plugins/<plugin> && python -m zipfile -c ../<plugin>.plu
 
 ## 🧭 Architecture
 
-```mermaid
-flowchart TD
-    U([User intention]) --> MB[MainBrain v1.5<br/>router + guards + budget]
-    MB --> SK[Skills & Plugins<br/>13 engine plugins · preflight contracts]
-    CP[Claude plugins<br/>5 method plugins · 21 skills] -.-> SK
-    MB --> MEM[Memory<br/>boot · temporal SQLite · daily logs]
-    SK --> RAG[Hybrid RAG · graphify<br/>Qdrant + BM25 + RRF + reranker]
-    SK --> RES[Deep research<br/>web · APIs · sources]
-    RAG --> KB[(Knowledge Base<br/>Neo4j + Qdrant<br/>local or remote)]
-    RES --> KB
-    MB --> WF[Workflow engine<br/>Temporal · bounded retries]
-    MB --> SI[Self-Improving loop<br/>learning-engine · god-mode radar]
-    SI -. proposals only .-> SK
-    MB --> EV[eval-lab<br/>RAGAS · dedup · retrieval]
-    SK --> GATE{{Quality gates<br/>gitleaks · public-boundary · docs-sync · preflight}}
-    GATE --> GIT[(Git · CI)]
-    LLM[Local LLM · Ollama / LiteLLM gateway] --- MB
-    LLM --- RAG
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/architecture-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/architecture-light.svg">
+  <img src="assets/architecture-light.svg" alt="TricorderKit architecture: intention → MainBrain → skills, memory, workflows, self-improving loop, eval-lab → hybrid RAG, research, knowledge base, all behind quality gates" width="880">
+</picture>
 
 Everything is **local-first**: the agent (Claude or a local model via the Ollama/LiteLLM gateway), the knowledge base (Neo4j + Qdrant), the memory (SQLite), and the workflow engine (Temporal) run on your machine — or, if you choose, the three heavy services run on a server you own ([docs/10](docs/10_REMOTE_SERVICES.md)).
 
@@ -153,12 +180,12 @@ Everything is **local-first**: the agent (Claude or a local model via the Ollama
 
 ## 📊 Measured results
 
-Real numbers from the **offline benchmarks** shipped under [`experiments/`](experiments/) (each has a `--selftest`). Reproduce with `python experiments/<name>/<script>.py --selftest`.
+Real numbers from the **offline benchmarks** shipped under [`experiments/`](experiments/) (each has a `--selftest`; figures below re-run on 28 Oct 2026). Reproduce with `python experiments/<name>/<script>.py --selftest`.
 
 | Capability | Benchmark | Result |
 |---|---|---|
-| **Embedding-blocking dedup** | vs. exhaustive fuzzy, equal quality | **F1 1.0 at −91 % comparisons** |
-| **Temporal memory** (bi-temporal, SQLite) | "what was true at time T" | **100 % accuracy, −95 % tokens** vs full-context |
+| **Embedding-blocking dedup** | vs. exhaustive fuzzy, equal quality | **same F1 at −82 % comparisons** |
+| **Temporal memory** (bi-temporal, SQLite) | "what was true at time T" | **100 % accuracy, −84 % tokens** vs full-context |
 | **GraphRAG** | multi-hop relational questions, equal budget | **100 % coverage vs 33–50 %** flat RAG |
 | **Evaluator-driven tuning** (OpenEvolve-style) | auto-tune dedup thresholds | **F1 0.909 → 1.0**, GPU-free, local LLM |
 | **RAG evaluation** (RAGAS) | faithfulness / relevancy / context | objective scoring, LLM-as-judge optional |
@@ -238,6 +265,19 @@ The learning loop only produces **proposals** (drafts). Promotion requires green
 
 After the Star Trek tricorder — a tool that scans, analyzes, and synthesizes information on demand.
 </details>
+
+---
+
+## ⭐ Help others find it
+
+If TricorderKit saved you a leak, a token or an evening, a star helps other people find it — and tells us which direction to push next. Questions, ideas and field reports are welcome in [Issues](https://github.com/GeekFamilyCorp/TricorderKit/issues).
+
+<a href="https://star-history.com/#GeekFamilyCorp/TricorderKit&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=GeekFamilyCorp/TricorderKit&type=Date&theme=dark">
+    <img alt="Star history" src="https://api.star-history.com/svg?repos=GeekFamilyCorp/TricorderKit&type=Date" width="600">
+  </picture>
+</a>
 
 ---
 

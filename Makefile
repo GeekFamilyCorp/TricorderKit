@@ -103,6 +103,7 @@ gates: gate docs-sync preflight
 
 install-hooks:
 	git config core.hooksPath .githooks
+	chmod +x .githooks/* 2>/dev/null || true
 	@echo "Pre-push gates active (.githooks/pre-push). Disable: git config --unset core.hooksPath"
 
 # ── Clean ─────────────────────────────────────────────────────────────────────

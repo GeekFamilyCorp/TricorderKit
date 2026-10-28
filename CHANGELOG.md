@@ -4,6 +4,16 @@
 
 ---
 
+## [Unreleased] - 28/10/2026 - Vitrine
+
+### Ajouté
+- **README** - haut de page refait : bannière animée (SVG, sombre/clair), promesse en une ligne, tableau de 4 preuves mesurées avec lien « reproduce », installation en une ligne (marketplace Claude Code), démo animée du garde-fou pré-push (sortie réelle), « Field notes from a real project », appel à l'étoile + historique des étoiles. Schéma d'architecture Mermaid remplacé par un SVG (sombre/clair, flux animés).
+- **assets/** - `hero-dark.svg`, `hero-light.svg`, `demo-gates.svg`, `architecture-dark.svg`, `architecture-light.svg` (animations SMIL, sans script) ; image de partage 1280×640 fournie à part pour les réglages du dépôt.
+
+### Corrigé
+- **Crochet pré-envoi** - `.githooks/pre-push` n'était pas marqué exécutable : sous Linux et macOS, git l'ignorait sans rien dire (la CI restait le seul filet). Bit exécutable posé dans le dépôt ; `make install-hooks` le pose aussi.
+- **Mesures du README** - relancées le 28/10/2026 : déduplication −82 % de comparaisons à F1 égal (affiché −91 %), mémoire temporelle −84 % de tokens (affiché −95 %).
+
 ## [1.2.0] — 28/10/2026 — v1.2 « Moteur public sans domaine métier, contrats preflight & frontière durcie »
 
 ### Historique

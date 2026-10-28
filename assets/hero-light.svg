@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" width="1280" height="520" role="img" aria-label="TricorderKit - the local-first second brain for your AI agents">
+<defs>
+<linearGradient id="bar" x1="0" x2="1"><stop offset="0" stop-color="#0d9488"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+<linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0d9488" stop-opacity="0"/><stop offset="1" stop-color="#0d9488" stop-opacity="0.45"/></linearGradient>
+<pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#e5e7eb" stroke-width="1"/></pattern>
+</defs>
+<rect width="1280" height="520" rx="18" fill="#ffffff"/>
+<rect width="1280" height="520" rx="18" fill="url(#grid)" opacity="0.55"/>
+<circle cx="1020" cy="255" r="175.0" fill="none" stroke="#7c3aed" stroke-opacity="0.55" stroke-width="2"/>
+<circle cx="1020" cy="255" r="119.0" fill="none" stroke="#7c3aed" stroke-opacity="0.75" stroke-width="2"/>
+<circle cx="1020" cy="255" r="63.0" fill="none" stroke="#0d9488" stroke-opacity="0.9" stroke-width="2"/>
+<line x1="845" y1="255" x2="1195" y2="255" stroke="#e5e7eb" stroke-width="1"/>
+<line x1="1020" y1="80" x2="1020" y2="430" stroke="#e5e7eb" stroke-width="1"/>
+<g><path d="M1020,255 L1107.5,103.4 A175,175 0 0 1 1195,255 Z" fill="url(#sweep)"/><line x1="1020" y1="255" x2="1195" y2="255" stroke="#0d9488" stroke-width="3" stroke-linecap="round"/><animateTransform attributeName="transform" type="rotate" from="0 1020 255" to="360 1020 255" dur="6s" repeatCount="indefinite"/></g>
+<circle cx="1020" cy="255" r="7" fill="#0d9488"/>
+<circle cx="1134.7" cy="335.3" r="6" fill="#0d9488" opacity="0"><animate attributeName="opacity" values="0;1;0.15;0" keyTimes="0;0.04;0.7;1" dur="6s" begin="0.58s" repeatCount="indefinite"/><animate attributeName="r" values="4;8;5;4" keyTimes="0;0.04;0.7;1" dur="6s" begin="0.58s" repeatCount="indefinite"/></circle>
+<circle cx="960.7" cy="330.8" r="6" fill="#7c3aed" opacity="0"><animate attributeName="opacity" values="0;1;0.15;0" keyTimes="0;0.04;0.7;1" dur="6s" begin="2.13s" repeatCount="indefinite"/><animate attributeName="r" values="4;8;5;4" keyTimes="0;0.04;0.7;1" dur="6s" begin="2.13s" repeatCount="indefinite"/></circle>
+<circle cx="883.6" cy="191.4" r="6" fill="#0d9488" opacity="0"><animate attributeName="opacity" values="0;1;0.15;0" keyTimes="0;0.04;0.7;1" dur="6s" begin="3.42s" repeatCount="indefinite"/><animate attributeName="r" values="4;8;5;4" keyTimes="0;0.04;0.7;1" dur="6s" begin="3.42s" repeatCount="indefinite"/></circle>
+<circle cx="1059.4" cy="186.8" r="6" fill="#b45309" opacity="0"><animate attributeName="opacity" values="0;1;0.15;0" keyTimes="0;0.04;0.7;1" dur="6s" begin="5.00s" repeatCount="indefinite"/><animate attributeName="r" values="4;8;5;4" keyTimes="0;0.04;0.7;1" dur="6s" begin="5.00s" repeatCount="indefinite"/></circle>
+<circle cx="1005.0" cy="213.9" r="6" fill="#7c3aed" opacity="0"><animate attributeName="opacity" values="0;1;0.15;0" keyTimes="0;0.04;0.7;1" dur="6s" begin="4.17s" repeatCount="indefinite"/><animate attributeName="r" values="4;8;5;4" keyTimes="0;0.04;0.7;1" dur="6s" begin="4.17s" repeatCount="indefinite"/></circle>
+<rect x="96" y="104" width="54" height="54" rx="12" fill="none" stroke="#0d9488" stroke-width="4"/><circle cx="123" cy="131" r="13" fill="#7c3aed"/>
+<text x="96" y="86" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="3" fill="#0d9488">AGENTIC KNOWLEDGE OS</text>
+<text x="170" y="152" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="62" font-weight="800" fill="#0f172a">TricorderKit</text>
+<text x="96" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="36" font-weight="700" fill="#0f172a">The local-first <tspan fill="#0d9488">second brain</tspan></text>
+<text x="96" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="36" font-weight="700" fill="#0f172a">for your AI agents.</text>
+<text x="96" y="318" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" fill="#475569">Measured, self-improving, and gated so it can't leak</text>
+<text x="96" y="346" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" fill="#475569">what you keep private.</text>
+<rect x="96" y="392" width="185" height="40" rx="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/><text x="189" y="418" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#0f172a">13 engine plugins</text>
+<rect x="293.2" y="392" width="176" height="40" rx="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/><text x="381" y="418" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#0f172a">21 Claude skills</text>
+<rect x="480.79999999999995" y="392" width="204" height="40" rx="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/><text x="583" y="418" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#0f172a">pre-push + CI gates</text>
+<rect x="697.1999999999999" y="392" width="195" height="40" rx="20" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/><text x="795" y="418" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#0f172a">Ollama / local LLM</text>
+<rect x="0" y="512" width="1280" height="8" fill="url(#bar)"/>
+</svg>

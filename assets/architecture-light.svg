@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="TricorderKit architecture">
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+</defs>
+<rect width="1200" height="600" rx="16" fill="#ffffff"/>
+<rect x="60" y="40" width="210" height="56" rx="28" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/><text x="165" y="75" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Your intention</text>
+<rect x="400" y="28" width="400" height="80" rx="12" fill="#f8fafc" stroke="#7c3aed" stroke-width="2"/>
+<text x="600.0" y="58" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">MainBrain</text>
+<text x="600.0" y="82" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">router · guards · budget · hooks</text>
+<rect x="930" y="28" width="220" height="80" rx="12" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/>
+<text x="1040.0" y="58" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Local LLM</text>
+<text x="1040.0" y="82" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">Ollama / LiteLLM gateway</text>
+<line x1="270" y1="68" x2="396" y2="68" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<line x1="926" y1="68" x2="804" y2="68" stroke="#475569" stroke-width="2" marker-end="url(#ah)"></line>
+<rect x="50.0" y="170" width="200" height="100" rx="12" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/>
+<text x="150.0" y="200" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Skills &amp; plugins</text>
+<text x="150.0" y="224" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">13 engine plugins</text>
+<text x="150.0" y="244" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">21 Claude skills</text>
+<line x1="600" y1="110" x2="150.0" y2="166" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<rect x="275.0" y="170" width="200" height="100" rx="12" fill="#f8fafc" stroke="#7c3aed" stroke-width="2"/>
+<text x="375.0" y="200" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Memory</text>
+<text x="375.0" y="224" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">boot cache · temporal</text>
+<text x="375.0" y="244" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">SQLite · daily logs</text>
+<line x1="600" y1="110" x2="375.0" y2="166" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<rect x="500.0" y="170" width="200" height="100" rx="12" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/>
+<text x="600.0" y="200" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Workflows</text>
+<text x="600.0" y="224" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">Temporal</text>
+<text x="600.0" y="244" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">bounded retries</text>
+<line x1="600" y1="110" x2="600.0" y2="166" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<rect x="725.0" y="170" width="200" height="100" rx="12" fill="#f8fafc" stroke="#b45309" stroke-width="2"/>
+<text x="825.0" y="200" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Self-improving</text>
+<text x="825.0" y="224" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">learning-engine</text>
+<text x="825.0" y="244" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">proposals only</text>
+<line x1="600" y1="110" x2="825.0" y2="166" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<rect x="950.0" y="170" width="200" height="100" rx="12" fill="#f8fafc" stroke="#7c3aed" stroke-width="2"/>
+<text x="1050.0" y="200" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">eval-lab</text>
+<text x="1050.0" y="224" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">RAGAS · dedup</text>
+<text x="1050.0" y="244" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">retrieval checks</text>
+<line x1="600" y1="110" x2="1050.0" y2="166" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<rect x="60" y="340" width="300" height="96" rx="12" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/>
+<text x="210.0" y="370" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Hybrid RAG · graphify</text>
+<text x="210.0" y="394" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">Qdrant + BM25 + RRF + reranker</text>
+<rect x="390" y="340" width="300" height="96" rx="12" fill="#f8fafc" stroke="#0d9488" stroke-width="2"/>
+<text x="540.0" y="370" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Deep research</text>
+<text x="540.0" y="394" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">GitHub · arXiv · HN · Wikipedia</text>
+<rect x="760" y="340" width="380" height="96" rx="12" fill="#f8fafc" stroke="#7c3aed" stroke-width="2"/>
+<text x="950.0" y="370" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Knowledge base</text>
+<text x="950.0" y="394" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#475569">Neo4j + Qdrant — local or your server</text>
+<line x1="150.0" y1="272" x2="210" y2="336" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<line x1="170.0" y1="272" x2="540" y2="336" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<line x1="692" y1="388" x2="756" y2="388" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></line>
+<path d="M210,438 L210,458 L950,458 L950,442" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#ah)"><animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.2s" repeatCount="indefinite"/></path>
+<rect x="60" y="480" width="1080" height="80" rx="14" fill="#f8fafc" stroke="#dc2626" stroke-width="2" stroke-dasharray="10 6"/>
+<text x="600" y="512" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="800" fill="#0f172a">Quality gates — pre-push hook + CI, on every change</text>
+<text x="600" y="540" text-anchor="middle" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" fill="#475569">gitleaks (secrets) · public-boundary (private names, paths, IPs) · docs-sync · plugin preflight contracts · 579 tests</text>
+</svg>
