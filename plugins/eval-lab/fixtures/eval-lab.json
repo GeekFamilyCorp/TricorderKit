@@ -1,0 +1,29 @@
+{
+  "status": "success",
+  "skill_name": "eval-lab",
+  "skill_version": "0.1.0",
+  "timestamp": "2026-05-16T00:00:00+00:00",
+  "duration_ms": 850,
+  "tokens_used": {
+    "input": 120,
+    "output": 60,
+    "total": 180
+  },
+  "output": {
+    "summary": "Eval 1/1 skills OK",
+    "data": {
+      "skills_evaluated": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "has_critical": false,
+      "schema_violations": [],
+      "regressions": [],
+      "baseline_updated": false
+    },
+    "files_created": [],
+    "next_steps": [
+      "Tous les skills sont conformes — mettre à jour les baselines si nécessaire"
+    ]
+  }
+}

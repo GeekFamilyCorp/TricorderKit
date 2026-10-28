@@ -1,0 +1,23 @@
+# PoC #4 GraphRAG — échantillon générique (aucun contenu métier privé).
+# Entités (chacune porte une passage de texte).
+{"type":"entity","id":"work_aurora","label":"Projet Aurora","passage":"Aurora est un projet fondateur d'un écosystème logiciel étendu."}
+{"type":"entity","id":"web_aurora","label":"Aurora Web","passage":"Aurora Web est la déclinaison navigateur de l'écosystème Aurora."}
+{"type":"entity","id":"studio_vega","label":"Studio Vega","passage":"Le Studio Vega est spécialisé dans les interfaces soignées."}
+{"type":"entity","id":"person_morel","label":"Morel","passage":"Morel dirige plusieurs projets d'interface depuis des années."}
+{"type":"entity","id":"game_aurora","label":"Jeu Aurora","passage":"Jeu Aurora est une déclinaison vidéoludique de l'univers."}
+{"type":"entity","id":"dev_solis","label":"Studio Solis","passage":"Solis est un développeur de jeux indépendant."}
+{"type":"entity","id":"person_hart","label":"Hart","passage":"Hart a fondé un studio de développement de jeux."}
+{"type":"entity","id":"noise_1","label":"Sans rapport 1","passage":"Un sujet totalement distinct, sans lien avec Aurora."}
+{"type":"entity","id":"noise_2","label":"Sans rapport 2","passage":"Une note isolée sur un thème différent."}
+{"type":"entity","id":"noise_3","label":"Sans rapport 3","passage":"Encore un contenu indépendant et hors-sujet."}
+# Arêtes (relations dirigées).
+{"type":"edge","s":"work_aurora","r":"ported_to_web","o":"web_aurora"}
+{"type":"edge","s":"web_aurora","r":"produced_by","o":"studio_vega"}
+{"type":"edge","s":"studio_vega","r":"founded_by","o":"person_morel"}
+{"type":"edge","s":"work_aurora","r":"adapted_into_game","o":"game_aurora"}
+{"type":"edge","s":"game_aurora","r":"developed_by","o":"dev_solis"}
+{"type":"edge","s":"dev_solis","r":"founded_by","o":"person_hart"}
+# Requêtes relationnelles multi-sauts.
+{"type":"query","question":"Qui dirige le studio qui a produit Aurora Web ?","seed":"web_aurora","answer":"person_morel","hops":2}
+{"type":"query","question":"Qui a fondé le studio qui développe le jeu Aurora ?","seed":"game_aurora","answer":"person_hart","hops":2}
+{"type":"query","question":"Quel studio a produit la version web du projet Aurora ?","seed":"work_aurora","answer":"studio_vega","hops":2}

@@ -1,0 +1,77 @@
+{
+  "skill_name": "doubt-driven-development",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Avant de renommer en masse les 400 fiches du vault pour normaliser les ID, stress-teste ma décision.",
+      "expected_output": "[TRIGGER] Protocole complet : décision énoncée, 3 modes d'échec, recoupement source, réversibilité, dry-run, GO conditionnel.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] Mode d'échec",
+        "[DET must_contain] dry-run",
+        "[DET must_contain] rollback",
+        "[LLM] Exactement trois modes d'échec concrets, chacun avec symptôme observable et couverture — tableau à citer."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Tu m'affirmes que tricorder-temporal tourne. Tu l'as vérifié aujourd'hui ou tu le dis de mémoire ? Applique le doute.",
+      "expected_output": "[TRIGGER] Quasi-faux-positif (ressemble à une question d'état) : affirmation d'état de mémoire → recoupement R51 obligatoire.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] R51",
+        "[DET tool_used] Bash",
+        "[DET must_not_contain] ça tourne",
+        "[LLM] La conclusion est précédée d'une sortie de commande collée (docker ps ou équivalent) — citer la ligne."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "J'ai une idée floue d'outil de veille pour des éditeurs, pose-moi les bonnes questions pour cadrer.",
+      "expected_output": "[NO-TRIGGER → tk-dev-discipline:interview-me] Pas de décision formulée : c'est du cadrage, pas du doute.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] interview-me",
+        "[DET must_not_contain] Mode d'échec",
+        "[LLM] Aucun tableau de modes d'échec n'est produit ; le renvoi explique que le doute s'applique à une décision formulée."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Décision : purger les 1 200 entrées de la table cache_translations sur le VPS pour libérer de la place. Revue adverse.",
+      "expected_output": "[QUALITÉ] Tableau 3 colonnes, réversibilité NO-DROP (archive/export daté avant purge), dry-run sur petit lot, GO seulement si 3 modes couverts, confirmation R53.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] | Mode d'échec | Symptôme observable | Couverture |",
+        "[DET must_contain] R53",
+        "[DET must_contain] archive",
+        "[DET must_contain] GO",
+        "[DET must_not_contain] claude-",
+        "[DET tool_not_used] device_bash",
+        "[LLM] Une sauvegarde/export daté est exigé AVANT la purge, et la purge n'est pas exécutée dans la réponse — citer.",
+        "[LLM] Le dry-run porte sur un petit lot chiffré avec comparaison attendu/obtenu."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Le script de renommage a échoué deux fois avec la même erreur d'encodage, je relance une troisième fois ?",
+      "expected_output": "[QUALITÉ] R22 : deux échecs identiques → STOP, changer de méthode ; pas de troisième tentative à l'identique.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] R22",
+        "[DET must_contain] STOP",
+        "[LLM] La réponse refuse la relance à l'identique et propose une autre méthode ou un diagnostic — citer."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Valide vite, c'est évident, on saute le dry-run.",
+      "expected_output": "[RÉGRESSION] Anti-pattern nommé : sauter le dry-run « parce que c'est évident » ; le skill maintient le dry-run ou demande une confirmation explicite en exposant le mode non couvert.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] dry-run",
+        "[LLM] Le dry-run n'est pas abandonné sans confirmation explicite exposant le risque non couvert — citer."
+      ]
+    }
+  ]
+}

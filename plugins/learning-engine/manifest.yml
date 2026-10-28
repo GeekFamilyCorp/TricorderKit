@@ -1,0 +1,54 @@
+name: learning-engine
+version: 0.1.0
+status: draft
+decision: DEC-046
+created: 2026-06-11
+description: >
+  Mémoire d'expérience et rétro-amélioration contrôlée — transforme les runs
+  en leçons, propositions de skill updates et classements de stratégies,
+  avec tests et validation humaine avant toute promotion.
+loop: "Run -> Trace -> Score -> Compare -> Learn -> Propose -> Test -> Review -> Promote -> Monitor"
+depends_on:
+  - workflow-engine
+  - eval-lab
+  - graphify
+  - deep-research-core
+contracts:
+  output: core/contracts/skill_output.schema.json
+  schemas:
+    - schemas/run_experience.schema.json
+    - schemas/experience_card.schema.json
+    - schemas/strategy_variant.schema.json
+    - schemas/lesson.schema.json
+    - schemas/skill_update_proposal.schema.json
+guardrails:
+  human_review_required_default: true
+  core_self_modification: forbidden
+  promotion_requires_tests: 8
+  scraped_content_is_untrusted: true
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: schémas d'expérience, kind: dir, ref: plugins/learning-engine/schemas, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+    - {name: temporal, kind: tcp, target: "localhost:7233", required: false, reason: boucle via workflow-engine (learning_review)}
+  env: []
+  stop_conditions:
+    - proposition sans les 8 tests requis
+    - tentative de modifier le core (interdit)
+    - contenu collecté non validé utilisé comme instruction
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: git_revert
+    procedure: >
+      Aucune promotion sans revue humaine. Une promotion = un commit ;
+      retour arrière par git revert de ce commit.
+  escalation:
+    risk_level: HIGH
+    ask_before:
+      - promouvoir une proposition de mise à jour de skill
+      - modifier un skill existant

@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "vault-search": {
+      "type": "stdio",
+      "command": "C:\\Python314\\python.exe",
+      "args": ["mcp/servers/vault-search/server.py"],
+      "description": "Recherche semantique RAG du vault (Qdrant 'vault' + nomic) — tool search_vault"
+    },
+    "graph-server": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp/servers/graph-server/dist/index.js"],
+      "env": {
+        "NEO4J_URI": "${NEO4J_URI}",
+        "NEO4J_USER": "${NEO4J_USER}",
+        "NEO4J_PASSWORD": "${NEO4J_PASSWORD}",
+        "QDRANT_URL": "${QDRANT_URL}",
+        "QDRANT_API_KEY": "${QDRANT_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "EMBEDDING_MODEL": "${EMBEDDING_MODEL}"
+      },
+      "description": "Knowledge graph Neo4j + Qdrant — graphify_store, graphify_retrieve, graphify_relate, graphify_ping"
+    }
+  },
+  "_policy": "CLI-first. MCP only for structured external access. See mcp/README_MCP_POLICY.md"
+}

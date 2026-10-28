@@ -1,0 +1,37 @@
+# config.yaml — OpenEvolve pour le PoC dédup TricorderKit (LLM LOCAL, GPU-free).
+# STATUT (2026-06-24) : openevolve 0.2.27 INSTALLE, harness pret (initial_program + evaluator + ce config).
+# PREREQUIS pour une vraie evolution utile : un modele de CODE capable. `qwen:1.8b` (seul dispo en local)
+# est trop faible pour reecrire du code -> ne produit pas d'amelioration au-dela du baseline deja optimal.
+# Recommande : `ollama pull qwen2.5-coder:7b` (ou pointer api_base sur une gateway exposant un modele fort),
+# puis lancer :
+#   export OPENAI_API_KEY=ollama
+#   python -m openevolve experiments/openevolve_poc/initial_program.py \
+#          experiments/openevolve_poc/evaluator.py --config experiments/openevolve_poc/config.yaml --iterations 30
+max_iterations: 30
+random_seed: 42            # reproductibilite (meme convention qu'OpenEvolve)
+
+llm:
+  # LLM LOCAL Ollama (endpoint OpenAI-compatible). Aucune cle cloud, cout ~0. OPENAI_API_KEY=ollama (factice).
+  api_base: "http://localhost:11434/v1"
+  models:
+    - name: "qwen2.5-coder:7b"   # REQUIS pour des resultats utiles ; a `ollama pull`. (qwen:1.8b = trop faible)
+      weight: 1.0
+  temperature: 0.7
+
+database:
+  population_size: 40
+  num_islands: 3
+  feature_dimensions: ["recall", "precision"]   # qualite-diversite sur nos metriques
+
+evaluator:
+  cascade_evaluation: true     # ecarte vite les programmes casses
+  use_llm_feedback: false      # metrique deterministe (F1) suffit ici
+
+prompt:
+  system_message: |
+    Tu es un expert en resolution d'entites (deduplication de titres).
+    Objectif : MAXIMISER le F1 de detection des doublons dans `initial_program.py`.
+    Tu peux modifier les parametres du bloc EVOLVE (BLOCK_THRESHOLD, FUZZY_THRESHOLD, TOPK)
+    ET la logique de `predict` (ex. normalisation, ponderation cosinus/fuzzy, blocking).
+    CONTRAINTES : ne change pas la signature de `predict(titles)` ; le code doit rester
+    deterministe et hors-ligne (pas de nouvel appel reseau). Renvoie un programme Python valide.

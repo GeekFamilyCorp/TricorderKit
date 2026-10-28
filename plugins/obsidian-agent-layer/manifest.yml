@@ -1,0 +1,86 @@
+name: obsidian-agent-layer
+version: "0.1.0"
+description: "Couche d'intégration Obsidian — CRUD notes, templates structurés, routing vault, sync HOT_CACHE"
+service: tricorderkit-core
+language: python
+entrypoint: scripts/obsidian_runner.py
+token_budget: 600
+cache:
+  backend: sqlite
+  ttl_seconds: 3600
+  path: .cache/obsidian-agent-layer.db
+dry_run: true
+output_format: json
+output_schema: core/contracts/skill_output.schema.json
+safe_commands:
+  - read
+  - search
+  - write
+  - patch
+  - update-hot-cache
+  - dry-run
+priority: HIGH
+
+obsidian:
+  vaults:
+    claude-vault:
+      mcp_server: obsidian-claude-vault
+      hot_cache_path: "00_SYSTEM/05_Hot_Cache/HOT_CACHE.md"
+      daily_log_path: "10_INBOX/Daily_Logs/{date}.md"
+    my-domain-project:
+      mcp_server: obsidian-my-domain-project
+      index_path: "00_SYSTEM/INDEX.md"
+
+  templates:
+    project:
+      target_folder: "Knowledge/Projects"
+      required_fields: [title, url, license, status]
+    paper:
+      target_folder: "Knowledge/Papers"
+      required_fields: [title, authors, year]
+    person:
+      target_folder: "Knowledge/People"
+      required_fields: [name, affiliation]
+    organization:
+      target_folder: "Knowledge/Organizations"
+      required_fields: [name, founded]
+    concept:
+      target_folder: "Knowledge/Concepts"
+      required_fields: [title, definition]
+    source:
+      target_folder: "Knowledge/Sources"
+      required_fields: [title, url]
+
+  write_guards:
+    dry_run_threshold: 10      # Dry-run obligatoire si > 10 notes en une session
+    archive_on_overwrite: true # Conserver version précédente dans _archive/
+    max_ops_per_session: 50    # Rate-limit opérations MCP
+
+  sync:
+    qdrant_enabled: false      # Phase 6 — non connecté en Phase 5
+    sqlite_log: data/obsidian-agent-layer/sync_log.sqlite
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: note ou gabarit cible, kind: arg, ref: path, required: true}
+  dependencies:
+    - {name: obsidian-claude-vault, kind: mcp, target: obsidian-claude-vault, required: true}
+    - {name: vault du projet lié, kind: mcp, target: linked-project-vault, required: false}
+  env: []
+  stop_conditions:
+    - plus de 10 notes écrites sans dry-run préalable
+    - plus de 50 opérations MCP dans la session
+    - champs obligatoires du gabarit manquants
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: backup_restore
+    procedure: >
+      archive_on_overwrite : la version précédente est conservée dans _archive/.
+      Retour arrière : restaurer cette version.
+  escalation:
+    risk_level: HIGH
+    ask_before:
+      - toute écriture dans le vault du projet lié
+      - écrire plus de 10 notes

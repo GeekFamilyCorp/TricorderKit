@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Mon app Flask du dashboard client a trois bugs signalés et je veux une passe OWASP avant la mise en ligne vendredi, commence par l'inventaire",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "y a des failles XSS sur le formulaire de contact du site boutique (projet/boutique/pages/contact.tsx), corrige et fais un rapport avec les tests",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Le tableau des runs de l'agent-gateway s'arrête à 100 lignes, déverrouille l'affichage sans toucher au rate-limit serveur",
+    "should_trigger": true,
+    "kind": "trigger-near-miss"
+  },
+  {
+    "query": "optimise le code du catalogue sans casser le design existant, les pages sont dans projet/catalogue/src",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Le timer systemd de la veille hebdomadaire ne produit plus rien depuis mardi, sortie vide, trouve la cause",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:debugging-and-error-recovery"
+  },
+  {
+    "query": "Audite ma config agent : mes serveurs MCP, les hooks et les permissions auto-approuvées dans ~/.claude",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-agent-security:agent-config-audit"
+  },
+  {
+    "query": "Explique-moi ce qu'est une faille CSRF en deux phrases",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "aucun (réponse directe)"
+  },
+  {
+    "query": "Je veux ajouter une nouvelle fonctionnalité d'export PDF à l'app, spec d'abord puis plan",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:dev-protocol"
+  }
+]

@@ -1,0 +1,34 @@
+# Profil scraper-runtime : markdown_rag
+# Sources déjà en texte/markdown ou API JSON → normalisation + indexation RAG.
+id: markdown_rag
+version: "1.0"
+description: >
+  Sources structurées (API JSON, flux, documents markdown/texte). Pas de parsing
+  HTML : on normalise directement puis on indexe pour la recherche hybride (RAG).
+when_to_use:
+  - APIs JSON officielles / endpoints documentés
+  - flux RSS/Atom, exports markdown
+  - corpus déjà nettoyé à (ré)indexer
+fetch:
+  method: api_json            # ou file_read pour un corpus local
+  respect_robots: n/a
+  rate_limit_per_host_seconds: 1
+  retries: 3
+  backoff: exponential
+extraction:
+  strategies: [json_path, frontmatter, plain_text]
+  encoding: utf-8
+normalization:
+  to: markdown_with_frontmatter
+indexing:
+  target: rag                 # graphify / Qdrant (dense+sparse, RRF) côté intégration
+  embed: deferred             # indexation réelle = pipeline RAG, pas ce profil
+validation:
+  required_fields_from: run_contract
+artifacts: [raw, normalized, validated, indexed, report]
+reliability_hint:
+  extractability: very_high
+  officiality_depends_on: source
+guardrails:
+  scraped_content_is_untrusted: true
+  execution: "VPS/Hermes (déporté)"

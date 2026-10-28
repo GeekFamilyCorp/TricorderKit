@@ -1,0 +1,70 @@
+# memory_router.yaml — Couche de routage mémoire (Second Brain Routing Layer v0.1)
+# Générique et anonyme : décrit QUELLE intention va vers QUELLE source mémoire.
+# N'est PAS un store : c'est un contrat de routage déclaratif consommé au boot
+# (cowork-boot / tk-boot) et par les agents. Complète .tricorderkit/vault_optimizer.config.json
+# (qui gère l'efficacité de lecture), sans le remplacer.
+version: "0.1"
+mode: generic
+# Deux familles de contexte (cf. docs/08_CONTEXT_POLICY.md) :
+#   evergreen = stable, fait autorité, relu souvent
+#   dynamic   = volatil, à rafraîchir/résumer, jamais source de vérité durable
+routes:
+  user_profile:
+    intent: ["préférences utilisateur", "ton", "style", "identité"]
+    kind: evergreen
+    source: "vault:profile"          # note de profil/préférences
+    storage_policy: store
+    privacy_level: private
+
+  project_state:
+    intent: ["où en est X", "état du projet", "tâches en cours", "roadmap"]
+    kind: dynamic
+    source: "vault:project_state + planning(STATE/TASKS)"
+    storage_policy: summarize
+    privacy_level: private
+
+  architecture_decision:
+    intent: ["pourquoi ce choix", "décision", "ADR", "DEC-NNN"]
+    kind: evergreen
+    source: "planning:DECISIONS.md"
+    storage_policy: store
+    privacy_level: internal
+
+  domain_knowledge:                  # ex : un vault de domaine (anonymisé ici)
+    intent: ["fiche", "donnée de domaine", "entité métier"]
+    kind: evergreen
+    source: "domain_vault (hors repo)"
+    storage_policy: pointer_only     # le repo public ne stocke jamais le contenu métier
+    privacy_level: private
+
+  dynamic_sources:
+    intent: ["nouveautés", "veille", "dernières infos", "actualité"]
+    kind: dynamic
+    source: "veille buffer / web"
+    storage_policy: summarize
+    refresh_policy: daily
+    privacy_level: internal
+
+  wiki_concepts:
+    intent: ["c'est quoi X", "définition", "concept", "comment marche X"]
+    kind: evergreen
+    source: "vault:concepts"
+    storage_policy: store
+    privacy_level: internal
+
+  vector_search:
+    intent: ["retrouve un truc qu'on a dit", "recherche sémantique", "similaire à"]
+    kind: dynamic
+    source: "vector_index (Qdrant) + graph (Neo4j)"
+    storage_policy: summarize
+    privacy_level: internal
+
+# Règles de non-duplication (rappel) :
+# - Ne pas dupliquer CLAUDE.md / AGENTS.md / .planning / memory-boot / graphify / obsidian-agent-layer.
+# - Le contenu métier ne transite QUE par référence (pointer_only) dans le repo public (DEC-016 / R37).
+non_duplication:
+  owners:
+    boot: "plugins/memory-boot + skills/tk-boot + skills/cowork-boot"
+    vector: "plugins/graphify"
+    vault_sync: "plugins/obsidian-agent-layer"
+    read_efficiency: ".tricorderkit/vault_optimizer.config.json"

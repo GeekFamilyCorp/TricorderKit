@@ -1,0 +1,85 @@
+name: graphify
+version: 0.1.0
+description: Hybrid knowledge graph engine -- Neo4j + Qdrant + LangGraph
+status: scaffold
+phase: 3
+author: GeekFamilyCorp
+repo: https://github.com/GeekFamilyCorp/TricorderKit
+
+requires:
+  services:
+    - neo4j
+    - qdrant
+  env:
+    - NEO4J_URI
+    - NEO4J_USER
+    - NEO4J_PASSWORD
+    - QDRANT_URL
+  python:
+    - neo4j>=5.0
+    - qdrant-client>=1.8
+    - langgraph>=0.1
+    - openai>=1.0
+
+mcp_servers:
+  - name: graph-server
+    path: mcp/graph-server/
+    port: 7475
+    status: todo
+  - name: vector-server
+    path: mcp/vector-server/
+    port: 6334
+    status: todo
+
+ontology:
+  node_types: [Concept, Entity, Task, Skill, Agent, Source, Session, Decision]
+  relationship_types: [RELATES_TO, DEPENDS_ON, PRODUCES, CONSUMES, REFERENCES, DERIVED_FROM, PART_OF, IMPLEMENTS, DISCOVERED_IN]
+
+integrations:
+  - plugin: deep-research-core
+    role: feeds Source nodes + Concept nodes
+  - plugin: workflow-engine
+    role: Temporal Activity + LangGraph state API
+  - plugin: memory-boot
+    role: seeds graph from Obsidian vault
+
+token_budget:
+  max_tokens_per_query: 2000
+  on_budget_exceeded: truncate_results
+
+implements: [DEC-003, DEC-004, DEC-008, DEC-009]
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  dependencies:
+    - {name: neo4j, kind: tcp, target: "localhost:7687", required: true, reason: capacité graph (caps ensure graph)}
+    - {name: qdrant, kind: tcp, target: "localhost:6333", required: true, reason: capacité graph (caps ensure graph)}
+    - {name: ollama, kind: http, target: "http://localhost:11434", required: false, reason: embeddings locaux}
+    - {name: neo4j-driver, kind: python_module, target: neo4j, required: true}
+    - {name: qdrant-client, kind: python_module, target: qdrant_client, required: true}
+    - {name: langgraph, kind: python_module, target: langgraph, required: true}
+  env:
+    - {name: NEO4J_URI, required: true, secret: false}
+    - {name: NEO4J_USER, required: true, secret: false}
+    - {name: NEO4J_PASSWORD, required: true, secret: true}
+    - {name: QDRANT_URL, required: true, secret: false}
+    - {name: QDRANT_API_KEY, required: false, secret: true}
+    - {name: TK_VAULT_ROOT, required: false, secret: false}
+    - {name: TK_MASTER_INDEX, required: false, secret: false}
+    - {name: TK_VEILLE_RUNS, required: false, secret: false}
+  stop_conditions:
+    - Neo4j ou Qdrant injoignable
+    - budget de 2000 tokens par requête atteint (résultats tronqués)
+  retry: {max_attempts: 3}
+  rollback:
+    strategy: backup_restore
+    procedure: >
+      Avant toute écriture en masse, sauvegarder le volume neo4j_data (ou un export APOC).
+      Retour arrière : restaurer cette sauvegarde.
+  escalation:
+    risk_level: HIGH
+    ask_before:
+      - écriture en masse dans Neo4j
+      - suppression de nœuds ou de relations
+      - modification de l'ontologie

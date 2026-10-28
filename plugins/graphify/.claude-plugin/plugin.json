@@ -1,0 +1,18 @@
+{
+  "name": "graphify",
+  "version": "0.1.0",
+  "description": "Knowledge graph hybride — Neo4j + Qdrant + LangGraph. Fournit le MCP graph-server (store/retrieve/relate).",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "knowledge-graph",
+    "neo4j",
+    "qdrant",
+    "mcp"
+  ]
+}

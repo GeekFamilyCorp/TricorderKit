@@ -1,0 +1,13 @@
+{
+  "name": "tk-dev-discipline",
+  "version": "1.0.0",
+  "description": "Discipline de développement TricorderKit : cadrage (interview-me), protocole spec→plan→sous-agents→tests→ship (dev-protocol), revue adverse (doubt-driven-development), débogage par cause racine, correction/durcissement web OWASP (code-corrector), observabilité des automatisations.",
+  "author": {
+    "name": "GeekFamilyCorp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tricorderkit",
+    "tk"
+  ]
+}

@@ -1,0 +1,87 @@
+name: deep-research-core
+version: 0.1.0
+type: plugin
+description: Local-first autonomous research engine - multi-source collection, deduplication, scoring, Markdown synthesis
+author: TricorderKit
+
+skills:
+  - tk-deep-research
+
+commands:
+  - /tk:deep-research
+
+dependencies:
+  - python: ">=3.11"
+  - packages:
+    - requests
+    - pyyaml
+    - jsonschema
+
+pipelines:
+  - name: content_sources_research
+    file: pipelines/content_sources_research.yml
+    status: ready
+  - name: entity_research
+    file: pipelines/entity_research.yml
+    status: planned
+  - name: github_research
+    file: pipelines/github_research.yml
+    status: planned
+  - name: vendor_research
+    file: pipelines/vendor_research.yml
+    status: planned
+
+sources:
+  trusted: sources/trusted_sources.yml
+  blocked: sources/blocked_sources.yml
+
+outputs:
+  - type: markdown
+    path: "vault/reports/"
+  - type: json
+  - type: obsidian_notes
+    vault: "${OBSIDIAN_VAULT_PATH}"
+
+infrastructure_optional:
+  - service: qdrant
+    port: 6333
+    note: "Degraded mode if unavailable"
+
+token_budget:
+  max_per_research: 20000
+  warn_at: 15000
+  on_exceeded: pause_and_notify
+
+status: scaffold_ready
+phase: 4
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: sources de confiance, kind: file, ref: plugins/deep-research-core/sources/trusted_sources.yml, required: true}
+    - {name: sources bloquées, kind: file, ref: plugins/deep-research-core/sources/blocked_sources.yml, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true, reason: ">= 3.11"}
+    - {name: requests, kind: python_module, target: requests, required: true}
+    - {name: pyyaml, kind: python_module, target: yaml, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+    - {name: qdrant, kind: tcp, target: "localhost:6333", required: false, reason: mode dégradé si absent ; capacité graph (caps)}
+  env:
+    - {name: GITHUB_PERSONAL_ACCESS_TOKEN, required: false, secret: true, reason: sources GitHub authentifiées}
+    - {name: OBSIDIAN_VAULT_PATH, required: false, secret: false, reason: sortie obsidian_notes}
+  stop_conditions:
+    - budget de 20000 tokens par recherche dépassé (pause_and_notify)
+    - source présente dans blocked_sources
+    - aucune source joignable
+  retry: {max_attempts: 3}
+  rollback:
+    strategy: manual
+    procedure: >
+      Les sorties sont de nouveaux rapports ; aucune donnée existante n'est modifiée.
+      Retour arrière : archiver le rapport produit (NO-DROP).
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - écrire des notes dans un vault Obsidian
+      - dépasser le seuil warn_at de 15000 tokens

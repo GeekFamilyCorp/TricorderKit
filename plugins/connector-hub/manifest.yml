@@ -1,0 +1,88 @@
+name: connector-hub
+version: 0.2.0
+description: |
+  Hub d'ingestion passif multi-sources pour TricorderKit.
+  Lit les déclarations sources de chaque linked_project actif,
+  construit un registre unifié et route vers le bon CLI d'ingestion.
+author: GeekFamilyCorp
+type: plugin
+category: ingestion
+
+entrypoint: connector_hub.py
+
+commands:
+  list:
+    description: Lister toutes les sources déclarées (linked_projects + core)
+    flags:
+      - --all         # inclure les sources désactivées
+      - --format json
+  status:
+    description: Vérifier la joignabilité HTTP de chaque source
+    flags:
+      - --dry-run
+      - --format json
+  dispatch:
+    description: Déclencher l'ingestion via le bon CLI (collect_sources.py pour les sources core, CLI déclaré par le linked_project sinon)
+    flags:
+      - --source <id|nom|type|domaine>
+      - --query <requête>
+      - --all
+      - --dry-run
+      - --format json
+
+# Routage : aucune source câblée en dur dans le hub.
+handlers:
+  core:            plugins/deep-research-core/scripts/collect_sources.py  # --domain <catégorie> --sources <nom> --query <requête>
+  linked_project:  "bloc dispatch: {cli, args} de <linked_project>/project_config/sources.yaml"
+
+sources_config:
+  linked_projects: configs/local/linked_projects.yaml  # projet actif → project_config/sources.yaml
+  core:            plugins/deep-research-core/sources/trusted_sources.yml
+
+dependencies:
+  python: ">=3.11"
+  pip:
+    - pyyaml
+    - requests     # optionnel — requis pour cmd_status uniquement
+
+output_contract: core/contracts/skill_output.schema.json
+
+dry_run_support: true
+format_support:
+  - markdown
+  - json
+
+risk_level: LOW  # read-only sauf dispatch (qui appelle des sous-CLIs)
+
+linked_to:
+  - plugins/deep-research-core/
+  - plugins/workflow-engine/workflows/source_watch.workflow.ts
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: sources du projet lié, kind: file, ref: configs/local/linked_projects.yaml, required: true}
+    - {name: sources core, kind: file, ref: plugins/deep-research-core/sources/trusted_sources.yml, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true, reason: ">= 3.11"}
+    - {name: pyyaml, kind: python_module, target: yaml, required: true}
+    - {name: requests, kind: python_module, target: requests, required: false, reason: commande status uniquement}
+    - {name: temporal, kind: tcp, target: "localhost:7233", required: false, reason: dispatch vers source_watch.workflow ; capacité workflows (caps)}
+  env:
+    - {name: TEMPORAL_ADDRESS, required: false, secret: false, default: "localhost:7233"}
+    - {name: OBSIDIAN_VAULT_PATH, required: false, secret: false}
+  stop_conditions:
+    - fichier de sources absent ou illisible
+    - dispatch demandé sans passage --dry-run préalable
+    - sous-CLI d'ingestion en échec
+  retry: {max_attempts: 2}
+  rollback:
+    strategy: manual
+    procedure: >
+      list et status sont en lecture seule. dispatch délègue l'écriture aux sous-CLIs :
+      leur propre retour arrière s'applique ; relancer en --dry-run pour comparer.
+  escalation:
+    risk_level: LOW
+    ask_before:
+      - dispatch --all sans --dry-run

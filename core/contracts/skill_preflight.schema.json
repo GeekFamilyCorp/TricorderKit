@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/GeekFamilyCorp/TricorderKit/core/contracts/skill_preflight.schema.json",
+  "title": "TricorderKit — contrat d'entrée (preflight) d'un plugin ou skill",
+  "description": "Bloc `preflight:` du manifest.yml. Déclare ce qui doit être vrai AVANT de démarrer (entrées, dépendances, variables), quand s'arrêter, comment revenir en arrière et quand escalader vers l'humain. Contrat statique : il est lu, jamais exécuté par le linter. Les valeurs de secrets ne figurent jamais ici.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["dependencies", "env", "stop_conditions", "rollback", "escalation"],
+  "properties": {
+    "inputs": {
+      "description": "Données d'entrée requises avant démarrage.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "kind", "required"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["file", "dir", "arg", "env"] },
+          "ref": { "type": "string", "description": "Chemin RELATIF au dépôt, nom d'argument ou de variable. Jamais de chemin personnel." },
+          "required": { "type": "boolean" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "dependencies": {
+      "description": "Dépendances système à vérifier avant démarrage.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "kind", "required"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["tcp", "http", "mcp", "command", "python_module", "node_module", "docker_container"] },
+          "target": { "type": "string", "description": "host:port, URL, nom de serveur MCP, commande ou module. Utiliser localhost, jamais d'IP ni d'hôte réel." },
+          "required": { "type": "boolean" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "env": {
+      "description": "Variables d'environnement. Pour un secret : présence seulement, jamais de valeur ni de défaut.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "required", "secret"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "required": { "type": "boolean" },
+          "secret": { "type": "boolean" },
+          "default": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "if": { "properties": { "secret": { "const": true } } },
+        "then": { "not": { "required": ["default"] } }
+      }
+    },
+    "stop_conditions": {
+      "description": "Conditions qui doivent arrêter l'exécution (fonction stop).",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "retry": {
+      "description": "Politique de réessai bornée. Un réessai infini est interdit.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_attempts"],
+      "properties": {
+        "max_attempts": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "non_retryable": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "rollback": {
+      "description": "Retour arrière en cas d'échec ou de mauvais résultat.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "procedure"],
+      "properties": {
+        "strategy": { "enum": ["none_read_only", "git_revert", "backup_restore", "env_flag", "compensation", "manual"] },
+        "procedure": { "type": "string", "minLength": 10 }
+      }
+    },
+    "escalation": {
+      "description": "Quand s'arrêter et demander à l'humain (Risk Guard).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_level", "ask_before"],
+      "properties": {
+        "risk_level": { "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "ask_before": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

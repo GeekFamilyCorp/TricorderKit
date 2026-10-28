@@ -1,0 +1,334 @@
+# CHANGELOG — TricorderKit
+
+> Format : [version] — date — description
+
+---
+
+## [1.2.0] — 28/10/2026 — v1.2 « Moteur public sans domaine métier, contrats preflight & frontière durcie »
+
+### Historique
+- **Historique public repris à zéro** (28/10/2026) - le dépôt public repart d'un commit unique : l'ancien historique contenait du contenu propre à un projet lié privé. L'ancien historique (449 commits) est conservé intégralement par le mainteneur, hors du dépôt public. Les versions v0.9.5, v1.0.0 et v1.1.0 restent décrites ci-dessous ; leurs archives ne sont plus publiées.
+
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **README** (27/10/2026) - vitrine remise à jour : section « What's new » (classée par ampleur des changements depuis v1.1.0), « Use it inside Claude » (13 plugins du marketplace + 5 plugins de méthode, 21 skills), index de la documentation (00 à 10), tableau « What's inside » complété (cowork-plugins, canal_agents, tools/caps, backup, batch, examples), badges CI en direct (tests, gitleaks, public-boundary) à la place du badge statique « 634 PASS », compteur porté à 648 tests collectés (README, STATUS, ROADMAP).
+- **docs/10_REMOTE_SERVICES.md** + **examples/remote-services/** - guide pour héberger Temporal, Neo4j et Qdrant sur une autre machine (réseau privé, ports liés à l'IP privée car Docker contourne UFW, migration des données, variables du poste, tâches Windows, retour arrière) ; lien depuis le README.
+- **core/contracts/skill_preflight.schema.json** - contrat statique du bloc `preflight:` d'un manifest.yml : entrées, dépendances, variables (secret = présence seule, jamais de défaut), conditions d'arrêt, réessai borné (1-10), retour arrière, escalade (Risk Guard).
+- **scripts/check_preflight_contract.py** + cible `make preflight` (ajoutée à `make gates`) - mode avertissement : un contrat invalide échoue, un contrat absent est signalé ; `--strict` pour exiger. Refuse les chemins personnels (R37). Ne lit aucune valeur d'environnement.
+- **plugins/workflow-engine/manifest.yml** - premier manifest du plugin, pilote du contrat.
+- **tests/test_check_preflight_contract.py** - 9 tests.
+- **Contrats des 12 autres plugins** - les 13 plugins déclarent désormais leur contrat ; `plugins/cli-forge/manifest.yml` créé (absent). `make preflight` passe en `--strict`.
+
+### Corrigé
+- **Moteur public sans domaine métier** (27/10/2026, nuit) - tout le contenu propre à un domaine privé (sources, outils, types de notes, intentions du routeur, exemples et jeux de données) est retiré ou remplacé par un domaine neutre : logiciel libre et recherche. `deep-research-core` : sources GitHub + `research` (arXiv, Hacker News, Wikipedia) avec collecteurs ; `connector-hub` : plus aucune source câblée en dur, les sources d'un projet lié se branchent par un bloc `dispatch:` ; `workflow-engine` : activité générique `scanSource` ; `obsidian-agent-layer` : notes project / paper / person / organization / concept / source ; routeur d'intentions et hooks neutralisés ; veille RSS générique (`ingest_veille.py`). Outil de veille de domaine `source-watch-goat` retiré. Expériences relancées sur des échantillons neutres : GraphRAG 100 % vs 33-50 % en RAG plat (contre 50-67 % sur l'ancien échantillon), dédup selftest -82 % de comparaisons (inchangé) ; la mesure `nomic` cross-script est à refaire. 579 tests collectés.
+- **Dépôt public : contenu propre à un projet lié privé retiré** (27/10/2026) - prompts de tâches planifiées (`cowork-scheduled-tasks/`, désormais ignoré par git), PoC dédié, schéma Supabase et ses tests, rapports d'audit internes, exemples et scripts de démonstration du domaine, planification interne (`.planning/` réduit à des fichiers publics neutres) ; noms du projet lié remplacés par `my-domain-project` dans le code, les tests et la documentation. Compteur : 584 tests collectés (README, STATUS, ROADMAP).
+- **Tests** - `test_check_docs_sync` aligné sur l'ancrage courant (« NNN tests collected ») ; `test_status_json_valid` ne fige plus la version ; sous-processus de `test_generate_status` en UTF-8 (échec cp1252 sous Windows).
+- **`tk research run`** - sans `--dry-run`, refuse désormais de lancer la collecte réseau sans `--yes` (garde d'irréversibilité) ; le test correspondant échouait par dépassement de délai.
+- **Services distants** - `tools/caps` : clé `remote_env` (capacités `graph` et `workflows`) ; si les variables (`NEO4J_URI`, `QDRANT_URL`, `TEMPORAL_ADDRESS`) pointent hors de la machine, `caps` sonde le service distant, ne démarre jamais rien en local, ne le compte pas dans la RAM et ne le préempte pas ; autotest étendu. `search_vault.py` et `index_qdrant.py` lisent `QDRANT_URL`.
+- **workflow-engine** - `run_worker_loop.cmd` : worker au premier plan avec relance, pour les tâches planifiées (le Planificateur arrêtait le worker lancé en détaché, une seconde après le démarrage). `start_worker.cmd` accepte un Temporal distant via `TEMPORAL_ADDRESS`.
+- **pytest.ini** - suppression de `--basetemp=.pytest_tmp` (R36) : le dossier verrouillé sous Windows faisait échouer tous les tests utilisant `tmp_path`. pytest utilise le dossier temporaire système.
+- **workflow-engine/scripts/start_worker.cmd** - monte la capacité `workflows` (caps) avant le worker ; sinon, à l'ouverture de session, le worker mourait si Temporal n'était pas prêt.
+- **workflow-engine** - `skill_eval` et `usage_observer` n'avaient aucune politique de réessai (défaut Temporal : illimité). Bornés à 3 tentatives.
+
+---
+
+### Inclus aussi dans 1.2.0 (08/07/2026) — Outil : batch runner résilient (AIMD + checkpoint)
+
+### Ajouté
+- **tools/batch/batch_runner.py** — traitement de très gros arbres de fichiers (100k+) sans saturer l'hôte : lots adaptatifs **AIMD** (start 100, +50 au succès rapide, ×0.5 au lent/erreur), **checkpoint JSON résumable** après chaque lot (reprise exacte après crash/arrêt/redémarrage), liste de chemins cachée, poison-pill anti-boucle. Détachable, sans dépendance. Ops CLI intégrées (`audit_ts`/`backfill_ts`) + README documentant le patron.
+
+---
+
+## [1.1.0] — 23/06/2026 — v1.1 « Radar d'auto-amélioration, PoC de mesure & durcissement »
+
+> Cap additif (aucune rupture d'API, plugins inchangés à 13). Ajoute un **radar d'innovation** branché
+> sur la boucle self-improving, une **piste de mesure** sous forme de PoC isolés, deux **skills** d'ingénierie,
+> et plusieurs **durcissements d'infrastructure**. Les `experiments/` sont isolés et promus uniquement sur DEC ;
+> les skills sont « proposition d'abord ».
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **skills/god-mode** — radar d'innovation/auto-amélioration : sources tiérées → ranking → mapping module → propositions (jamais d'adoption auto). Passe hebdomadaire planifiée. (DEC-053)
+- **skills/code-corrector** — correcteur/durcisseur web discipliné (audit OWASP, plafonds d'affichage levés sans retirer les protections serveur, design préservé), approbation humaine des changements structuraux.
+- **skills/agent-config-audit** — audit lecture-seule de la surface de l'agent (MCP, hooks, permissions, secrets en clair, exposition) → correctifs proposés (inspiré d'AgentShield). Complète code-corrector + le coffre de secrets.
+- **experiments/** (PoC isolés, hors-ligne, selftest) : `ragas_eval` (éval RAG), `temporal_memory` (mémoire bi-temporelle, backend SQLite), `dedup_embeddings` (blocking par embeddings + fuzzy), `graphrag` (récupération entité-relation), `openevolve_poc` (optimiseur piloté par évaluateur, style autoresearch, GPU-free, LLM local).
+- **tools/caps** — capability-on-demand (ensure/reap/status, gouverneur RAM, résolveur d'intention) : démarrage des outils à la demande.
+- **models/** registry (abstraction Ollama/LiteLLM) + **observabilité** Prometheus/Grafana (DEC-051).
+- **memory-router** + prototype Arbor (DEC-052) — couche de routage mémoire.
+
+### Modifié / durci
+- **token-optimizer** : hooks reconçus **portables cmd+sh non bloquants** (bootstrap Python lisant `CLAUDE_PLUGIN_ROOT` via l'environnement, exit 0 garanti) ; Economizer réconcilié (v0.3.0).
+- **docker-compose** : profils (graph/workflows/observability) + `restart:no` + limites mémoire (boot léger, démarrage à la demande) ; healthcheck Temporal corrigé.
+
+### Sécurité
+- **Gate frontière publique (R37)** : aucun terme privé/chemin perso dans la vitrine — appliquée à chaque push.
+- Durcissements côté runtime privé (résilience gateway LLM, secrets hors-fichier) documentés hors repo public.
+
+---
+
+## [1.0.0] — 11/06/2026 — v1.0 « Self-Improving Scraping & Knowledge OS » (DEC-046)
+
+> Cap v1.0 : les 7 chantiers N1–N7 sont **code-complets**. Boucle d'auto-amélioration (experience → leçons → propositions de skill gardées par tests + revue humaine), gouvernance MCP machine-lisible, runtime de scraping standardisé, moteur de fiabilité des sources, évaluateurs de qualité, workflows Temporal d'auto-amélioration (exécution déportée). Aucun plugin ajouté à la vitrine (12) — N1/N2 = nouveaux plugins déjà comptés ; N3 = `mcp/` ; N5/N7 = extensions.
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **mcp/registry_allowlist.yaml** — allowlist MCP **machine-lisible, deny-by-default** : serveurs + tools + permissions + rate limits, patterns de tools bannis, politique de secrets (références `${VAR}` uniquement, DEC-039). Rend exécutable la politique écrite (`mcp/README_MCP_POLICY.md`).
+- **mcp/scripts/mcp_gateway.py** — moteur de gouvernance : `list` (déclarés + configurés), `audit` (`.mcp.json` confronté à l'allowlist : serveurs non déclarés, secrets en clair, tools bannis), `allowlist-check` (décision autorisé/refusé). Sortie conforme `core/contracts/skill_output.schema.json`, journal par appel `mcp/logs/mcp_calls.jsonl` (gitignoré).
+- **CLI** — `tk mcp list | audit | allowlist-check` câblés dans `cli/tk.py`.
+- **tests/test_mcp_gateway.py** — 13 tests (deny-by-default, audit secrets/serveurs, contrat skill_output, codes retour CLI).
+
+### Ajouté (Lot E — N6 + N7)
+- **plugins/scraper-runtime/scripts/source_reliability_engine.py** (N6) — moteur de **fiabilité des sources** : score composite (officialité, fiabilité, fraîcheur, extractabilité, dédup) calculé depuis l'historique des runs, **dry-run strict** (lecture seule, jamais d'écriture vault ; promotion déléguée au writer du projet aval, routage DEC-016, archivage R31). Sortie `skill_output` (status=dry_run). + **8 tests**.
+- **plugins/workflow-engine/workflows/** (N7) — 4 workflows Temporal d'auto-amélioration : `learning_review` (hebdo : compare → leçons → drafts, jamais de promotion), `skill_regression_test` (gate des tests + approbation humaine avant promotion), `source_freshness` (score N6 → re-scrape déporté), `tool_scout` (veille outillage déportée). Exécution collecte/veille **déportée** Antigravity/Hermes via `canal_agents` (DEC-029).
+- **plugins/workflow-engine/activities/self_improving.activities.ts** — activities dédiées (dispatch canal_agents + consolidation CLI), type `SelfImprovingActivities` **isolé du worker en production** ; barrel séparé `workflows/self_improving.index.ts` ; doc d'activation `plugins/workflow-engine/SELF_IMPROVING.md`.
+
+### Ajouté (N5 — extension eval-lab)
+- **plugins/eval-lab/evaluators.py** — 5 évaluateurs de qualité (fonctions pures, zéro dép) : `scraping_quality`, `source_reliability`, `dedup_quality`, `rag_retrieval_quality`, `cost_latency` ; grille de notation (excellent/good/warn/fail), dispatch + agrégat `evaluate_all` (ne note que les dimensions mesurées).
+- **plugins/eval-lab/eval_runner.py** — commande `evaluate [<type>] --input metrics.json [--json]` (sortie skill_output). **17 tests** (`tests/test_evaluators.py`).
+
+### Ajouté (N7 — scaffolding d'activation)
+- **plugins/workflow-engine/scripts/start_self_improving_worker.ts** — worker Temporal **isolé** (task queue dédiée `tricorderkit-self-improving`) enregistrant les 4 workflows N7 + les activities self-improving ; n'affecte pas le worker de production.
+- **plugins/workflow-engine/scripts/register_self_improving_schedules.ts** — enregistrement des Temporal Schedules (learning_review hebdo, source_freshness quotidien, tool_scout hebdo), **dry-run par défaut** (`DRY_RUN=0` pour appliquer) ; `skill_regression_test` reste à la demande (approbation humaine). Doc `SELF_IMPROVING.md` mise à jour. Activation par commande explicite (aucune auto-activation, garde HIGH).
+
+### Corrigé (2026-06-12 — harmonisation vitrine, DEC-049)
+- **ROADMAP.md** — était resté en **v0.9.5 / 544 tests / 10 plugins** après le cut v1.0 (alors que README/STATUS/CHANGELOG étaient déjà passés à v1.0.0) ; réaligné sur **v1.0.0 / 634 tests collected / 12 plugins**, ajout de la phase v1.0 (Self-Improving), phase 9 alignée sur README (🟡 In progress), item docs-sync marqué fait.
+- **STATUS.md** — date d'en-tête corrigée (2026-06-01 → 2026-06-11) ; ajout des modules `learning-engine` et `scraper-runtime` au tableau « Modules core » (16 → 18 lignes).
+- **scripts/check_docs_sync.py** — gate docs-sync **étendu** (cause racine de la dérive non détectée) : lit désormais **ROADMAP.md** dans les contrôles version ET tests ; compte les plugins **suivis par git** (un WIP non poussé ne bloque plus le push) ; ignore les compteurs de tests *historiques* (faux positif « 503 tests PASS » de la phase 8). Confirmé : pytest collecte 634 tests. (DEC-049 / R46)
+
+### Référence
+- DEC-046 — cap v1.0 Self-Improving : N3 (gouvernance MCP), N5 (extension eval-lab), N6 (source reliability engine), N7 (workflows d'auto-amélioration + scaffolding d'activation). Plan : `.planning/PLAN_v1.0_SELF_IMPROVING_2026-06-11.md`.
+- DEC-049 — gate docs-sync étendu au ROADMAP + comptage plugins git-tracked + exclusion des compteurs historiques (R46). Voir `.planning/DEC-049_docs_coherence.md`. (NB : DEC-047 = project_scope générique learning-engine ; DEC-048 = plugin document-ingestion/MarkItDown — numéros déjà attribués.)
+
+## [0.9.5] — 01/06/2026 — graphify : RAG vault local-first (DEC-023) + dédup G1 ingestion veille
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **plugins/graphify/scripts/hybrid_rag.py** — RAG vault **local-first** : indexeur incrémental, recherche dense, pont d'ingestion de veille, heartbeat de santé. Implémente DEC-023 (RAG hybride local-first).
+- **Dédup G1 dans l'ingestion de veille** — chaque fiche est confrontée au **Master Index** → marquée `nouveau`/`existant`, avec gate `n_a_creer` qui empêche la création de doublons.
+
+### Sécurité / Gouvernance
+- **LICENSE** — licence MIT ajoutée (© 2026 GeekFamilyCorp).
+- **Gate frontière publique** — `scripts/check_public_boundary.py` (scan des fichiers suivis : termes privés hors whitelist + chemins personnels absolus toujours bloquants), **appliqué** en CI (`.github/workflows/public-boundary.yml`) et en pre-push (`.githooks/pre-push`, `make install-hooks`). Nettoyage frontière (Lot 2) : retrait des dossiers legacy, capsules privées et chemins personnels ; `cowork-boot` relocalisé vers un projet lié privé. (DEC-026)
+
+### Référence
+- DEC-023 (.planning/DECISIONS.md) — RAG hybride local-first. Commits `cbd9f53` (RAG), `124baba` (dédup G1).
+- DEC-026 (.planning/DECISIONS.md) — gate frontière publique appliqué.
+
+> Note : 6 tests graphify (`test_hybrid_rag.py`, `test_hybrid_rag_integration.py`) validés en local, à intégrer à la suite committée (non comptés dans le total 503).
+
+## [0.9.5] — 30/05/2026 — obsidian-goat v0.2.2 : retrait du cache SQLite (ponytail / R37)
+
+### Supprimé
+- **tools/obsidian-goat/obsidian_goat.py** (v0.2.1 → v0.2.2) — suppression de la couche de cache SQLite (`init_cache`/`cache_get`/`cache_set`, `CACHE_DB`/`CACHE_TTL`, `conn` propagé dans chaque commande, invalidations). **640 → 580 lignes (−60)**. Application du finding ponytail #1 (audit YAGNI) : optimisation prématurée pour une CLI lisant de petits fichiers Markdown, et **cause racine du mode de panne R36** (`sqlite disk I/O error` si `OBSIDIAN_GOAT_CACHE` non inscriptible) — désormais éliminé. La variable `OBSIDIAN_GOAT_CACHE` n'a plus d'effet.
+- Imports `sqlite3`, `time`, `Optional` retirés (devenus inutiles).
+
+### Vérifié
+- AST OK, **28/28 tests PASS**, zéro résidu `conn`/`cache`/`sqlite3` (validés sur FS réel).
+
+### Référence
+- R37 (échelle YAGNI, lessons.md LESSON-013) — inspiration : github.com/DietrichGebert/ponytail (MIT).
+
+## [0.9.4] — 29/05/2026 — obsidian-goat v0.2.1 : `next-id` (allocation d'ID, R34) + rétrospective
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **tools/obsidian-goat/obsidian_goat.py** (v0.2.0 → v0.2.1) — commande `next-id <prefix> [--check <id>]` : scanne noms de fichiers + contenu (sans exclure backups/réservés) → prochain ID libre, trous, et vérification de collision d'un ID précis. Implémente R34 (allocation d'ID sûre, complète R29).
+- **tests/cli_contracts/test_obsidian_goat.py** — classe `TestNextIdR34` (5 tests). Suite complète **28/28 PASS**.
+- **tasks/lessons.md** — LESSON-008→012 (règles **R32-R36** : pas d'édition octet + validation parse/smoke ; git FS réel + vérif sandbox ; allocation ID ; vérif nature avant fiche ; cache CLI writable).
+
+### Référence
+- DEC-019 — rétrospective 28/29 mai + auto-améliorations. Vault : `RETRO_2026-05-28_29`, `PATTERN-EDIT-DUALFS-001`, `SUCCESSES_INDEX`.
+
+## [0.9.3] — 29/05/2026 — obsidian-goat v0.2.0 : garde-fou R29 (anti-collision d'ID)
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **tools/obsidian-goat/obsidian_goat.py** (v0.1.0 → v0.2.0) — nouvelle commande `replace-id <old_id> <new_id>` : remplacement d'identifiant **borné au token complet** (lookbehind/lookahead `\w`). Empêche le piège ED040 (un préfixe nu ne corrompt plus un token plus long) ; tokens partageant le préfixe détectés et listés `protected_prefix_tokens`. **Dry-run par défaut**, `--apply` pour écrire, `--root` pour cibler un vault hors ENV, `--exclude` répétable (exclut par défaut `99_Migration_Backups`/`03_Manifestes_Migration`). Implémente la règle R29 (DEC-017/DEC-018).
+- **tests/cli_contracts/test_obsidian_goat.py** — classe `TestReplaceIdR29` (4 tests : dry-run token complet, préfixe nu protégé, apply sans corruption, refus old==new). Suite complète **23/23 PASS**.
+
+### Référence
+- DEC-018 (.planning/DECISIONS.md) — améliorations post-assainissement + rollout studios.
+
+## [0.9.2] — 23/05/2026 — M5 : security hardening + Windows deployment
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **plugins/workflow-engine/activities/sanitize_input.activity.ts** — Pre-Execution Hook anti-prompt-injection : Llama Guard 3 (Ollama) + regex fallback 12 patterns. `ApplicationFailure.nonRetryable` si payload unsafe → quarantaine Temporal. Ferme RISK-005.
+- **plugins/deep-research-core/index_qdrant.py** — génération d'IDs Qdrant : `hashlib.sha1` → `uuid.uuid5(NAMESPACE, name)`. Déterministe + sans collision. Test idempotence inclus. Ferme ERR-T-001.
+- **.semgrep/no-shell-true.yaml** — 3 règles custom : `no-shell-true` (CWE-78), `no-os-system` (CWE-78), `no-sha1-for-ids` (CWE-327).
+
+### Modifié
+- **plugins/security-audit-cli/security_runner.py** — architecture `_run_*` pure (découplée de Typer) · `encoding="utf-8", errors="replace"` sur tous les accès fichier · exclusions UUID par chemin relatif · suppression emoji → ASCII `PASS/FAIL` (compatibilité Windows tâche planifiée).
+- **plugins/security-audit-cli/tests/test_security_runner.py** — 18/18 tests PASS (était 17/18 : `test_scan_skip_if_semgrep_missing` corrigé).
+
+### Corrections Windows
+- `subprocess.run()` : `encoding="utf-8"` forcé partout (R18) — élimine les crashs cp1252
+- `Path.read_text()` : même correction dans `_run_docker` et `_run_uuid`
+- `pytest --basetemp` : défini hors `AppData\Temp` dans `pyproject.toml` (R-WIN-003)
+- Rich Console : `isatty()` conditionnel pour tâches planifiées (R19)
+
+### Full Audit résultat
+`scan PASS · secrets PASS · deps PASS · docker PASS · uuid PASS`
+
+---
+
+## [0.9.1] — 23/05/2026 — Public-ready : docs, install, anonymisation
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **ROADMAP.md** — fichier public à la racine, phases 1–12 (1–8 Complete, 9–12 Planned)
+- **scripts/install-menu.py** — wizard d'installation guidée (4 étapes : prérequis, .env, Docker, tk doctor)
+- **Makefile** — 11 targets : `install`, `doctor`, `health`, `test`, `test-all`, `lint`, `docker-up/down`, `validate`, `security`, `clean`
+- **docs/anonymization.md** — guide complet anonymisation avant push public + checklist + règle R17
+
+### Modifié
+- **README.md** — version 0.9, badge phase, section "v0.9 What's New", roadmap 12 phases
+- **STATUS.md** — ajout table modules (16 modules : stable / evolving / experimental)
+- **INSTALL.md** — `scripts/install-menu.py` désormais opérationnel (retrait "à venir")
+- **docs/linked_projects.md** — v0.9, exemples anonymisés (my-domain-project → my-domain-project)
+- **.gitignore** — `vault/*.json` et `reports/` gitignorés, version v0.9
+
+### Sécurité / Anonymisation
+- Suppression de tous les chemins `C:\Users\<username>` hardcodés dans les fichiers versionnés
+- Suppression des références au nom du linked_project dans le périmètre public (`cli/tk.py`, `connector_hub.py`, `pipeline_rtk_docmancer.py`, `obsidian_goat.py`, `dispatch_temporal.py`, `docmancer/SKILL.md`, `trusted_sources.yml`)
+- `mcp/MCP_AUTH_DIAGNOSTIC.md` — username anonymisé (`<username>`)
+- `templates/linked_project_template/` — exemples de config anonymisés
+
+---
+
+## [0.9.0] — 18/05/2026 — Orchestration M1+M2 + linked_project Phase 1
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **tk-orchestrator v0.3.0** — budget_guard phase 2 (DEC-006)
+  - Tiers T1/T2/T3 : `haiku-4-5` (query) / `sonnet-4-6` (action/audit) / `opus-4-6` (workflow/research)
+  - `tier_for_intent()`, `tier_from_complexity()` (escalade has_code/multifile/destructive)
+  - `guard_action()` → proceed|pause|abort selon budget session
+  - CLI `budget-guard` + CLI `session-budget` — 25 tests pytest ✅
+- **Pipeline observabilité B2** — `tools/observability/hook_log_to_obsidian.py`
+  - Parse `.cache/hooks/*.log` JSON-lines → note Obsidian `ERRORS.md`
+  - Catégories : HIGH/CRITICAL, qualité <60%, erreurs d'exécution
+- **Pipeline rtk→docmancer M3** — `tools/pipelines/pipeline_rtk_docmancer.py`
+  - 5 étapes : collect→dedup→score→build_note→write_obsidian
+  - Dry-run validé (note d'exemple écrite dans le vault)
+- **Schéma Supabase d'un projet lié** — 7 tables, 5 ENUMs, RLS complet (déplacé hors du dépôt public le 27/10/2026)
+- **Temporal connector dispatch** — bypass registre + idempotence (DEC-013)
+- **Skills pont Cowork** — token-savior + claude-code-router — 19 tests ✅ (DEC-014)
+- **Plugins v0.8** — memory-boot (21 tests) + token-optimizer (31 tests)
+- **Skills** — rtk + docmancer + `/tk:boot` command
+
+### Décisions
+- DEC-012 : Supabase pour My-Domain-Project
+- DEC-013 : Bypass registre connector_hub en mode Temporal
+- DEC-014 : Skills token-savior + claude-code-router comme ponts Cowork
+
+### Tests
+- **247 PASS** (+25 budget_guard | 10 échecs pré-existants non régressés)
+
+---
+
+## [0.8.0] — 17/05/2026 — Linked project architecture + Quality loop
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- **Architecture linked_project** — séparation moteur générique / domaine privé (DEC-010)
+  - `configs/local/linked_projects.yaml` (non versionné) + `linked_projects.example.yaml` (versionné)
+  - `docs/linked_projects.md` — convention officielle
+  - `templates/linked_project_template/` — template reproductible (9 sous-dossiers + configs)
+  - My-Domain-Project déclaré comme premier linked_project actif
+- **CLI `tk` v0.2.0** — entrypoint unifié : `tk status/health/doctor/skill list/workflow list/vault scan/research run --dry-run/project *` + `--format json|markdown` sur toutes les commandes
+- **Hook layer v0.2** — Pre-Intent, Pre-Execution, Post-Execution hooks câblés dans MainBrain v1.5 ; 25 tests pytest ; activities Temporal + worker RUNNING
+- **Plugins quality loop** — eval-lab (eval_runner, baseline_store, regression_checker), security-audit-cli, obsidian-agent-layer (vault_router, note_builder)
+- **Audit tools** — `tools/audit/linked_project_audit.py` (structure, git, config, secrets, consistency) + `tools/audit/local_vs_github_audit.py` (diff local vs GitHub)
+- **Config layers** — `configs/shared/defaults.yaml` (versionné) + `configs/local/settings.yaml` + `configs/vps/settings.yaml` (gitignorés)
+- **Reports** — premier audit système complet (rapport interne, retiré du dépôt public)
+- **Tests live deep-research** — sources externes validées (marqueur `live`)
+
+### Modifié
+- MainBrain v1.4 → v1.5 (hooks Pre-Intent, Pre-Execution, Post-Execution câblés)
+- `docker-compose.yml` — Langfuse port 3000 → 3001 (conflit Docker Desktop résolu)
+- GitHub MCP — migration `@modelcontextprotocol/server-github` → `ghcr.io/github/github-mcp-server` (Docker officiel, KI-003)
+- `.gitignore` — ajout configs locaux non versionnés
+
+### Décisions
+- DEC-008 : LangGraph pour boucles agentiques courtes
+- DEC-009 : architecture hybride graph+vector (Neo4j + Qdrant)
+- DEC-010 : pattern linked_project — TricorderKit exécute, le projet lié spécialise
+- DEC-011 : VPS extension optionnelle future (non déployé)
+
+### Résolus
+- KI-004 : Temporal worker — tsconfig CommonJS + DB postgres12 + barrel export + docker cleanup
+- ERR-T-002 : `${CLAUDE_PLUGIN_ROOT}` → chemin absolu + `datetime.utcnow()` → timezone-aware
+- KI-003 : GitHub MCP déprécié → migration Docker officielle
+
+---
+
+## [0.7.0] — 10/05/2026 — Complet
+
+### Ajouté
+- **Frontière publique durcie** (27/10/2026) - `plugins/security-audit-cli/private_terms.py` : les termes privés ne sont plus écrits en clair dans le dépôt (empreintes SHA-256 de leur forme normalisée) ; détection insensible à la casse, aux séparateurs (espace, tiret, underscore) et à la forme collée, dans le contenu ET dans les chemins de fichiers ; termes supplémentaires par `TK_PRIVATE_TERMS` ou `configs/local/private_terms.txt` (non suivi). Sortie masquée (`private-term#xxxxxxxx`) car la CI est publique. `.check-anon-ignore` vidé (il exemptait ~60 motifs, dont des dossiers entiers).
+- README_FIRST.md — fichier de boot obligatoire
+- AGENTS.md — instructions pour tous les agents Claude
+- CLAUDE.md — configuration Claude Code
+- .planning/ — dossier de pilotage (STATE, TASKS, DECISIONS, RISKS, ROADMAP)
+- MainBrain v1.4 — upgrade avec Risk Guard + CLI Selector + Token Hygiene Guard
+- Plugin cli-forge — génération CLIs déterministes pour agents
+- Plugin workflow-engine — orchestration Temporal (squelette)
+- Plugin deep-research-core — recherche autonome locale (squelette)
+- Skill /tk:boot — boot de session
+- Skill /tk:cli-forge — génération CLI
+- Skill /tk:deep-research — recherche autonome
+- Commande /tk:dry-run — simulation sans effet de bord
+- Commande /tk:health — dashboard santé système
+- Commande /tk:changelog — génération auto entrée changelog
+- Contract testing : core/contracts/skill_output.schema.json
+- Rate limiting agentique : token_budget par workflow
+- docker-compose.yml — Neo4j + Qdrant + Temporal + Langfuse
+- CLI github-goat — GitHub API, lecture seule, SQLite cache
+- CLI de veille de sources de domaine, SQLite cache (retiré du dépôt public le 27/10/2026)
+- Script validate_repo.py — validation arborescence
+- Script health_check.py — dashboard santé HTML/JSON
+- Tests cli_contracts/ — contract tests dry-run
+
+### Modifié
+- Repositionnement stratégique : CLI-first Agentic OS (vs memory-first v0.6)
+- MainBrain v1.3 → v1.4 (ajout Risk Guard, CLI Selector, Token Hygiene Guard)
+- Arborescence repo complète reconstruite
+
+### Décisions
+- DEC-001 : Temporal comme moteur de workflows
+- DEC-002 : cli-forge en priorité Phase 2
+- DEC-003 : Neo4j pour le graph
+- DEC-004 : Qdrant pour le vector
+- DEC-005 : Output schema JSON obligatoire
+- DEC-006 : Rate limiting token par workflow
+- DEC-007 : Règle atomique 1 idée = 1 node
+
+---
+
+## [0.6.0] — 05/05/2026
+
+### Acquis
+- Vision Agentic Knowledge OS
+- Stack Claude Code + Obsidian + MCP + Neo4j + Qdrant + Docker
+- 7 axes d'amélioration documentés
+- MainBrain v1.3 avec pipeline cognitif
+- Claude Vault v0.2 arborescence décimale
+- Nodes typés (project, paper, person, organization, trend...)
+- Edges typés (supports, contradicts, adapted_into, created_by...)
+- Règle atomique : 1 idée = 1 node (100–500 tokens)
+
+---
+
+## [0.1.0 → 0.5.x] — Historique antérieur
+
+- Mise en place memory-boot, token-hygiene, repo-pack
+- RAG initial + hygiene tokens
+- Sécurité des skills + registre
+- Observabilité initiale + eval-lab prototype
+
+---
+
+*Généré automatiquement — ne pas modifier manuellement*  
+*Commande : /tk:changelog*

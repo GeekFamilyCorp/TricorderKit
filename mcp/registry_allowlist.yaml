@@ -1,0 +1,75 @@
+# registry_allowlist.yaml — Gouvernance MCP machine-lisible (TricorderKit, DEC-046 / N3)
+#
+# Politique : DENY-BY-DEFAULT. Aucun serveur ni tool MCP n'est utilisable s'il
+# n'est pas declare ici avec ses permissions. Rend executable la politique
+# ecrite dans mcp/README_MCP_POLICY.md (CLI = travail lourd, MCP = acces
+# structure, Claude = raisonnement).
+#
+# Consomme par mcp/scripts/mcp_gateway.py :
+#   tk mcp list             -> serveurs/tools declares + configures
+#   tk mcp audit            -> .mcp.json confronte a cette allowlist
+#   tk mcp allowlist-check  -> decision autorise/refuse pour un couple serveur/tool
+#
+# Secrets : conformes DEC-039 (gestionnaire d'identifiants OS + wrapper). Aucune
+# valeur en clair dans .mcp.json : uniquement des references ${VAR} resolues a
+# l'execution, jamais commitees.
+
+version: 1
+
+policy:
+  default: deny              # deny-by-default : tout ce qui n'est pas liste est refuse
+  log_every_call: true       # journal par appel -> mcp/logs/mcp_calls.jsonl (gitignore)
+  dry_run_required_for_write: true
+  secrets:
+    storage: os_credential_manager   # DEC-039 : coffre OS + wrapper, jamais en config
+    forbid_inline_values: true       # aucune valeur secrete litterale dans .mcp.json
+    allow_env_reference_only: true   # seules les references ${VAR} sont tolerees
+
+# Patterns de tools bannis meme si un serveur tente de les exposer
+# (coherent avec "Forbidden commands" de README_MCP_POLICY.md).
+forbidden_tool_patterns:
+  - "*exec*"
+  - "*shell*"
+  - "*run_command*"
+  - "*eval*"
+  - "*spawn*"
+
+servers:
+
+  vault-search:
+    description: Recherche semantique RAG du vault (Qdrant + nomic) — lecture seule.
+    transport: stdio
+    permissions: [read]
+    secrets: []
+    allowed_tools:
+      - name: search_vault
+        permission: read
+        rate_limit_per_min: 30
+
+  graph-server:
+    description: Knowledge graph Neo4j + Qdrant (graphify).
+    transport: stdio
+    permissions: [read, write]
+    secrets:
+      - NEO4J_URI
+      - NEO4J_USER
+      - NEO4J_PASSWORD
+      - QDRANT_URL
+      - QDRANT_API_KEY
+      - OPENAI_API_KEY
+      - EMBEDDING_MODEL
+    allowed_tools:
+      - name: graphify_ping
+        permission: read
+        rate_limit_per_min: 60
+      - name: graphify_retrieve
+        permission: read
+        rate_limit_per_min: 60
+      - name: graphify_store
+        permission: write
+        rate_limit_per_min: 30
+        dry_run_default: true
+      - name: graphify_relate
+        permission: write
+        rate_limit_per_min: 30
+        dry_run_default: true

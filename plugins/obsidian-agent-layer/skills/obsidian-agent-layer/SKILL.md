@@ -1,0 +1,152 @@
+---
+name: obsidian-agent-layer
+description: "Couche d'integration Obsidian : CRUD notes avec frontmatter structure, recherche semantique full-text + tags, fiches conformes aux templates (project, paper, person, organization, concept, source), routing vault, sync HOT_CACHE. Declencheurs : creer/lire/patcher une note, ecrire dans le vault, fiche structuree Obsidian."
+---
+
+# obsidian-agent-layer — Skill Intégration Vault Obsidian
+> Version : 0.1.0 — 16/05/2026
+> Ancrage : TricorderKit v0.8 — Phase 5 active
+> Statut : Scaffoldé — en développement
+
+---
+
+## 🎯 Rôle & déclencheurs
+
+`obsidian-agent-layer` est la **couche d'intégration Obsidian** de TricorderKit. Il fournit une API unifiée pour lire, créer, mettre à jour et indexer des notes dans les vaults Obsidian connectés sans passer par le MCP brut.
+
+### Responsabilités
+1. **CRUD notes** — créer, lire, patcher, déplacer, supprimer des notes avec frontmatter structuré
+2. **Recherche sémantique** — full-text + tags + frontmatter dans les vaults
+3. **Fiches structurées** — produire des notes conformes aux templates TricorderKit (project, paper, person, organization, concept, source)
+4. **Sync bidirectionnelle** — détecter les changements et propager vers les BDD (Qdrant, SQLite)
+5. **HOT_CACHE** — mettre à jour l'état du projet en fin de session
+
+### Déclencheurs
+- Commande : `/tk:obsidian write <note_path> <content>`
+- Commande : `/tk:obsidian search <query> --vault <vault_name>`
+- Après exécution d'un pipeline deep-research-core (auto-persist)
+- Fin de session : mise à jour HOT_CACHE + daily log
+
+### Ce qu'il N'EST PAS
+- ❌ Un remplaçant du MCP Obsidian (il s'appuie dessus)
+- ❌ Un moteur de recherche vectorielle (délègue à Qdrant)
+- ❌ Un éditeur de vault (pas de suppression en masse)
+
+---
+
+## ⚙️ Architecture
+
+```
+plugins/obsidian-agent-layer/
+├── SKILL.md                   ← Ce fichier
+├── manifest.yml               ← Compatible cli-forge
+├── obsidian_client.py         ← Wrapper MCP → API Python unifiée
+├── note_builder.py            ← Construction frontmatter + body Obsidian
+├── vault_router.py            ← Routing vault (claude-vault / linked_project / custom)
+├── template_registry.py       ← Templates Obsidian par type (project, paper, person...)
+├── sync_engine.py             ← Détection changements + propagation Qdrant/SQLite
+└── tests/
+    ├── __init__.py
+    ├── conftest.py
+    ├── test_note_builder.py
+    ├── test_vault_router.py
+    └── test_obsidian_client.py
+```
+
+---
+
+## 🗂️ Vaults supportés
+
+| Vault ID          | Path Obsidian                        | Usage principal                    |
+|---|---|---|
+| `claude-vault`      | Claude Vault (MCP connecté)          | Mémoire système, daily logs, HOT_CACHE |
+| `linked_project`    | Vault du linked_project actif        | Données métier du projet privé connecté |
+| `custom`            | Configurable via manifest.yml        | Usage projet spécifique            |
+
+---
+
+## 📤 Output Contract
+
+```json
+{
+  "status": "success|partial|error|dry_run",
+  "skill_name": "obsidian-agent-layer",
+  "skill_version": "0.1.0",
+  "timestamp": "...",
+  "output": {
+    "summary": "3 notes créées, 1 mise à jour, 0 erreur",
+    "data": {
+      "notes_created": 3,
+      "notes_updated": 1,
+      "notes_failed": 0,
+      "vault": "linked_project",
+      "paths": [
+        "domain/entity-type/entity-name.md",
+        "domain/entity-type/entity-name-2.md"
+      ]
+    },
+    "files_created": [],
+    "next_steps": ["Indexer les nouvelles notes dans Qdrant"]
+  }
+}
+```
+
+---
+
+## 🚀 Commandes CLI
+
+```bash
+# Écrire une note depuis stdin JSON
+echo '{"path": "Knowledge/Projects/test.md", "content": "# Test"}' \
+  | python plugins/obsidian-agent-layer/obsidian_client.py write
+
+# Recherche full-text
+python plugins/obsidian-agent-layer/obsidian_client.py search "My Query" --vault linked_project
+
+# Construire une fiche domaine structurée
+python plugins/obsidian-agent-layer/note_builder.py entity --title "Entity Name" --author "Author Name"
+
+# Mettre à jour le HOT_CACHE
+python plugins/obsidian-agent-layer/obsidian_client.py update-hot-cache
+
+# Dry-run : simuler une écriture
+python plugins/obsidian-agent-layer/obsidian_client.py write --dry-run
+```
+
+---
+
+## 📝 Templates supportés
+
+| Type    | Frontmatter clés                                      | Dossier cible                |
+|---|---|---|
+| `project` | title, url, repository, license, language, status | `Knowledge/Projects/`        |
+| `paper` | title, authors, year, venue, arxiv_id, doi             | `Knowledge/Papers/`          |
+| `person`| name, birth_date, affiliation, known_for               | `Knowledge/People/`          |
+| `organization` | name, founded, location, notable_projects       | `Knowledge/Organizations/`   |
+| `concept` | title, related, definition                           | `Knowledge/Concepts/`        |
+| `source` | title, url, kind                                      | `Knowledge/Sources/`         |
+| `note`  | (générique — title, tags, date)                       | Libre                        |
+
+---
+
+## 🛡️ Gardes-fous
+
+- **Dry-run obligatoire** avant toute écriture en masse (> 10 notes)
+- **Vérification existence** : jamais d'écrasement silencieux — patch si note existante
+- **Rollback** : conserver la version précédente en `_archive/` sur modification destructive
+- **Rate-limit MCP** : max 50 opérations par session, pause entre lots
+
+---
+
+## 📊 Notes de fiabilité
+
+| Élément             | Niveau           | Commentaire                                              |
+|---|---|---|
+| CRUD notes          | 🟡 Probable      | Dépend stabilité MCP Obsidian — testé en session active |
+| Routing vault       | ✅ Confirmé      | Deux vaults MCP connectés et stables                    |
+| Templates           | 🟡 Probable      | Templates v0.1 — évolution attendue Phase 6             |
+| Sync Qdrant         | 🟠 À vérifier    | Qdrant non encore connecté en Phase 5                   |
+
+---
+
+*obsidian-agent-layer v0.1.0 — 16/05/2026 — TricorderKit v0.8*

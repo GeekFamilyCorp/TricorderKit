@@ -1,0 +1,38 @@
+experiment:
+  name: arbor_adapter
+  status: prototype_isolated
+  decision: PROTOTYPER          # cf .planning/DECISIONS.md DEC-052
+  allowed_to_modify_core: false
+  allowed_to_create_reports: true
+  allowed_to_create_decisions: true
+
+modules_impacted:
+  primary: research_agent
+  secondary:
+    - workflow-engine
+    - eval-lab
+    - graphify
+    - observability
+
+test_cases:
+  - id: github_audit_repos
+    goal: comparer N dépôts GitHub et produire un scoring TricorderKit
+    output: reports/benchmarks/arbor_github_audit_test.md
+  - id: scraping_optimizer
+    goal: comparer plusieurs stratégies d'extraction de source
+    output: reports/benchmarks/arbor_scraping_optimizer_test.md
+  - id: markitdown_conversion_strategy
+    goal: comparer plusieurs stratégies de conversion document vers Markdown
+    output: reports/benchmarks/arbor_markitdown_test.md
+
+success_criteria:
+  - produit un arbre d'hypothèses lisible
+  - conserve les branches rejetées avec justification
+  - produit un rapport Markdown exploitable
+  - n'écrit pas dans le cœur TricorderKit
+  - peut être supprimé sans casser le projet
+
+rollback:
+  - supprimer experiments/arbor_adapter
+  - supprimer les rapports de benchmark liés
+  - conserver la décision d'historique dans .planning/DECISIONS.md

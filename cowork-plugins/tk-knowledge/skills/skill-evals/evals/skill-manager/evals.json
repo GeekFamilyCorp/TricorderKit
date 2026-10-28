@@ -1,0 +1,81 @@
+{
+  "skill_name": "skill-manager",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Fais un health check du plugin tk-knowledge : score /8 par skill, critères KO, action.",
+      "expected_output": "[TRIGGER] Protocole 0 (inventory.sh) → quick_validate.py sur chaque dossier → table skill | score /8 | critères KO | action.",
+      "files": [],
+      "expectations": [
+        "[DET tool_used] Bash",
+        "[DET must_contain] inventory.sh",
+        "[DET must_contain] /8",
+        "[DET must_match] \\|\\s*skill\\s*\\|\\s*score",
+        "[LLM] Chaque ligne du tableau nomme les critères KO parmi les 8 et une action — citer une ligne."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Que fait exactement resilient-ops, et est-ce qu'il se marche dessus avec file-organizer ?",
+      "expected_output": "[TRIGGER] Quasi-faux-positif (« est-ce qu'il y a un skill pour » sonne capability-scout) : c'est une comparaison de skills installés.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] chevauchement",
+        "[DET must_contain] recommandation",
+        "[DET must_not_contain] capability-scout",
+        "[LLM] La comparaison couvre type · activation · domaine · déclencheurs · chevauchement % · recommandation (garder / fusionner / re-scoper)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Il me manque un skill pour convertir des sous-titres srt en vtt, qu'est-ce qui m'aiderait ?",
+      "expected_output": "[NO-TRIGGER → recherche de skill, hors périmètre] Détection d'un manque pour une tâche → hors scope skill-manager.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] capability-scout",
+        "[DET must_not_contain] inventory.sh",
+        "[LLM] Aucun inventaire complet n'est lancé pour répondre."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Liste mes skills et leurs racines, sans rien inventer si une racine ne répond pas.",
+      "expected_output": "[QUALITÉ] Résolution multi-racines dérivée de $HOME (aucun chemin de session en dur), recoupement avec ListSkills/ListPlugins, rapport standard, racine muette signalée.",
+      "files": [],
+      "expectations": [
+        "[DET tool_used] Bash",
+        "[DET must_not_match] /sessions/[A-Za-z0-9_-]+",
+        "[DET must_not_contain] C:\\Users",
+        "[DET must_contain] racine",
+        "[LLM] Le rapport a un résumé (nb par racine, plugins, alertes), une table par type et 3 recommandations.",
+        "[LLM] Si une racine ne répond pas, c'est dit explicitement plutôt qu'inventé (R51)."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Archive le skill fiche-validator, il est remplacé par note-validator.",
+      "expected_output": "[QUALITÉ] Protocole 5 : metadata.status: archived + raison + date, dépendances vérifiées, PROPOSÉ puis appliqué sur GO ; jamais de suppression (R31 NO-DROP) ; livraison en fichier (pas de hot-patch du cache).",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] status: archived",
+        "[DET must_contain] GO",
+        "[DET must_contain] R31",
+        "[DET must_not_contain] supprimé",
+        "[DET must_not_contain] rm -rf",
+        "[LLM] L'archivage est proposé (diff/plan) et non exécuté avant le GO — citer.",
+        "[LLM] La réponse rappelle que l'édition du cache de session ne met pas à jour le skill installé (PATTERN-EDIT-DUALFS-001) et livre en fichier."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Crée-moi un skill pour générer des sitemaps Astro.",
+      "expected_output": "[RÉGRESSION] Création → délégation à skill-creator, rappel R35/R59 (un plugin par famille) et R69 (vérifier le registre) ; skill-manager ne rédige pas le skill.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] skill-creator",
+        "[DET must_contain] R59",
+        "[LLM] Aucun SKILL.md n'est rédigé dans la réponse."
+      ]
+    }
+  ]
+}

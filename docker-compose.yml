@@ -1,0 +1,172 @@
+# TricorderKit v0.9 — Infrastructure locale
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  DEV / LOCAL ONLY — remplacer tous les secrets avant tout déploiement.    ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+#
+# DÉMARRAGE À LA DEMANDE (profiles) — un `docker compose up -d` nu ne lance RIEN.
+# On opte-in par groupe, pour ne pas saturer la VM WSL (plafonnée ~3 Go, .wslconfig) :
+#   docker compose --profile graph up -d          # neo4j + qdrant (RAG/graphe)
+#   docker compose --profile workflows up -d       # temporal (+ db, ui) — self-improving
+#   docker compose --profile observability up -d   # langfuse (+ db) — traces/tokens
+#   docker compose --profile graph --profile workflows up -d   # combinable
+# Arrêt : docker compose --profile <p> down   (ou: docker stop <conteneur>)
+#
+# restart: "no" partout → un (re)démarrage de Docker ne relance pas la stack tout seul.
+# mem_limit par service → aucun conteneur ne peut balloon au-delà de son budget.
+
+services:
+
+  # ── Neo4j — Graph Knowledge ────────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.18
+    container_name: tricorder-neo4j
+    profiles: ["graph"]
+    ports:
+      - "127.0.0.1:7474:7474"   # Browser HTTP
+      - "127.0.0.1:7687:7687"   # Bolt
+    environment:
+      NEO4J_AUTH: "${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:?NEO4J_PASSWORD manquant dans .env}"
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_dbms_memory_heap_max__size: "512m"
+      NEO4J_dbms_memory_pagecache_size: "256M"
+    mem_limit: 2g
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ── Qdrant — Vector Search / RAG ─────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.8.4
+    container_name: tricorder-qdrant
+    profiles: ["graph"]
+    ports:
+      - "127.0.0.1:6333:6333"   # REST API
+      - "127.0.0.1:6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+    mem_limit: 512m
+    restart: "no"
+
+  # ── Temporal DB — PostgreSQL pour Temporal ────────────────────────────────
+  # Règle 3 : temporalio/auto-setup ne supporte PAS sqlite.
+  temporal-db:
+    image: postgres:15
+    container_name: tricorder-temporal-db
+    profiles: ["workflows"]
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: "${TEMPORAL_DB_PASSWORD:?TEMPORAL_DB_PASSWORD manquant dans .env}"
+      POSTGRES_DB: temporal
+    volumes:
+      - temporal_db:/var/lib/postgresql/data
+    mem_limit: 384m
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Temporal — Workflow Engine ────────────────────────────────────────────
+  temporal:
+    image: temporalio/auto-setup:1.23
+    container_name: tricorder-temporal
+    profiles: ["workflows"]
+    ports:
+      - "127.0.0.1:7233:7233"   # Frontend gRPC
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: "${TEMPORAL_DB_PASSWORD:?TEMPORAL_DB_PASSWORD manquant dans .env}"
+      POSTGRES_SEEDS: temporal-db
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    mem_limit: 512m
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "tctl --address temporal:7233 cluster health 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ── Temporal UI — Interface Web (optionnel) ───────────────────────────────
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: tricorder-temporal-ui
+    profiles: ["workflows"]
+    ports:
+      - "127.0.0.1:8081:8080"   # UI Web
+    environment:
+      TEMPORAL_ADDRESS: "temporal:7233"
+      TEMPORAL_CORS_ORIGINS: "http://localhost:3001"
+    depends_on:
+      - temporal
+    mem_limit: 256m
+    restart: "no"
+
+  # ── Langfuse — Observabilité tokens + traces ──────────────────────────────
+  langfuse:
+    image: langfuse/langfuse:2.92.0
+    container_name: tricorder-langfuse
+    profiles: ["observability"]
+    pull_policy: if_not_present
+    ports:
+      - "127.0.0.1:3001:3000"   # UI + API
+    environment:
+      DATABASE_URL: "postgresql://langfuse:${LANGFUSE_DB_PASSWORD}@langfuse-db:5432/langfuse"
+      NEXTAUTH_SECRET: "${LANGFUSE_NEXTAUTH_SECRET:?LANGFUSE_NEXTAUTH_SECRET manquant dans .env}"
+      NEXTAUTH_URL: "http://localhost:3001"
+      SALT: "${LANGFUSE_SALT:?LANGFUSE_SALT manquant dans .env}"
+      TELEMETRY_ENABLED: "false"
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    mem_limit: 768m
+    restart: "no"
+
+  langfuse-db:
+    image: postgres:15
+    container_name: tricorder-langfuse-db
+    profiles: ["observability"]
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: "${LANGFUSE_DB_PASSWORD:?LANGFUSE_DB_PASSWORD manquant dans .env}"
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse_db:/var/lib/postgresql/data
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: "no"
+
+# ── Volumes persistants ───────────────────────────────────────────────────
+volumes:
+  neo4j_data:
+    name: tricorder_neo4j_data
+  neo4j_logs:
+    name: tricorder_neo4j_logs
+  qdrant_data:
+    name: tricorder_qdrant_data
+  temporal_db:
+    name: tricorder_temporal_db
+  langfuse_db:
+    name: tricorder_langfuse_db
+
+# ── Network ───────────────────────────────────────────────────────────────
+networks:
+  default:
+    name: tricorder-network

@@ -1,0 +1,61 @@
+# trusted_sources.yml — TricorderKit deep-research-core
+# Version: 0.4.0 — Sources generiques (logiciel libre et recherche technique)
+# github: GitHub REST (fetcher actif)
+# research: arXiv (fetcher actif) | Hacker News Algolia, Wikipedia REST (declarees, fetcher a implementer)
+#
+# Un domaine metier prive se branche via un linked_project (voir docs/linked_projects.md) :
+# ses sources sont declarees dans le projet lie, pas dans ce fichier public.
+
+github:
+  - name: GitHub API
+    url: https://api.github.com
+    type: api_rest
+    reliability: 0.99
+    rate_limit: 5000/hour
+    cache_ttl: 300
+    auth_required: false
+    auth_method: token
+    notes: "API GitHub REST. /search/repositories. Fetcher actif."
+  - name: GitHub Search
+    url: https://api.github.com/search
+    type: api_rest
+    reliability: 0.97
+    rate_limit: 30/min
+    cache_ttl: 300
+    auth_required: false
+    notes: "Recherche code, repos, issues GitHub."
+
+research:
+  - name: arXiv API
+    url: http://export.arxiv.org/api/query
+    type: api_atom
+    reliability: 0.95
+    rate_limit: 1/3sec
+    cache_ttl: 3600
+    auth_required: false
+    notes: "API Atom arXiv. search_query=all:<query>. Fetcher actif."
+  - name: Hacker News Algolia
+    url: https://hn.algolia.com/api/v1/search
+    type: api_rest
+    reliability: 0.70
+    rate_limit: 10000/hour
+    cache_ttl: 900
+    auth_required: false
+    notes: "Recherche Hacker News. /search?query=<query>. Fetcher actif."
+  - name: Wikipedia REST
+    url: https://en.wikipedia.org/api/rest_v1/
+    type: api_rest
+    reliability: 0.80
+    rate_limit: 200/sec
+    cache_ttl: 7200
+    auth_required: false
+    notes: "Resumes encyclopediques. /page/summary/<titre>. Fetcher actif."
+
+scoring_weights:
+  official_api: 1.0
+  official_site: 0.9
+  aggregator_api: 0.85
+  aggregator_scrape: 0.75
+  community_wiki: 0.65
+  social_media: 0.40
+  unknown: 0.20

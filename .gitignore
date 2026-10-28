@@ -1,0 +1,209 @@
+# TricorderKit v0.9 — .gitignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Cache
+.cache/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+*.js.map
+dist/
+
+# Docker
+docker/volumes/
+
+# Obsidian
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# Vault — session capsules et données privées
+vault/*.json
+vault/*.yaml
+vault/*.yml
+
+# Reports — générés localement, non versionnés
+reports/
+vault/reports/
+
+# Audit reports (fichiers générés ponctuellement)
+TricorderKit_Audit_*.md
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Configs locales — chemins réels et secrets (non versionnés)
+configs/local/linked_projects.yaml
+configs/local/settings.yaml
+configs/vps/settings.yaml
+
+# Pytest — artefacts locaux
+.pytest_tmp/
+.pytest_cache/
+pytest-cache-files-*/
+
+# Fichiers de sauvegarde
+*.bak
+
+# Quarantaine d'audit locale (volumineuse — ne jamais committer)
+.quarantine_audit_*/
+
+# --- Ajouts 2026-06-01 (anonymisation / artefacts locaux) ---
+# Handoffs de collaboration (operationnel, chemins perso)
+a_faire_par_antigravity.md
+fait_par_antigravity.md
+PROMPT_pour_Antigravity.md
+# Donnees de veille locales (linked_project prive)
+tools/jp-scraper/
+# Scratch diagnostic local
+.planning/poc-graphify-index/
+# Session capsules (etat operationnel local)
+.planning/SESSION_CAPSULE_*.md
+# Artefacts d'execution dans les dossiers scripts
+plugins/**/scripts/*.txt
+plugins/**/scripts/*.out
+plugins/**/scripts/*.err
+plugins/**/scripts/*_report.json
+plugins/**/scripts/*_report.md
+plugins/**/scripts/index_state.json
+plugins/**/scripts/index_progress.json
+plugins/**/scripts/health_heartbeat.log
+# Fichiers temp d'anonymisation
+_anon.txt
+_anon.err
+
+# _sync_antigravity : pont LEGACY DEPRECIE (remplace par canal_agents, bus unifie). Prive en entier.
+_sync_antigravity/
+
+# canal_agents : bus multi-agents UNIFIE. Moteur generique PUBLIC (reinstallable) ;
+# runtime + contenu PRIVES (supersede DEC-038 : le canal n'est plus 100% prive).
+canal_agents/*
+!canal_agents/PROTOCOL.md
+!canal_agents/scripts
+canal_agents/scripts/*
+!canal_agents/scripts/sync_bus.py
+_userpath_backup_*.txt
+_find_bus.txt
+
+# --- Ajouts 2026-06-11 (durcissement frontiere publique) ---
+# Backups de rotation (secrets potentiels) : *.bak ne couvre pas les suffixes datés
+*.bak-rotation-*
+.env.bak*
+docker-compose*.bak*
+# Scratch diagnostic local à la racine (scripts jetables, agents parallèles)
+/_q_*.py
+/_run_remote_q.py
+/_remote_q.py
+/vps_*.py
+/_vps_exec.py
+/inspect_hk*.py
+/dry_hk.py
+/repair_run.py
+/splice_engine.py
+/_patch_*.py
+/run*_out.txt
+/audit_fiches_raw.csv
+/createurs_manquants.csv
+
+# --- Ajouts 2026-06-13 (scratch / cross-projet hors repo public) ---
+# Runtime VPS / Paperclip (cross-projet : paramiko, logs, etat)
+/Agents-Hub/
+# Veille scratch local
+/veille_v2/
+# Audit cross-projet local (genere ponctuellement)
+/*-Audit-2026-06-06/
+# Scratch divers
+/scratch/
+# Scripts one-off racine (jetables)
+/check_authors.py
+/digest_ia.py
+/inspect_kw_sg.py
+/test_extract.py
+/verify_db.py
+/verify_noregress.py
+/audit_v2.ps1
+# Sorties / captures scratch racine
+/audit_v2_summary.txt
+/new_block.txt
+/yellow_fiches.txt
+/TricorderKit v0.9.1.png
+/tricorderkit_repo-github.png
+# Session capsules (etat operationnel local)
+/session_capsule.json
+.planning/session_capsule.json
+# Backups dates (suffixe .bak-YYYYMMDD / .bak_YYYYMMDD non couvert par *.bak)
+*.bak-*
+*.bak_*
+# Contenu cross-projet / sensible VPS (ne pas committer au repo public)
+/Fiches_a_completer_et_createurs_manquants_2026-06-03.md
+.planning/PROP_Paperclip_VPS_OrgChart.md
+docs/RUNBOOK_INFRA.md
+
+# --- Ajout 2026-06-20 (DEC-052) ---
+# Arbor prototype : worktrees Git isoles, jamais committes
+experiments/arbor_adapter/worktrees/
+
+# Artefacts d'evaluation RAGAS (regenerables)
+experiments/ragas_eval/ragas_report.json
+
+# Fichiers de travail locaux (Workflow Standard) - hors repo public
+tasks/todo.md
+tasks/lessons.md
+
+# ─── Porteurs de secrets — ajoute le 2026-08-18 apres audit gitleaks ───────
+# Un .gitignore incomplet ne se voit que le jour ou il laisse passer quelque
+# chose. L'audit du 18/08 a trouve 7 valeurs distinctes dans l'historique d'un
+# des depots, dont une CLE ACTIVE de 48 caracteres presente dans 12 fichiers.
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+.env
+.env.*
+!.env.example
+secrets/
+secrets.*
+!secrets.sops.yaml
+*credentials*
+*_token*
+*cookies*
+known_hosts
+id_rsa*
+id_ed25519*
+
+# 2026-09-12 — scripts jetables de session, jamais destines au depot public (R37).
+# Mesure du 12/09 : 19 fichiers _tmp_*.py presents en non-suivis, 0 contenant un
+# chemin personnel ou une IP VPS. La regle previent l'accident, pas une fuite
+# constatee. Retour arriere : .gitignore.bak_20260912
+_tmp_*.py
+
+# Termes prives en clair (gate anti-fuite) et prompts de taches planifiees : jamais publics
+configs/local/private_terms.txt
+cowork-scheduled-tasks/

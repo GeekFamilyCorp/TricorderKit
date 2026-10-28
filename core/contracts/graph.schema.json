@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://tricorderkit/schemas/graph.schema.json",
+  "title": "TricorderKit Graph Ontology Contract",
+  "description": "Schéma de validation pour les nœuds et relations du knowledge graph (Neo4j + Qdrant). Toute écriture dans le graph doit respecter ce contrat.",
+  "version": "1.0.0",
+
+  "definitions": {
+
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{2,63}$",
+      "description": "Identifiant unique du nœud — minuscules, tirets autorisés, 3-64 chars. Partagé entre Neo4j et Qdrant."
+    },
+
+    "iso_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601"
+    },
+
+    "embedding_metadata": {
+      "type": "object",
+      "description": "Métadonnées de l'embedding Qdrant associé au nœud",
+      "properties": {
+        "collection": { "type": "string", "description": "Nom de la collection Qdrant" },
+        "vector_id":  { "type": "string", "description": "ID du vecteur dans Qdrant (= node_id)" },
+        "model":      { "type": "string", "description": "Modèle d'embedding utilisé" },
+        "dim":        { "type": "integer", "minimum": 1, "description": "Dimension du vecteur" },
+        "indexed_at": { "$ref": "#/definitions/iso_timestamp" }
+      },
+      "required": ["collection", "vector_id"]
+    },
+
+    "node_base": {
+      "type": "object",
+      "required": ["id", "type", "title", "created_at"],
+      "properties": {
+        "id":          { "$ref": "#/definitions/node_id" },
+        "type":        { "$ref": "#/definitions/node_type" },
+        "title":       { "type": "string", "maxLength": 256 },
+        "content":     { "type": "string", "description": "Contenu textuel principal (utilisé pour l'embedding)" },
+        "tags":        { "type": "array", "items": { "type": "string" } },
+        "source_url":  { "type": "string", "format": "uri" },
+        "confidence":  { "type": "number", "minimum": 0, "maximum": 1, "description": "Score de confiance 0-1" },
+        "created_at":  { "$ref": "#/definitions/iso_timestamp" },
+        "updated_at":  { "$ref": "#/definitions/iso_timestamp" },
+        "created_by":  { "type": "string", "description": "Agent ou skill ayant créé le nœud" },
+        "session_id":  { "type": "string", "description": "ID de la session d'origine" },
+        "embedding":   { "$ref": "#/definitions/embedding_metadata" }
+      }
+    },
+
+    "node_type": {
+      "type": "string",
+      "enum": ["Concept", "Entity", "Task", "Skill", "Agent", "Source", "Session", "Decision"],
+      "description": "8 types de nœuds de l'ontologie TricorderKit"
+    },
+
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "RELATES_TO",
+        "DEPENDS_ON",
+        "PRODUCES",
+        "CONSUMES",
+        "REFERENCES",
+        "DERIVED_FROM",
+        "PART_OF",
+        "IMPLEMENTS",
+        "DISCOVERED_IN"
+      ],
+      "description": "9 types de relations de l'ontologie TricorderKit"
+    },
+
+    "relationship": {
+      "type": "object",
+      "required": ["from_id", "rel_type", "to_id"],
+      "properties": {
+        "from_id":    { "$ref": "#/definitions/node_id" },
+        "rel_type":   { "$ref": "#/definitions/relationship_type" },
+        "to_id":      { "$ref": "#/definitions/node_id" },
+        "weight":     { "type": "number", "minimum": 0, "maximum": 1, "description": "Force de la relation (0=faible, 1=forte)" },
+        "created_at": { "$ref": "#/definitions/iso_timestamp" },
+        "metadata":   { "type": "object", "description": "Propriétés libres sur la relation" }
+      }
+    }
+  },
+
+  "oneOf": [
+    { "$ref": "#/definitions/node_write" },
+    { "$ref": "#/definitions/relationship_write" },
+    { "$ref": "#/definitions/graph_query" }
+  ],
+
+  "definitions_extended": {},
+
+  "$defs": {
+
+    "node_write": {
+      "title": "NodeWrite",
+      "description": "Payload d'écriture d'un nœud dans le graph",
+      "allOf": [{ "$ref": "#/definitions/node_base" }]
+    },
+
+    "relationship_write": {
+      "title": "RelationshipWrite",
+      "description": "Payload d'écriture d'une relation entre deux nœuds",
+      "allOf": [{ "$ref": "#/definitions/relationship" }]
+    },
+
+    "graph_query": {
+      "title": "GraphQuery",
+      "description": "Payload de requête sur le graph",
+      "type": "object",
+      "required": ["query"],
+      "properties": {
+        "query":      { "type": "string", "description": "Requête en langage naturel ou Cypher" },
+        "mode":       { "type": "string", "enum": ["hybrid", "graph", "vector"], "default": "hybrid" },
+        "limit":      { "type": "integer", "minimum": 1, "maximum": 100, "default": 10 },
+        "min_score":  { "type": "number", "minimum": 0, "maximum": 1, "description": "Score minimum de similarité (mode vector/hybrid)" },
+        "node_types": { "type": "array", "items": { "$ref": "#/definitions/node_type" }, "description": "Filtrer par type(s) de nœud" },
+        "filters":    { "type": "object", "description": "Filtres additionnels (tags, session_id, created_by…)" }
+      }
+    }
+  },
+
+  "node_type_specs": {
+    "description": "Spécifications et règles métier par type de nœud",
+    "Concept": {
+      "description": "Idée, notion ou connaissance abstraite",
+      "required_fields": ["title", "content"],
+      "qdrant_collection": "concepts",
+      "typical_relations": ["RELATES_TO", "DERIVED_FROM", "PART_OF"]
+    },
+    "Entity": {
+      "description": "Objet concret du monde réel : outil, service, personne, organisation",
+      "required_fields": ["title"],
+      "qdrant_collection": "entities",
+      "typical_relations": ["RELATES_TO", "IMPLEMENTS", "PART_OF"]
+    },
+    "Task": {
+      "description": "Tâche à faire ou en cours — liée à .planning/TASKS.md",
+      "required_fields": ["title"],
+      "extra_fields": {
+        "status":   { "type": "string", "enum": ["todo", "in_progress", "done", "blocked"] },
+        "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+        "due_date": { "type": "string", "format": "date" }
+      },
+      "qdrant_collection": "tasks",
+      "typical_relations": ["DEPENDS_ON", "PRODUCES", "CONSUMES"]
+    },
+    "Skill": {
+      "description": "Skill TricorderKit — correspond à un SKILL.md dans skills/ ou plugins/",
+      "required_fields": ["title"],
+      "extra_fields": {
+        "skill_path":    { "type": "string" },
+        "skill_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "status":        { "type": "string", "enum": ["active", "scaffold", "deprecated"] }
+      },
+      "qdrant_collection": "skills",
+      "typical_relations": ["IMPLEMENTS", "DEPENDS_ON", "PRODUCES"]
+    },
+    "Agent": {
+      "description": "Agent LLM ou service autonome opérant dans le système",
+      "required_fields": ["title"],
+      "extra_fields": {
+        "model":        { "type": "string" },
+        "capabilities": { "type": "array", "items": { "type": "string" } }
+      },
+      "qdrant_collection": "agents",
+      "typical_relations": ["PRODUCES", "CONSUMES", "IMPLEMENTS"]
+    },
+    "Source": {
+      "description": "Source externe d'information (URL, doc, API, vault note)",
+      "required_fields": ["title", "source_url"],
+      "extra_fields": {
+        "source_type": { "type": "string", "enum": ["web", "vault", "api", "doc", "pdf", "rss"] },
+        "reliability": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "qdrant_collection": "sources",
+      "typical_relations": ["REFERENCES", "DISCOVERED_IN"]
+    },
+    "Session": {
+      "description": "Session de travail Claude / agent — contexte temporel",
+      "required_fields": ["title"],
+      "extra_fields": {
+        "session_date": { "type": "string", "format": "date" },
+        "tokens_used":  { "type": "integer" },
+        "commands_run": { "type": "array", "items": { "type": "string" } }
+      },
+      "qdrant_collection": "sessions",
+      "typical_relations": ["PRODUCES", "REFERENCES"]
+    },
+    "Decision": {
+      "description": "Décision architecturale ou stratégique — correspond à DECISIONS.md",
+      "required_fields": ["title", "content"],
+      "extra_fields": {
+        "decision_id": { "type": "string", "pattern": "^DEC-[0-9]{3,}$" },
+        "status":      { "type": "string", "enum": ["active", "superseded", "rejected"] },
+        "impact":      { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+        "supersedes":  { "type": "string", "description": "ID de la décision remplacée" }
+      },
+      "qdrant_collection": "decisions",
+      "typical_relations": ["DEPENDS_ON", "DERIVED_FROM", "IMPLEMENTS"]
+    }
+  },
+
+  "relationship_matrix": {
+    "description": "Combinaisons source → relation → cible valides",
+    "RELATES_TO":    { "from": "*",                              "to": "*",                              "note": "Relation générique bidirectionnelle" },
+    "DEPENDS_ON":    { "from": ["Task", "Skill", "Decision"],    "to": ["Task", "Skill", "Entity"],     "note": "Dépendance de précédence" },
+    "PRODUCES":      { "from": ["Agent", "Task", "Skill"],       "to": ["Concept", "Entity", "Source"], "note": "Création d'un artefact" },
+    "CONSUMES":      { "from": ["Agent", "Task", "Skill"],       "to": ["Source", "Concept", "Entity"], "note": "Utilisation d'une ressource" },
+    "REFERENCES":    { "from": ["Decision", "Concept", "Task"],  "to": ["Source", "Entity"],            "note": "Citation ou lien vers une source" },
+    "DERIVED_FROM":  { "from": ["Concept", "Decision"],         "to": ["Concept", "Source"],           "note": "Héritage ou dérivation sémantique" },
+    "PART_OF":       { "from": ["Concept", "Entity", "Task"],   "to": ["Concept", "Entity"],           "note": "Composition hiérarchique" },
+    "IMPLEMENTS":    { "from": ["Skill", "Agent", "Entity"],    "to": ["Decision", "Concept"],         "note": "Mise en œuvre d'une décision ou spec" },
+    "DISCOVERED_IN": { "from": ["Concept", "Entity", "Source"], "to": ["Session", "Source"],           "note": "Découverte lors d'une session ou source" }
+  },
+
+  "qdrant_collections": {
+    "description": "Collections Qdrant correspondant à chaque type de nœud",
+    "collections": [
+      { "name": "concepts",  "node_type": "Concept",  "distance": "Cosine" },
+      { "name": "entities",  "node_type": "Entity",   "distance": "Cosine" },
+      { "name": "tasks",     "node_type": "Task",     "distance": "Cosine" },
+      { "name": "skills",    "node_type": "Skill",    "distance": "Cosine" },
+      { "name": "agents",    "node_type": "Agent",    "distance": "Cosine" },
+      { "name": "sources",   "node_type": "Source",   "distance": "Cosine" },
+      { "name": "sessions",  "node_type": "Session",  "distance": "Cosine" },
+      { "name": "decisions", "node_type": "Decision", "distance": "Cosine" }
+    ],
+    "default_vector_size": 1536,
+    "note": "Taille vecteur à ajuster selon le modèle d'embedding choisi (1536 = OpenAI text-embedding-3-small, 768 = nomic-embed-text local)"
+  },
+
+  "examples": [
+    {
+      "_comment": "Écriture d'un nœud Decision",
+      "id": "dec-008-langgraph",
+      "type": "Decision",
+      "title": "DEC-008 — Adopter LangGraph pour les boucles agentiques",
+      "content": "Temporal pour les workflows longs et durables. LangGraph pour les boucles agentiques courtes (research → extract → reflect). Les deux coexistent.",
+      "tags": ["architecture", "langgraph", "temporal", "phase3"],
+      "confidence": 0.95,
+      "created_at": "2026-05-11T10:00:00Z",
+      "created_by": "mainbrain",
+      "session_id": "session-2026-05-11",
+      "extra": {
+        "decision_id": "DEC-008",
+        "status": "active",
+        "impact": "HIGH"
+      }
+    },
+    {
+      "_comment": "Écriture d'une relation",
+      "from_id": "dec-008-langgraph",
+      "rel_type": "DEPENDS_ON",
+      "to_id": "plugin-workflow-engine",
+      "weight": 0.9,
+      "created_at": "2026-05-11T10:00:00Z"
+    },
+    {
+      "_comment": "Requête hybride",
+      "query": "quelles décisions impactent graphify ?",
+      "mode": "hybrid",
+      "limit": 5,
+      "node_types": ["Decision"],
+      "min_score": 0.7
+    }
+  ]
+}

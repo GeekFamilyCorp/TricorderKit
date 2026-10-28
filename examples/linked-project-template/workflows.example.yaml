@@ -1,0 +1,84 @@
+# workflows.example.yaml — Workflows Temporal du projet lié
+# Définit les workflows déclenchables depuis TricorderKit via connector_hub.
+# Copier vers workflows.yaml et adapter aux workflows réels.
+
+# Convention :
+#   Durée < 30s → LangGraph (in-process)
+#   Durée > 30s → Temporal (durable, rejoignable)
+
+workflows:
+
+  # ── Workflow de recherche ──────────────────────────────────────────────────
+  - id: research-pipeline
+    name: "Pipeline de recherche"
+    engine: temporal             # temporal | langgraph
+    temporal_queue: sample-linked-project-tasks
+    description: |
+      Collecte des données depuis les sources configurées, déduplique,
+      score par pertinence et génère une note Obsidian.
+    trigger:
+      manual: true
+      scheduled: false
+    input:
+      query:
+        type: string
+        required: true
+        example: "Sujet de recherche"
+      max_sources:
+        type: integer
+        default: 10
+    output:
+      format: markdown
+      destination: vault          # vault | json | both
+    timeout_seconds: 300
+    enabled: true
+
+  # ── Workflow d'audit ───────────────────────────────────────────────────────
+  - id: security-audit
+    name: "Audit de sécurité"
+    engine: langgraph
+    description: |
+      Scan statique du code du projet lié : secrets exposés,
+      dépendances obsolètes, patterns dangereux.
+    trigger:
+      manual: true
+      scheduled: true
+      cron: "0 9 * * 1"          # lundi 9h
+    input:
+      target_path:
+        type: string
+        default: "."
+        description: "Chemin relatif à scanner"
+    output:
+      format: json
+      destination: json
+    timeout_seconds: 60
+    enabled: true
+
+  # ── Workflow de sync vault ─────────────────────────────────────────────────
+  - id: vault-sync
+    name: "Synchronisation vault"
+    engine: temporal
+    temporal_queue: sample-linked-project-tasks
+    description: |
+      Synchronise les notes du vault local vers la source de vérité
+      (GitHub, S3, etc.) après validation humaine.
+    trigger:
+      manual: true
+      scheduled: false
+    input:
+      dry_run:
+        type: boolean
+        default: true
+        description: "Simuler sans écriture"
+    output:
+      format: json
+      destination: json
+    timeout_seconds: 120
+    enabled: false               # nécessite configuration vault réelle
+
+# ── Temporal configuration ────────────────────────────────────────────────────
+temporal:
+  namespace: default
+  task_queue: sample-linked-project-tasks
+  worker_id: sample-linked-project-worker

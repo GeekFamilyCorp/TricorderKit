@@ -1,0 +1,13 @@
+{
+  "name": "tk-data-ops",
+  "version": "1.0.0",
+  "description": "Données et graphe TricorderKit : accès normé à Neo4j (MCP officiel, lecture seule par défaut), recherche hybride Qdrant+Neo4j (graphrag-hybrid), scraping adaptatif (Scrapling), veille de changements (changedetection.io + RSSHub).",
+  "author": {
+    "name": "GeekFamilyCorp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tricorderkit",
+    "tk"
+  ]
+}

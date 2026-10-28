@@ -1,0 +1,32 @@
+# sources.yaml — Sources spécialisées du linked_project
+# Déclarer ici toutes les sources propres au domaine
+
+project_id: [PROJECT_ID]
+
+sources:
+  - id: source_1
+    name: "[SOURCE_NAME]"
+    url: "[SOURCE_URL]"
+    type: rss | rest_api | web | graphql
+    reliability: high | medium | low
+    language: fr | en | ja
+    update_frequency: daily | weekly | monthly
+    requires_auth: false
+    notes: ""
+
+  - id: source_2
+    name: "[SOURCE_NAME_2]"
+    url: "[SOURCE_URL_2]"
+    type: rest_api
+    reliability: high
+    language: en
+    update_frequency: daily
+    requires_auth: false
+    notes: ""
+
+# Politiques d'accès
+access_policy:
+  allow_scraping: true
+  respect_robots_txt: true
+  rate_limit_rps: 1
+  user_agent: "TricorderKit-Research/0.8"

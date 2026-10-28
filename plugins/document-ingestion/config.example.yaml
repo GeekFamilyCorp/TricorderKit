@@ -1,0 +1,42 @@
+# plugins/document-ingestion/config.example.yaml
+# Copier en config.yaml (gitignore) et adapter les chemins a la machine.
+enabled: true
+provider: markitdown
+
+paths:
+  input_dir: "data/inbox/documents"
+  output_dir: "vault/_ingested"
+  archive_dir: "data/archive/originals"
+  quarantine_dir: "data/quarantine/ingestion_failed"
+
+allowed_extensions:
+  - ".pdf"
+  - ".docx"
+  - ".xlsx"
+  - ".xls"
+  - ".pptx"
+  - ".html"
+  - ".htm"
+  - ".csv"
+  - ".json"
+  - ".xml"
+  - ".zip"
+  - ".epub"
+  - ".txt"
+
+frontmatter:
+  add: true
+  conversion_tool: "markitdown"
+
+security:
+  allow_remote_urls: false
+  restrict_to_input_dir: true
+  preserve_original: true
+  overwrite_existing: false
+  max_file_size_mb: 100
+
+observability:
+  report_path: "reports/integrations/markitdown_ingestion_report.jsonl"
+
+rollback:
+  disable_by_env: "TK_MARKITDOWN_ENABLED=false"

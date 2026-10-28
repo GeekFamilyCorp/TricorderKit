@@ -1,0 +1,79 @@
+{
+  "skill_name": "model-router",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Quel modèle pour ça : relire 40 fiches projet et corriger les URL de dépôt mal formées ? Route la tâche.",
+      "expected_output": "[TRIGGER] classify.py appelé une fois, bloc d'annonce (Classification / Alias modèle / Budget / Optimisations), délégation à l'agent exécuteur.",
+      "files": [],
+      "expectations": [
+        "[DET tool_used] Bash",
+        "[DET must_contain] classify.py",
+        "[DET must_contain] Classification :",
+        "[DET must_contain] Alias modèle",
+        "[DET must_match] \\b(fast|default|deep)\\b",
+        "[LLM] Le bloc d'annonce est complet et l'agent exécuteur choisi correspond à l'alias."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Je vais lancer six sous-agents pour le scraping des éditeurs, dispatche en économisant des tokens.",
+      "expected_output": "[TRIGGER] Quasi-faux-positif (ressemble à head-agent) : lot de sous-agents dont le coût compte → routage avant dispatch.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] budget.py",
+        "[DET must_contain] Classification :",
+        "[DET must_not_contain] head-agent",
+        "[LLM] Le budget est vérifié (budget.py status) avant de proposer le tier des sous-agents."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Combien j'ai consommé cette semaine, on en est où du budget mensuel ?",
+      "expected_output": "[NO-TRIGGER → tk-token-economy:budget] Suivi de consommation, pas de routage.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] budget",
+        "[DET must_not_contain] Classification :",
+        "[LLM] Aucun classify.py n'est lancé."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Route : « audit sécurité du formulaire de login en production ».",
+      "expected_output": "[QUALITÉ] Forçage « sécurité »/« production » → +1 tier : T3 / deep ; aucun identifiant de modèle versionné, renvoi à models.json.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] T3",
+        "[DET must_contain] deep",
+        "[DET must_contain] models.json",
+        "[DET must_not_match] claude-[a-z]+-\\d",
+        "[DET must_not_match] (?i)(opus|sonnet|haiku)[- ]?\\d",
+        "[LLM] Le forçage +1 tier est explicité par le mot-clé détecté (sécurité / production)."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Route : « brouillon, juste pour voir : reformule ce paragraphe de 5 lignes ».",
+      "expected_output": "[QUALITÉ] T1 / fast, −1 tier « juste pour voir » respecté ; caveman proposé seulement si activé par l'utilisateur, jamais imposé.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] T1",
+        "[DET must_contain] fast",
+        "[DET must_not_contain] caveman activé",
+        "[LLM] caveman n'est pas appliqué d'office ; s'il est mentionné, c'est comme proposition conditionnelle."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Route cette tâche mais le script classify.py n'est pas disponible dans cette session.",
+      "expected_output": "[RÉGRESSION] Repli sur la grille manuelle (tableau Tier/Alias/Signaux) sans inventer une sortie de script ; alias seulement.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] grille",
+        "[DET must_not_contain] score 7",
+        "[LLM] Aucune sortie JSON de classify.py n'est fabriquée ; la classification est justifiée par la grille manuelle — citer."
+      ]
+    }
+  ]
+}

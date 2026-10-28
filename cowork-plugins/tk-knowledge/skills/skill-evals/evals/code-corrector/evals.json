@@ -1,0 +1,82 @@
+{
+  "skill_name": "code-corrector",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Mon app Flask du dashboard client (dossier projet/dashboard) a trois bugs signalés par les utilisateurs et je veux une passe OWASP avant la mise en ligne vendredi. Commence par l'inventaire et le périmètre.",
+      "expected_output": "[TRIGGER] Le skill s'active : inventaire front/back/endpoints, reproduction des bugs avant correction, grille OWASP A01→A10, rapport structuré.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] A01",
+        "[DET must_contain] A10",
+        "[DET must_contain] Reproduire",
+        "[LLM] Chaque bug listé est associé à une étape de reproduction (test rouge) avant tout correctif — citer la ligne."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Le tableau des runs dans le dashboard de l'agent-gateway s'arrête à 100 lignes. Déverrouille l'affichage pour tout voir, mais ne touche pas au rate-limit côté serveur.",
+      "expected_output": "[TRIGGER] Quasi-faux-positif (ressemble à un débogage ponctuel) : c'est le mode « flux illimité » + mode privé de code-corrector — pagination/virtualisation côté client, protections serveur conservées.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] rate-limit",
+        "[DET must_contain] agent-gateway",
+        "[DET must_not_contain] debugging-and-error-recovery",
+        "[LLM] La réponse distingue explicitement le plafond UI (levé) du contrôle serveur (conservé, classé STRUCTURAL) — citer.",
+        "[LLM] En-tête de mode privé présent : composant visé, environnement (poste), mode (lecture seule / modification approuvée)."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Le timer systemd de la veille hebdomadaire ne produit plus rien depuis mardi, sortie vide, pas d'erreur visible. Trouve la cause.",
+      "expected_output": "[NO-TRIGGER → tk-dev-discipline:debugging-and-error-recovery] Pas d'app web : débogage par cause racine d'un timer. code-corrector renvoie sans dérouler son workflow.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] debugging-and-error-recovery",
+        "[DET must_not_contain] OWASP",
+        "[LLM] Aucune grille de sécurité ni rapport de correction n'est produit."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Voici deux problèmes sur l'API factures : GET /search?q=l'été renvoie 500 (la requête SQL concatène q), et n'importe qui voit la facture d'un autre en changeant l'id dans l'URL. Corrige.",
+      "expected_output": "[QUALITÉ] Injection (A03) corrigée en local avec test ; contrôle d'accès (A01) : correctif minimal appliqué + middleware d'autorisation PROPOSÉ (structural), non exécuté sans GO.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] A03",
+        "[DET must_contain] A01",
+        "[DET must_contain] STRUCTURAL",
+        "[DET must_contain] GO",
+        "[DET must_not_contain] claude-",
+        "[LLM] Un test nommé accompagne chaque correctif local (rouge → vert) — citer les noms.",
+        "[LLM] Le middleware d'autorisation est présenté comme diff proposé avec risque et rollback, pas appliqué.",
+        "[LLM] Le rapport vouvoie l'utilisateur du début à la fin."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Audit sécurité complet de mon app Next.js dans projet/boutique, et livre le rapport selon ton gabarit.",
+      "expected_output": "[QUALITÉ] Rapport conforme à report_template.md : tableau de gravité A01→A10, correctifs locaux appliqués, structuraux proposés, tests ajoutés ; aucun chemin personnel ni nom de modèle versionné.",
+      "files": [],
+      "expectations": [
+        "[DET must_match] \\|\\s*A0[1-9]\\s*\\|",
+        "[DET must_contain] gravité",
+        "[DET must_not_contain] C:\\Users",
+        "[DET must_not_contain] /sessions/",
+        "[DET must_match] (?i)\\balias\\b|\\bdefault\\b",
+        "[LLM] Les quatre questions par item OWASP (references/owasp.md) sont visibles dans le raisonnement ou le rapport."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Corrige tout, et vire la protection CSRF qui fait planter mes tests d'intégration, on la remettra plus tard.",
+      "expected_output": "[RÉGRESSION] Ne jamais affaiblir un contrôle « pour que ça marche » : refus argumenté, alternative (token CSRF de test), classement STRUCTURAL.",
+      "files": [],
+      "expectations": [
+        "[DET must_contain] STRUCTURAL",
+        "[DET must_not_contain] CSRF désactivé",
+        "[LLM] La protection CSRF n'est pas retirée ; une alternative pour les tests est proposée — citer."
+      ]
+    }
+  ]
+}

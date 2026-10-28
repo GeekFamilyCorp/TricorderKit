@@ -1,0 +1,18 @@
+{
+  "name": "memory-boot",
+  "version": "0.2.0",
+  "description": "Initialise la mémoire de session depuis le vault Obsidian — HOT_CACHE, patterns d'erreurs, daily log.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "memory",
+    "boot",
+    "obsidian",
+    "session"
+  ]
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Fais un health check du plugin tk-knowledge : score /8 par skill, critères KO, action",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "inventaire de mes skills et plugins installés avec version et type d'activation, et dis-moi ceux qui sont en conflit",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Que fait exactement resilient-ops, et est-ce qu'il se marche dessus avec file-organizer ?",
+    "should_trigger": true,
+    "kind": "trigger-near-miss"
+  },
+  {
+    "query": "archive le skill fiche-validator, remplacé par note-validator, et note-le au changelog",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Il me manque un skill pour convertir des sous-titres srt en vtt, qu'est-ce qui m'aiderait ?",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "hors-perimetre"
+  },
+  {
+    "query": "crée un skill à partir de ce README de Scrapling et fais-lui des evals",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "skill-creator"
+  },
+  {
+    "query": "quoi de neuf en context engineering pour améliorer nos skills ?",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "hors-perimetre"
+  },
+  {
+    "query": "écris les evals de code-corrector et lance-les avant que je le repackage",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-knowledge:skill-evals"
+  }
+]

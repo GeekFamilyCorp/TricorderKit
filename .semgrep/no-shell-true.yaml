@@ -1,0 +1,32 @@
+rules:
+  - id: no-shell-true
+    patterns:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)
+    message: "🔴 RISK-OS-001 : shell=True détecté. FIX : subprocess.run(['cmd', 'arg'])"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-78: OS Command Injection"
+      tricorderkit_risk: RISK-OS-001
+
+  - id: no-os-system
+    pattern: os.system(...)
+    message: "🔴 RISK-OS-002 : os.system() interdit. FIX : subprocess.run(['cmd', 'arg'])"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-78: OS Command Injection"
+      tricorderkit_risk: RISK-OS-002
+
+  - id: no-sha1-for-ids
+    patterns:
+      - pattern: hashlib.sha1(...)
+      - pattern: hashlib.new("sha1", ...)
+    message: "🟠 RISK-UUID-001 : SHA-1 pour IDs. FIX : uuid.uuid4() ou uuid.uuid5()"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-327: Use of Broken Cryptographic Algorithm"
+      tricorderkit_risk: RISK-UUID-001

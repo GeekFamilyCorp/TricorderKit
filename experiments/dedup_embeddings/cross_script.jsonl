@@ -1,0 +1,22 @@
+# Jeu cross-script (latin / cyrillique / grec / variantes) — teste le rappel SÉMANTIQUE.
+# Le proxy lexical (n-grammes + Levenshtein) ne peut PAS décider ces paires (alphabets différents).
+{"type":"title","id":1,"text":"Tchaikovsky"}
+{"type":"title","id":2,"text":"Чайковский"}
+{"type":"title","id":3,"text":"Athens"}
+{"type":"title","id":4,"text":"Athina"}
+{"type":"title","id":5,"text":"Αθήνα"}
+{"type":"title","id":6,"text":"Moscow"}
+{"type":"title","id":7,"text":"Москва"}
+{"type":"title","id":8,"text":"Open Source"}
+{"type":"title","id":9,"text":"Open   Source!"}
+{"type":"title","id":10,"text":"Munich"}
+{"type":"title","id":11,"text":"München"}
+{"type":"title","id":12,"text":"Linux"}
+{"type":"title","id":13,"text":"Kernel"}
+{"type":"dupe","a":1,"b":2}
+{"type":"dupe","a":3,"b":4}
+{"type":"dupe","a":3,"b":5}
+{"type":"dupe","a":4,"b":5}
+{"type":"dupe","a":6,"b":7}
+{"type":"dupe","a":8,"b":9}
+{"type":"dupe","a":10,"b":11}

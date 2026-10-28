@@ -1,0 +1,12 @@
+# .check-anon-ignore - Fichiers exclus du scan de TERMES prives (gate public)
+# Syntaxe : un pattern fnmatch par ligne. # = commentaire.
+#
+# Lu par scripts/check_public_boundary.py et
+# plugins/security-audit-cli/anonymization_checker.py.
+#
+# 2026-10-27 : liste VIDEE. L'ancienne whitelist (~60 motifs, dont des dossiers
+# entiers) laissait passer le contenu lie aux projets prives. Les termes ne sont
+# plus ecrits en clair nulle part (empreintes SHA-256), donc plus aucun fichier
+# du depot n'a besoin d'etre exempte. N'ajouter une ligne qu'avec l'accord
+# explicite du proprietaire du depot, fichier par fichier, jamais un dossier.
+# Les chemins personnels et donnees sensibles ne sont JAMAIS whitelistables.

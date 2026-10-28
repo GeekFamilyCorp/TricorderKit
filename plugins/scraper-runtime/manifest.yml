@@ -1,0 +1,53 @@
+name: scraper-runtime
+version: 0.1.0
+status: draft
+decision: DEC-046
+created: 2026-06-11
+description: >
+  Runtime de scraping standardise (profils + contrat de run). Cadre generique :
+  definit COMMENT un run de collecte est structure et valide, pas un moteur de
+  scraping. L'execution reelle reste deportee (VPS/Hermes), ce plugin fournit
+  les profils, le contrat de run et le generateur de registre de sources.
+loop: "fetch -> raw -> normalized -> validated -> indexed -> report"
+profiles:
+  - profiles/static_html.yaml
+  - profiles/markdown_rag.yaml
+  - profiles/dynamic_browser.yaml
+contracts:
+  run: schemas/run_contract.schema.json
+  output: core/contracts/skill_output.schema.json
+guardrails:
+  scraped_content_is_untrusted: true
+  execution_offloaded: "VPS/Hermes (DEC-029) — pas de moteur de scraping cote Claude"
+  source_registry_generated: true   # jamais ecrit a la main
+  dry_run_before_external_write: true
+
+# Contrat d'entrée — core/contracts/skill_preflight.schema.json (make preflight)
+
+preflight:
+  inputs:
+    - {name: profil de collecte, kind: file, ref: plugins/scraper-runtime/profiles/static_html.yaml, required: true}
+    - {name: contrat de run, kind: file, ref: plugins/scraper-runtime/schemas/run_contract.schema.json, required: true}
+  dependencies:
+    - {name: python, kind: command, target: python --version, required: true}
+    - {name: jsonschema, kind: python_module, target: jsonschema, required: true}
+  env: []
+  stop_conditions:
+    - run non conforme au contrat de run
+    - écriture externe sans dry-run préalable
+    - source absente du registre généré
+    - collecte interdite par robots.txt
+  retry:
+    max_attempts: 3
+    non_retryable:
+      - interdiction robots.txt
+  rollback:
+    strategy: manual
+    procedure: >
+      La collecte réelle est déportée. Chaque run produit de nouveaux fichiers
+      raw/normalized ; retour arrière : archiver les fichiers du run.
+  escalation:
+    risk_level: MEDIUM
+    ask_before:
+      - écriture externe (vault, base, API)
+      - ajout manuel au registre de sources

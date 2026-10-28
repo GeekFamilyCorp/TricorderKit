@@ -1,0 +1,58 @@
+# manifest.yml — github-goat CLI
+# TricorderKit cli-forge
+
+name: github-goat
+version: 0.1.0
+description: CLI déterministe pour GitHub API — lecture seule, cache SQLite, output JSON
+source_api: https://api.github.com
+source_docs: https://docs.github.com/en/rest
+auth_required: true
+auth_method: token
+
+output_formats:
+  - json
+  - table
+  - markdown
+
+safe_commands:
+  - list-repos
+  - get-repo
+  - search-repos
+  - list-issues
+  - get-issue
+  - search-code
+  - list-commits
+  - get-commit
+
+forbidden_commands:
+  - delete-repo
+  - force-push
+  - admin-transfer
+  - delete-branch
+  - merge-pr
+
+dry_run: true
+
+cache:
+  sqlite: true
+  ttl_seconds: 300
+  offline_search: true
+
+rate_limit:
+  requests_per_minute: 30
+  retry_after_seconds: 60
+
+mcp_server:
+  generated: false
+
+security_status:
+  audited: false
+  prompt_injection_checked: false
+  shell_commands_checked: false
+  network_access_checked: false
+  sensitive_files_checked: false
+  notes: "A auditer avant enregistrement prod_ready. Dry-run validé le 10/05/2026."
+
+token_budget:
+  max_per_call: 2000
+  warn_at: 1500

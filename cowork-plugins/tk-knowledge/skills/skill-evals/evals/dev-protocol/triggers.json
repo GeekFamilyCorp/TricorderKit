@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Je veux ajouter un export CSV des fiches validées sur l'API du site, on fait les choses dans l'ordre : spec d'abord puis plan puis code",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "approche rigoureuse svp : TDD pour le nouveau service de dédoublonnage dans pipeline/dedup.py et tests/test_dedup.py, revue avant merge",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Ajoute un champ doi au schéma SQL sur le VPS et adapte le script d'import qui tourne la nuit",
+    "should_trigger": true,
+    "kind": "trigger-near-miss"
+  },
+  {
+    "query": "refactor du module de scraping : 6 fichiers dans scraper/, je veux un plan écrit avec des checkpoints avant que tu touches quoi que ce soit",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Mon app de facturation a des bugs et une faille XSS, durcis-la sans ajouter de fonctionnalité",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:code-corrector"
+  },
+  {
+    "query": "corrige la coquille ligne 12 du README, 'recieve' → 'receive'",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "aucun (correctif trivial, un fichier)"
+  },
+  {
+    "query": "Avant de pousser en prod, stress-teste ma décision de purger la table cache",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:doubt-driven-development"
+  },
+  {
+    "query": "J'ai une idée floue d'outil de veille, pose-moi les bonnes questions pour la cadrer",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:interview-me"
+  }
+]

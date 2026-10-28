@@ -1,0 +1,19 @@
+{
+  "name": "document-ingestion",
+  "version": "0.1.0",
+  "description": "Adaptateur d'ingestion documentaire — convertit PDF, DOCX, XLSX, PPTX, HTML, CSV, JSON, EPUB vers du Markdown normalisé (frontmatter TricorderKit) pour le RAG local. Cadre générique via markitdown (MIT), original préservé, quarantaine sur échec.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "ingestion",
+    "documents",
+    "markdown",
+    "markitdown",
+    "rag"
+  ]
+}

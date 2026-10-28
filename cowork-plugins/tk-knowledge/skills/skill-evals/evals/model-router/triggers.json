@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Quel modèle pour ça : relire 40 fiches projet et corriger les URL de dépôt mal formées ? route la tâche",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "classifie cette demande et dis-moi le tier : refondre l'architecture d'auth de l'API avec migration des sessions",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Je vais lancer six sous-agents pour le scraping des éditeurs, dispatche en économisant des tokens",
+    "should_trigger": true,
+    "kind": "trigger-near-miss"
+  },
+  {
+    "query": "évalue la complexité avant qu'on lance : résumer 30 rapports de veille en un digest",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Combien j'ai consommé cette semaine, on en est où du budget mensuel ?",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-token-economy:budget"
+  },
+  {
+    "query": "réponds plus court, compresse tes sorties à partir de maintenant",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-token-economy:caveman"
+  },
+  {
+    "query": "résume-moi ce paragraphe en deux phrases",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "aucun (réponse directe)"
+  },
+  {
+    "query": "orchestre trois sous-agents pour rédiger le rapport trimestriel, plan de délégation",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-knowledge:head-agent"
+  }
+]

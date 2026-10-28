@@ -1,0 +1,18 @@
+{
+  "name": "deep-research-core",
+  "version": "0.1.0",
+  "description": "Moteur de recherche autonome local-first — collecte multi-sources, dédup, scoring, synthèse Markdown.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "rag",
+    "synthesis",
+    "local-first"
+  ]
+}

@@ -1,0 +1,75 @@
+# linked_projects.example.yaml — TricorderKit v0.8
+# Convention : TricorderKit = moteur générique. linked_project = projet privé spécialisé.
+#
+# Copier ce fichier en linked_projects.yaml et renseigner les chemins réels.
+# NE PAS versionner linked_projects.yaml (contient des chemins personnels).
+#
+# Règle d'or :
+#   TricorderKit exécute.
+#   Le projet lié spécialise.
+
+tricorderkit_root: C:/Users/<user>/Documents/Projects/TricorderKit
+
+linked_projects:
+
+  - id: my-domain-agent
+    name: my-domain-agent
+    type: ai_assistant
+    visibility: private
+    domain: my_domain
+    github_repo: your-org/my-domain-agent
+    root: C:/Users/<user>/Documents/Projects/my-domain-agent
+    enabled: true
+    description: |
+      Assistant IA dédié à My-Domain-Project. Contient tous les CLIs Python,
+      pipelines, skills, workflows et agents propres à ce domaine métier.
+    paths:
+      tools: tools/            # domain-cli + scrapers du domaine
+      skills: skills/
+      plugins: plugins/
+      pipelines: pipelines/
+      tests: tests/
+      docs: docs/
+    vault_source: my-domain-project
+    data_policy:
+      allow_public_export: false
+      allow_anonymized_reports: true
+      allow_private_sources: true
+    execution:
+      allow_tricorderkit_write: true
+      require_human_validation: true
+      default_output_format:
+        - markdown
+        - json
+
+  - id: my-domain-project
+    name: My-Domain-Project
+    type: obsidian_vault
+    visibility: private
+    domain: my_domain
+    github_repo: GeekFamilyCorp/My-Domain-Project
+    root: C:/Users/<user>/Documents/Projects/My-Domain-Project
+    enabled: true
+    description: |
+      Vault Obsidian pur — sauvegarde GitHub des notes de connaissance.
+      Ne contient aucun code exécutable. Accessible en lecture aux LLMs autorisés
+      via token GitHub (Claude, ChatGPT, Perplexity, Qwen).
+      Vocation future : site web alimenté par TricorderKit.
+    paths:
+      vault: vault/
+      templates: vault/templates/
+    data_policy:
+      allow_public_export: false
+      allow_anonymized_reports: false
+      allow_private_sources: false
+      llm_read_access: true
+    execution:
+      allow_tricorderkit_write: false
+      require_human_validation: true
+      read_only: true
+
+  # Ajouter d'autres projets liés selon le même modèle :
+  # - id: mon-projet-2
+  #   name: Mon Projet 2
+  #   type: private_project
+  #   ...

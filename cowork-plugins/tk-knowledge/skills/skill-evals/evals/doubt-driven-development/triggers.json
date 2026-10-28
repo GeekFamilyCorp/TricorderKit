@@ -1,0 +1,46 @@
+[
+  {
+    "query": "Avant de renommer en masse les 400 fiches du vault pour normaliser les ID, stress-teste ma décision",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "es-tu sûr ? revue adverse avant que je pousse le nouveau deploy.php en prod",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "Tu m'affirmes que tricorder-temporal tourne. Tu l'as vérifié aujourd'hui ou tu le dis de mémoire ? applique le doute",
+    "should_trigger": true,
+    "kind": "trigger-near-miss"
+  },
+  {
+    "query": "doute : je veux modifier le timer systemd du scraping nocturne pour passer à 2h, qu'est-ce qui peut casser ?",
+    "should_trigger": true,
+    "kind": "trigger"
+  },
+  {
+    "query": "J'ai une idée floue d'outil de veille pour des éditeurs, pose-moi les bonnes questions pour cadrer",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:interview-me"
+  },
+  {
+    "query": "code-moi l'export CSV des fiches validées, spec puis plan puis implémentation",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:dev-protocol"
+  },
+  {
+    "query": "le script de renommage plante avec UnicodeDecodeError ligne 42, trouve la cause",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "tk-dev-discipline:debugging-and-error-recovery"
+  },
+  {
+    "query": "renomme le fichier notes.md en notes-2026.md",
+    "should_trigger": false,
+    "kind": "no-trigger",
+    "expected_skill": "aucun (action triviale réversible)"
+  }
+]

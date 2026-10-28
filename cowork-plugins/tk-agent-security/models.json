@@ -1,0 +1,24 @@
+{
+  "_comment": "Alias de modèles — seul endroit où un identifiant de modèle est écrit. SKILL.md, agents et scripts n'utilisent que les alias. Mettre à jour ici quand Anthropic renomme une famille.",
+  "updated": "2026-09-07",
+  "source": "Identifiants OBSERVÉS dans les tâches planifiées de l'auteur (relevé du 2026-09-03 : T1→claude-fable-5, T2→claude-sonnet-5, T3→claude-opus-5). <À_TRANCHER : confirmer via list_triggers → derived_state.model avant tout bump ; la famille fable est annoncée par Anthropic comme la plus capable, ce qui contredit son usage T1 — vérifier.>",
+  "aliases": {
+    "fast": {
+      "tier": "T1",
+      "model": "claude-fable-5",
+      "use": "sondes, heartbeats, classification, extraction simple"
+    },
+    "default": {
+      "tier": "T2",
+      "model": "claude-sonnet-5",
+      "use": "défaut : rédaction, audit, synthèse, code non critique"
+    },
+    "deep": {
+      "tier": "T3",
+      "model": "claude-opus-5",
+      "use": "architecture, sécurité, debug complexe — jamais pour une tâche planifiée récurrente"
+    }
+  },
+  "scheduled_tasks_doctrine": "DEC-031 : T1 pour les sondes, T2 par défaut, T3 seulement si (a) jugement final sans validation humaine ET (b) risque élevé ET (c) default a échoué de façon documentée.",
+  "reference": "https://docs.claude.com/en/docs/about-claude/models"
+}

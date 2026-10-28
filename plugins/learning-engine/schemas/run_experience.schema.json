@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tricorderkit://learning-engine/run_experience.schema.json",
+  "title": "RunExperience",
+  "description": "Objet de run standard produit par chaque workflow (DEC-046, plan v1.0 §10).",
+  "type": "object",
+  "required": ["run_id", "workflow_id", "trigger", "status", "started_at", "strategy_used"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": { "type": "string", "pattern": "^run_\\d{4}-\\d{2}-\\d{2}_\\d{3,}$" },
+    "workflow_id": { "type": "string", "minLength": 1 },
+    "trigger": { "type": "string", "enum": ["schedule", "manual", "webhook", "agent", "retry"] },
+    "status": { "type": "string", "enum": ["success", "partial", "failed"] },
+    "started_at": { "type": "string", "format": "date-time" },
+    "ended_at": { "type": "string", "format": "date-time" },
+    "duration_seconds": { "type": "number", "minimum": 0 },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "url"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "url": { "type": "string", "format": "uri" },
+              "type": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "strategy_used": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "raw_files": { "type": "array", "items": { "type": "string" } },
+        "normalized_files": { "type": "array", "items": { "type": "string" } },
+        "markdown_reports": { "type": "array", "items": { "type": "string" } },
+        "db_rows_created": { "type": "integer", "minimum": 0 },
+        "db_rows_updated": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pages_fetched": { "type": "integer", "minimum": 0 },
+        "items_extracted": { "type": "integer", "minimum": 0 },
+        "duplicates_detected": { "type": "integer", "minimum": 0 },
+        "official_sources_found": { "type": "integer", "minimum": 0 },
+        "errors_count": { "type": "integer", "minimum": 0 },
+        "token_cost_estimate": { "type": "number", "minimum": 0 }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "score_global": { "type": "number", "minimum": 0, "maximum": 100 },
+        "score_freshness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "score_source_reliability": { "type": "number", "minimum": 0, "maximum": 100 },
+        "score_completeness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "score_dedup": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "recoverable": { "type": "boolean" }
+        }
+      }
+    },
+    "next_action": { "type": "string" },
+    "human_review_required": { "type": "boolean", "default": true }
+  }
+}

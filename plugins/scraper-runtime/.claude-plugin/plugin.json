@@ -1,0 +1,18 @@
+{
+  "name": "scraper-runtime",
+  "version": "0.1.0",
+  "description": "Runtime de scraping standardisé (profils + contrat de run) — cadre générique définissant comment un run de collecte est structuré et validé. Fournit les profils, le contrat de run et le générateur de registre de sources ; exécution réelle déportée.",
+  "author": {
+    "name": "GeekFamilyCorp",
+    "url": "https://github.com/GeekFamilyCorp"
+  },
+  "homepage": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "repository": "https://github.com/GeekFamilyCorp/TricorderKit",
+  "license": "MIT",
+  "keywords": [
+    "scraping",
+    "runtime",
+    "profiles",
+    "sources"
+  ]
+}
