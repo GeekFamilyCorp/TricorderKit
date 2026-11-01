@@ -58,6 +58,7 @@ Ce fichier n'est qu'un aide-mémoire embarqué pour qu'un skill reste lisible sa
 | R79 | Rien n'existe tant que ce n'est pas consigné, daté, indexable (`00_SYSTEM/JOURNAL/entrees/`) | action non triviale |
 | R80 | Clôture quotidienne automatique (23:30 Paris) | l'heure |
 | R81 | Agir par défaut ; s'arrêter seulement devant ce qui détruirait le site ou casserait le VPS | toute action |
+| R130 | Répartition : `task-observer` note ce qui doit améliorer un skill (observations numérotées) ; `session-memory` (ex-`memoire-de-session`) garde le journal des faits et décisions et cite le numéro d'observation sans la recopier ; le texte d'un skill change à la revue, installé sur GO humain — voir `docs/11_SKILL_IMPROVEMENT_LOOP.md` | leçon ou fait de séance |
 
 Patterns : `PATTERN-EDIT-DUALFS-001` (le cache de session n'est pas la source : livrer un fichier, pas un hot-patch) · `PATTERN-DEDUP-001` (R29-R31) · `PATTERN-VPS-RELAY-001` (jamais de code sur la ligne de commande du relais).
 

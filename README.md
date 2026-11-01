@@ -227,6 +227,7 @@ See [STATUS.md](STATUS.md) for the per-plugin dashboard and [ROADMAP.md](ROADMAP
 | 08 | [Context policy](docs/08_CONTEXT_POLICY.md) | keep agent context small and relevant |
 | 09 | [Governance & guardrails](docs/09_GOVERNANCE_GUARDRAILS.md) | see every rule and the gate that enforces it |
 | 10 | [Remote services](docs/10_REMOTE_SERVICES.md) | move Temporal, Neo4j and Qdrant to another machine |
+| 11 | [Skill improvement loop](docs/11_SKILL_IMPROVEMENT_LOOP.md) | let real sessions improve your skills (task-observer + session-memory), human-approved |
 | — | [Architecture](docs/architecture.md) · [Infrastructure](docs/INFRA.md) | the component map and the Docker stack |
 | — | [Linked projects](docs/linked_projects.md) · [Anonymization](docs/anonymization.md) | plug your own private project into the public engine, safely |
 

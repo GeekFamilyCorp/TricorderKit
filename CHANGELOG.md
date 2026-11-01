@@ -4,6 +4,13 @@
 
 ---
 
+## [Unreleased] - 01/11/2026 - Boucle d'amélioration des skills
+
+### Ajouté
+- **docs/11_SKILL_IMPROVEMENT_LOOP.md** - boucle d'amélioration des skills : `task-observer` (skill tiers, rebelytics, CC BY 4.0, non embarqué : où le récupérer, comment l'installer dans les applis Claude et Claude Code, épingler l'espace de travail, Git Bash sous Windows, activation, revue hebdomadaire planifiée, coût ~11 000 tokens par séance) + `session-memory` ; règle de répartition R130.
+- **skills/session-memory/** - version publique et générique de `memoire-de-session` (journal des faits et décisions au fil de l'eau, registres, liste de clôture) ; les leçons qui doivent modifier un skill passent par `task-observer` (R130).
+- **cowork-plugins/tk-knowledge/references/regles.md** - ligne R130 ; **README** - entrée 11 dans l'index de la documentation.
+
 ## [Unreleased] - 28/10/2026 - Vitrine
 
 ### Ajouté
